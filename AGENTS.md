@@ -1385,14 +1385,20 @@ Avoid large photorealistic desk images as critical path assets.
 
 ## 19.4 Fonts
 
-Self-host primary Latin fonts if possible.
+Use fontsource npm packages for self-hosted Latin fonts.
+
+```text
+@fontsource/newsreader
+@fontsource/cabin
+@fontsource/monaspace-argon
+```
 
 Be careful with CJK webfonts because they are large.
 
 Prefer:
 
 ```text
-Latin webfonts loaded for default experience
+Latin webfonts loaded via fontsource for default experience
 language-specific font loading for localized pages
 system fallback where appropriate
 ```

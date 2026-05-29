@@ -171,7 +171,13 @@ Design tokens are in `apps/web/src/styles/tokens.css`:
 
 ### Fonts
 
-Latin fonts are self-hosted (Newsreader + Cabin). CJK fonts are loaded per-language. Update `apps/web/src/styles/fonts.css` and `packages/config/src/fonts.ts`.
+Fonts are self-hosted via [fontsource](https://fontsource.org/) packages:
+
+- **Newsreader** (serif) — `@fontsource/newsreader`
+- **Cabin** (sans) — `@fontsource/cabin`
+- **Monaspace Argon** (code) — `@fontsource/monaspace-argon`
+
+CJK fonts are loaded per-language via system font fallbacks. To customize, update `apps/web/src/styles/fonts.css` and `apps/web/src/styles/global.css`.
 
 ---
 

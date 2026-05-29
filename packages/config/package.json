@@ -1,6 +1,7 @@
 {
   "name": "@angineblog/config",
   "version": "0.0.1",
+  "license": "MIT",
   "type": "module",
   "private": true,
   "main": "./src/index.ts",

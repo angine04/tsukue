@@ -830,7 +830,7 @@ Example:
 
   --font-serif: var(--font-serif-latin);
   --font-sans: var(--font-sans-latin);
-  --font-code: "JetBrains Mono", ui-monospace, monospace;
+  --font-code: "Monaspace Argon", ui-monospace, monospace;
 }
 
 :lang(en) {

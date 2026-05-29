@@ -13,4 +13,4 @@ export const FONT_SANS_JA = '"Noto Sans JP", "Source Han Sans JP", "Hiragino San
 export const FONT_SERIF_KO = '"Noto Serif KR", "Source Han Serif KR", serif';
 export const FONT_SANS_KO = '"Noto Sans KR", "Source Han Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
 
-export const FONT_CODE = '"JetBrains Mono", ui-monospace, monospace';
+export const FONT_CODE = '"Monaspace Argon", ui-monospace, monospace';

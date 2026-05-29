@@ -1,0 +1,11 @@
+.article-content {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  line-height: 1.7;
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3 {
+  font-family: var(--font-serif);
+}

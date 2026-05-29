@@ -1,0 +1,10 @@
+.card {
+  background-color: var(--color-paper-ivory);
+  box-shadow: var(--shadow-card-rest);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:focus,
+.card:hover {
+  box-shadow: var(--shadow-card-focus);
+}

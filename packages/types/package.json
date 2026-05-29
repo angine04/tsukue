@@ -1,0 +1,19 @@
+{
+  "name": "@angineblog/types",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./content": "./src/content.ts",
+    "./comments": "./src/comments.ts",
+    "./api": "./src/api.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

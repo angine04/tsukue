@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-code);
+
+  --color-desk-base: #8a5f3e;
+  --color-paper-ivory: #f2eadc;
+  --color-paper-sand: #d9c5a5;
+  --color-paper-olive: #6f7564;
+  --color-paper-terracotta: #a15f3d;
+  --color-paper-warm: #c4a882;
+  --color-paper-sage: #8b9a7d;
+  --color-paper-clay: #b87d5e;
+  --color-ink: #231b16;
+  --color-muted: #6f6258;
+  --color-accent: #7a2f22;
+
+  --shadow-card-rest: 0 12px 24px rgba(26, 16, 8, 0.18);
+  --shadow-card-focus: 0 18px 38px rgba(26, 16, 8, 0.24);
+  --shadow-sheet: 0 32px 64px rgba(26, 16, 8, 0.32);
+}
+
+:root {
+  --font-serif-latin: "Newsreader", "Noto Serif", serif;
+  --font-sans-latin: "Cabin", "Noto Sans", system-ui, sans-serif;
+
+  --font-serif-zh-hans: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --font-sans-zh-hans: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", sans-serif;
+
+  --font-serif-zh-hant: "Noto Serif TC", "Source Han Serif TC", "Songti TC", serif;
+  --font-sans-zh-hant: "Noto Sans TC", "Source Han Sans TC", "PingFang TC", sans-serif;
+
+  --font-serif-ja: "Noto Serif JP", "Source Han Serif JP", "Yu Mincho", serif;
+  --font-sans-ja: "Noto Sans JP", "Source Han Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+
+  --font-serif-ko: "Noto Serif KR", "Source Han Serif KR", serif;
+  --font-sans-ko: "Noto Sans KR", "Source Han Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  --font-serif: var(--font-serif-latin);
+  --font-sans: var(--font-sans-latin);
+  --font-code: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:lang(en) {
+  --font-serif: var(--font-serif-latin);
+  --font-sans: var(--font-sans-latin);
+}
+
+:lang(zh-Hans),
+:lang(zh-CN),
+:lang(zh-SG) {
+  --font-serif: var(--font-serif-zh-hans);
+  --font-sans: var(--font-sans-zh-hans);
+}
+
+:lang(zh-Hant),
+:lang(zh-TW),
+:lang(zh-HK),
+:lang(zh-MO) {
+  --font-serif: var(--font-serif-zh-hant);
+  --font-sans: var(--font-sans-zh-hant);
+}
+
+:lang(ja),
+:lang(ja-JP) {
+  --font-serif: var(--font-serif-ja);
+  --font-sans: var(--font-sans-ja);
+}
+
+:lang(ko),
+:lang(ko-KR) {
+  --font-serif: var(--font-serif-ko);
+  --font-sans: var(--font-sans-ko);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto;
+  }
+}

@@ -1,0 +1,27 @@
+name = "angineblog-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-09"
+
+[env.production]
+name = "angineblog-api"
+
+[env.staging]
+name = "angineblog-api-staging"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "angineblog-db"
+database_id = ""
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = ""
+
+[vars]
+TURNSTILE_SITE_KEY = ""
+
+[env.production.vars]
+TURNSTILE_SITE_KEY = ""
+
+[env.staging.vars]
+TURNSTILE_SITE_KEY = ""

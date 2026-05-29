@@ -1,0 +1,22 @@
+:root {
+  --color-desk-base: #8a5f3e;
+  --color-desk-light: #a07852;
+  --color-desk-dark: #6b4a30;
+
+  --color-paper-ivory: #f2eadc;
+  --color-paper-sand: #d9c5a5;
+  --color-paper-olive: #6f7564;
+  --color-paper-terracotta: #a15f3d;
+  --color-paper-warm: #c4a882;
+  --color-paper-sage: #8b9a7d;
+  --color-paper-clay: #b87d5e;
+
+  --color-ink: #231b16;
+  --color-muted: #6f6258;
+  --color-accent: #7a2f22;
+  --color-accent-light: #9e4a3c;
+
+  --shadow-card-rest: 0 12px 24px rgba(26, 16, 8, 0.18);
+  --shadow-card-focus: 0 18px 38px rgba(26, 16, 8, 0.24);
+  --shadow-sheet: 0 32px 64px rgba(26, 16, 8, 0.32);
+}

@@ -1,0 +1,14 @@
+.mdx-content pre {
+  font-family: var(--font-code);
+  background: #f5f2eb;
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.mdx-content blockquote {
+  border-left: 3px solid var(--color-accent);
+  padding-left: 1rem;
+  margin-left: 0;
+  font-style: italic;
+}

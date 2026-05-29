@@ -1,0 +1,18 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  return [
+    { params: { slug: "placeholder" } },
+  ];
+}
+
+const { slug } = Astro.params;
+---
+
+<Layout title={`Partial: ${slug}`}>
+  <article class="article-content" lang="en">
+    <h1>{slug}</h1>
+    <p>Partial content placeholder.</p>
+  </article>
+</Layout>

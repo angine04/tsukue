@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@angineblog/schemas": ["../schemas/src/index.ts"],
+      "@angineblog/types": ["../types/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../schemas" },
+    { "path": "../types" }
+  ]
+}

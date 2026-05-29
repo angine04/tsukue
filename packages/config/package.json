@@ -1,0 +1,21 @@
+{
+  "name": "@angineblog/config",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./routes": "./src/routes.ts",
+    "./i18n": "./src/i18n.ts",
+    "./fonts": "./src/fonts.ts",
+    "./site": "./src/site.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,26 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+export async function getStaticPaths() {
+  return [
+    { params: { slug: "placeholder" } },
+  ];
+}
+
+const { slug } = Astro.params;
+---
+
+<Layout title={`Post: ${slug}`} description="Article placeholder">
+  <div class="desk min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <div class="card p-8 rounded-lg max-w-2xl mx-auto">
+        <h1 class="font-serif text-3xl text-[var(--color-ink)] mb-4">
+          Article: {slug}
+        </h1>
+        <div class="article-content">
+          <p>Article content placeholder.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

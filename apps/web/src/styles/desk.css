@@ -1,0 +1,6 @@
+.desk {
+  background-color: var(--color-desk-base);
+  background-image: url("/textures/desk-grain.svg");
+  background-size: cover;
+  background-position: center;
+}

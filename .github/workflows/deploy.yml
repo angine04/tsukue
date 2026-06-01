@@ -1,0 +1,49 @@
+name: Deploy
+
+# This workflow is disabled by default to avoid conflicts with
+# Cloudflare Pages dashboard git connection. To enable it:
+# 1. Set the required secrets in your repository settings
+# 2. Uncomment the 'push' trigger below
+# 3. Comment out or remove the 'workflow_dispatch' trigger
+
+on:
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - apps/web/**
+  #     - functions/**
+  #     - packages/**
+  #     - wrangler.toml
+  #     - .github/workflows/deploy.yml
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install
+
+      - run: pnpm --filter web build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: tsukue
+          directory: apps/web/dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

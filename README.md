@@ -182,7 +182,7 @@ CJK fonts are loaded per-language via system font fallbacks. To customize, updat
 
 The project deploys as a single Cloudflare Pages site with API functions running at `/api/*`.
 
-#### Dashboard Settings
+#### Option 1: Dashboard Git Connection (Default)
 
 Connect your repository in the Cloudflare Pages dashboard. The project will auto-deploy on every push to `main`.
 
@@ -192,6 +192,20 @@ Connect your repository in the Cloudflare Pages dashboard. The project will auto
 | **Build output directory** | `apps/web/dist` |
 
 The `functions/` directory at the repo root is automatically detected by Cloudflare Pages.
+
+#### Option 2: GitHub Actions (Optional)
+
+A deploy workflow is included at `.github/workflows/deploy.yml` but disabled by default. To enable it:
+
+1. Set these secrets in your repository settings:
+   ```
+   CLOUDFLARE_API_TOKEN
+   CLOUDFLARE_ACCOUNT_ID
+   ```
+2. Uncomment the `push` trigger in `.github/workflows/deploy.yml`
+3. Comment out or remove the `workflow_dispatch` trigger
+
+**Note:** Don't enable both dashboard git connection and GitHub Actions — they will conflict.
 
 #### Manual Deployment (CLI)
 

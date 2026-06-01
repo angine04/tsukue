@@ -1631,10 +1631,14 @@ Recommended structure:
          └─ templates/
 ```
 
-Hono should live in Cloudflare Pages Functions:
+Hono lives in Cloudflare Pages Functions:
 
 ```text
-apps/web/functions/api/
+apps/web/functions/api/[[path]].ts
+  canonical API implementation
+
+functions/api/[[path]].ts
+  root re-export for Cloudflare Pages dashboard builds
 ```
 
 The default deployment model is:
@@ -1644,8 +1648,10 @@ apps/web
   deploy to Cloudflare Pages (static site + API functions)
 
 /api/*
-  served by Pages Functions at apps/web/functions/api/[[path]].ts
+  served by Pages Functions at functions/api/[[path]].ts
 ```
+
+**Why the root wrapper?** Cloudflare Pages dashboard builds look for `functions/` at the repo root. The root `functions/api/[[path]].ts` re-exports from `apps/web/functions/api/[[path]].ts` so the actual implementation stays with the app while satisfying the dashboard requirement.
 
 
 

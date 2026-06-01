@@ -184,7 +184,7 @@ The project deploys as a single Cloudflare Pages site with API functions running
 
 #### Dashboard Settings
 
-If using Cloudflare Dashboard Git integration:
+Connect your repository in the Cloudflare Pages dashboard. The project will auto-deploy on every push to `main`.
 
 | Setting | Value |
 |---------|-------|
@@ -192,20 +192,6 @@ If using Cloudflare Dashboard Git integration:
 | **Build output directory** | `apps/web/dist` |
 
 The `functions/` directory at the repo root is automatically detected by Cloudflare Pages.
-
-#### GitHub Actions (Automatic)
-
-- **CI**: Builds and type-checks on every PR
-- **Deploy**: Deploys to Cloudflare Pages on push to `main`
-
-##### Required GitHub Secrets
-
-Set these in your repository settings:
-
-```
-CLOUDFLARE_API_TOKEN    # Create at https://dash.cloudflare.com/profile/api-tokens
-CLOUDFLARE_ACCOUNT_ID   # From your Cloudflare dashboard
-```
 
 #### Manual Deployment (CLI)
 

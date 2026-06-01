@@ -3,8 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@angineblog/schemas": ["../schemas/src/index.ts"],
-      "@angineblog/types": ["../types/src/index.ts"]
+      "@tsukue/schemas": ["../schemas/src/index.ts"],
+      "@tsukue/types": ["../types/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

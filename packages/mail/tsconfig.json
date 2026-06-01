@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@angineblog/types": ["../types/src/index.ts"]
+      "@tsukue/types": ["../types/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

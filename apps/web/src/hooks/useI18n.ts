@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ui, uiFormat, type UIKey } from "@angineblog/config";
+import { ui, uiFormat, type UIKey } from "@tsukue/config";
 
 export function useI18n(lang: string = "en") {
   const t = useCallback(

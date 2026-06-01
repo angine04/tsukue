@@ -1,8 +1,8 @@
-# Angine Blog
+# Tsukue
 
 A tactile, editorial blog template built with Astro, React, and Hono. Designed to feel like a physical desk with paper cards scattered across a wooden surface — warm, material, and distinctly personal.
 
-**[Live Demo →](https://angineblog.com)** (placeholder)
+**[Live Demo →](https://tsukue.com)** (placeholder)
 
 ---
 
@@ -41,7 +41,7 @@ A tactile, editorial blog template built with Astro, React, and Hono. Designed t
 
 ```bash
 # Clone the template
-git clone https://github.com/angine/angineblog.git my-blog
+git clone https://github.com/angine/tsukue.git my-blog
 cd my-blog
 
 # Install dependencies
@@ -102,7 +102,7 @@ pnpm build:api
 ## Project Structure
 
 ```
-angineblog/
+tsukue/
 ├── apps/
 │   ├── web/              # Astro frontend (desk UI, articles, admin)
 │   └── api/              # Hono backend (comments, newsletter, admin)

@@ -1,16 +1,16 @@
-name = "angineblog-api"
+name = "tsukue-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-09"
 
 [env.production]
-name = "angineblog-api"
+name = "tsukue-api"
 
 [env.staging]
-name = "angineblog-api-staging"
+name = "tsukue-api-staging"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "angineblog-db"
+database_name = "tsukue-db"
 database_id = ""
 
 [[kv_namespaces]]

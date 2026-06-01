@@ -8,7 +8,7 @@ import health from "./routes/health.js";
 const app = new Hono();
 
 app.get("/", (c) => {
-  return c.json({ message: "Angine Blog API" });
+  return c.json({ message: "Tsukue API" });
 });
 
 app.route("/api/comments", comments);

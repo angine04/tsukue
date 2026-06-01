@@ -12,10 +12,10 @@
     "jsxImportSource": "react",
     "baseUrl": ".",
     "paths": {
-      "@angineblog/config": ["../../packages/config/src/index.ts"],
-      "@angineblog/schemas": ["../../packages/schemas/src/index.ts"],
-      "@angineblog/types": ["../../packages/types/src/index.ts"],
-      "@angineblog/mail": ["../../packages/mail/src/index.ts"]
+      "@tsukue/config": ["../../packages/config/src/index.ts"],
+      "@tsukue/schemas": ["../../packages/schemas/src/index.ts"],
+      "@tsukue/types": ["../../packages/types/src/index.ts"],
+      "@tsukue/mail": ["../../packages/mail/src/index.ts"]
     }
   },
   "references": [

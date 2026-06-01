@@ -28,9 +28,7 @@ jobs:
 
       - run: pnpm install
 
-      - run: pnpm build:web
-
-      - name: Deploy to Cloudflare Pages
+      - run: pnpm --filter web deploy:cf
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

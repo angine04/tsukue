@@ -8,14 +8,15 @@ name = "tsukue-api"
 [env.staging]
 name = "tsukue-api-staging"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "tsukue-db"
-database_id = ""
+# Uncomment and fill in after creating resources via dashboard or wrangler CLI:
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "tsukue-db"
+# database_id = "<your-d1-database-id>"
 
-[[kv_namespaces]]
-binding = "CACHE"
-id = ""
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "<your-kv-namespace-id>"
 
 [vars]
 TURNSTILE_SITE_KEY = ""

@@ -1,4 +1,4 @@
-import { UIDictionary } from "./types.js";
+import type { UIDictionary } from "./types.js";
 
 export const zhHant: UIDictionary = {
   "nav.home": "首頁",

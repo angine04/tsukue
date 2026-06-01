@@ -1,4 +1,4 @@
-import { UIKey } from "./ui/types";
+import type { UIKey } from "./ui/types";
 import { en } from "./ui/en";
 import { zhHans } from "./ui/zh-Hans";
 import { zhHant } from "./ui/zh-Hant";

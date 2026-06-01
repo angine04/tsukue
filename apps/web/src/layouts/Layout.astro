@@ -34,7 +34,7 @@ const { title, description, lang = "en" } = Astro.props;
     <title>{title ? `${title} | Angine Blog` : "Angine Blog"}</title>
     {description && <meta name="description" content={description} />}
   </head>
-  <body>
+  <body data-lang={lang}>
     <slot />
   </body>
 </html>

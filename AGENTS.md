@@ -878,6 +878,69 @@ fontFamily: {
 }
 ```
 
+# 11.4 UI Strings Internationalization
+
+All UI strings are centralized in `packages/config/src/ui/` and use type-safe keys.
+
+## 11.4.1 Dictionary Structure
+
+Each language has a flat dictionary with dot-separated keys:
+
+```typescript
+// packages/config/src/ui/en.ts
+export const en: UIDictionary = {
+  "nav.home": "Home",
+  "nav.about": "About",
+  "desk.readArticle": "Read article",
+  "comment.submit": "Submit",
+  // ...
+};
+```
+
+Supported languages: `en`, `zh-Hans`, `zh-Hant`, `ja`, `ko`.
+
+## 11.4.2 Usage in React Components
+
+Import the `useUI` hook and pass the `lang` prop:
+
+```typescript
+import { useUI } from "../../hooks/useUI";
+
+interface MyComponentProps {
+  lang?: string;
+}
+
+export default function MyComponent({ lang = "en" }: MyComponentProps) {
+  const { t } = useUI(lang);
+  return <button>{t("comment.submit")}</button>;
+}
+```
+
+## 11.4.3 Usage in Astro Pages
+
+Pass the `lang` prop to React island components:
+
+```astro
+---
+import MyComponent from "../components/MyComponent";
+---
+
+<MyComponent client:load lang="en" />
+```
+
+## 11.4.4 Adding New Strings
+
+1. Add the key to `packages/config/src/ui/types.ts` in the `UIDictionary` interface
+2. Add the English value to `packages/config/src/ui/en.ts`
+3. Add translations to other language files (zh-Hans.ts, ja.ts, etc.)
+4. Use in components with `t("your.new.key")`
+
+## 11.4.5 Adding New Languages
+
+1. Create `packages/config/src/ui/{lang}.ts`
+2. Import and register it in `packages/config/src/ui.ts`
+3. All components automatically support the new language
+
 ---
 
 # 12. Backend Architecture

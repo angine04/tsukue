@@ -1,13 +1,19 @@
 import { useState } from "react";
+import { useUI } from "../../hooks/useUI";
 
-export default function DeskApp() {
+interface DeskAppProps {
+  lang?: string;
+}
+
+export default function DeskApp({ lang = "en" }: DeskAppProps) {
+  const { t } = useUI(lang);
   const [mode, setMode] = useState<"desk" | "article" | "about">("desk");
 
   return (
     <div className="desk min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <h1 className="font-serif text-4xl text-[var(--color-paper-ivory)] mb-8">
-          Desk App Placeholder
+          {t("nav.home")}
         </h1>
         <p className="text-[var(--color-paper-sand)]">
           Mode: {mode}

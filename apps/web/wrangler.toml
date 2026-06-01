@@ -1,0 +1,24 @@
+name = "tsukue"
+compatibility_date = "2025-01-09"
+
+# D1 database binding (uncomment after creating database)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "tsukue-db"
+# database_id = "<your-d1-database-id>"
+
+# KV namespace binding (uncomment after creating KV namespace)
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "<your-kv-namespace-id>"
+
+[vars]
+TURNSTILE_SITE_KEY = ""
+
+# Build command for Pages
+# This builds Astro and then deploys everything
+[build]
+command = ""
+
+# Functions directory
+# Cloudflare Pages will auto-detect functions/ directory

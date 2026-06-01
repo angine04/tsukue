@@ -1,4 +1,4 @@
-name: Deploy Web
+name: Deploy
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
     paths:
       - apps/web/**
       - packages/**
-      - .github/workflows/deploy-web.yml
+      - .github/workflows/deploy.yml
 
 jobs:
   deploy:
@@ -28,7 +28,9 @@ jobs:
 
       - run: pnpm install
 
-      - run: pnpm --filter web deploy:cf
+      - run: pnpm --filter web build
+
+      - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

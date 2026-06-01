@@ -25,6 +25,4 @@ jobs:
 
       - run: pnpm check
 
-      - run: pnpm build:web
-
-      - run: pnpm build:api
+      - run: pnpm build

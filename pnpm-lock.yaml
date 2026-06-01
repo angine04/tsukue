@@ -66,6 +66,9 @@ importers:
       framer-motion:
         specifier: ^12.0.0
         version: 12.40.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      hono:
+        specifier: ^4.12.23
+        version: 4.12.23
       react:
         specifier: ^19.2.6
         version: 19.2.6
@@ -75,6 +78,9 @@ importers:
       tailwindcss:
         specifier: ^4.0.0
         version: 4.3.0
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.9

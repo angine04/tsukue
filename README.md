@@ -185,11 +185,10 @@ CJK fonts are loaded per-language via system font fallbacks. To customize, updat
 
 ### Cloudflare (Recommended)
 
-The project includes GitHub Actions workflows for automatic deployment:
+The project deploys as a single Cloudflare Pages site with API functions running at `/api/*`.
 
 - **CI**: Builds and type-checks on every PR
-- **Deploy Web**: Deploys to Cloudflare Pages on push to `main`
-- **Deploy API**: Deploys to Cloudflare Workers on push to `main`
+- **Deploy**: Deploys to Cloudflare Pages on push to `main`
 
 #### Required GitHub Secrets
 
@@ -203,23 +202,20 @@ CLOUDFLARE_ACCOUNT_ID   # From your Cloudflare dashboard
 #### Manual Deployment
 
 ```bash
-# Deploy web app to Cloudflare Pages
-pnpm deploy:web
-
-# Deploy API to Cloudflare Workers
-pnpm deploy:api
+# Deploy everything (static site + API functions)
+pnpm deploy
 ```
 
 ### Database Setup
 
 ```bash
-# Apply migrations
+# Apply D1 migrations
 pnpm --filter api db:migrate
 ```
 
 ### Environment Variables
 
-Set these in Cloudflare Workers secrets:
+Set these in Cloudflare Pages settings:
 
 ```
 TURNSTILE_SECRET_KEY
@@ -234,9 +230,9 @@ ENCRYPTION_KEY
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev:web` | Start Astro dev server |
-| `pnpm dev:api` | Start Hono dev server |
-| `pnpm build:web` | Build static site |
+| `pnpm dev` | Start Astro dev server (with API functions) |
+| `pnpm build` | Build static site |
+| `pnpm deploy` | Deploy to Cloudflare Pages |
 | `pnpm build:api` | Build API worker |
 | `pnpm deploy:web` | Deploy to Cloudflare Pages |
 | `pnpm deploy:api` | Deploy to Cloudflare Workers |

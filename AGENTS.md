@@ -1634,11 +1634,8 @@ Recommended structure:
 Hono lives in Cloudflare Pages Functions:
 
 ```text
-apps/web/functions/api/[[path]].ts
-  canonical API implementation
-
 functions/api/[[path]].ts
-  root re-export for Cloudflare Pages dashboard builds
+  Hono app, served by Cloudflare Pages Functions
 ```
 
 The default deployment model is:
@@ -1651,8 +1648,6 @@ apps/web
   served by Pages Functions at functions/api/[[path]].ts
 ```
 
-**Why the root wrapper?** Cloudflare Pages dashboard builds look for `functions/` at the repo root. The root `functions/api/[[path]].ts` re-exports from `apps/web/functions/api/[[path]].ts` so the actual implementation stays with the app while satisfying the dashboard requirement.
-
 
 
 Also update the **Decisions Already Made** section with:
@@ -1660,7 +1655,7 @@ Also update the **Decisions Already Made** section with:
 ```md
 Use a small pnpm monorepo.
 Use `apps/web` for Astro.
-Use `apps/web/functions/api/` for Hono.
+Use `functions/api/` for Hono Pages Functions.
 Use `packages/config`, `packages/schemas`, and `packages/types` for shared code.
 Do not put the Hono backend inside the Astro app by default.
 ````

@@ -1,11 +1,11 @@
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface CommentFormProps {
   lang?: string;
 }
 
 export default function CommentForm({ lang = "en" }: CommentFormProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
 
   return (
     <form className="space-y-4">

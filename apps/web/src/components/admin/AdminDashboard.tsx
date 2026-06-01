@@ -1,11 +1,11 @@
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface AdminDashboardProps {
   lang?: string;
 }
 
 export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
 
   return (
     <div className="admin-dashboard p-8">

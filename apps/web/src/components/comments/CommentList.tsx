@@ -1,11 +1,11 @@
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface CommentListProps {
   lang?: string;
 }
 
 export default function CommentList({ lang = "en" }: CommentListProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
 
   return (
     <div className="space-y-4">

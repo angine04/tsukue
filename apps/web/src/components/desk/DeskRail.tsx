@@ -1,11 +1,11 @@
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface DeskRailProps {
   lang?: string;
 }
 
 export default function DeskRail({ lang = "en" }: DeskRailProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
 
   return (
     <div className="flex gap-4 overflow-x-auto">

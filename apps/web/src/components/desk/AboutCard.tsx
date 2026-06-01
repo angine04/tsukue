@@ -1,11 +1,11 @@
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface AboutCardProps {
   lang?: string;
 }
 
 export default function AboutCard({ lang = "en" }: AboutCardProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
 
   return (
     <div className="card p-6 rounded-lg max-w-xs border-2 border-[var(--color-accent)]">

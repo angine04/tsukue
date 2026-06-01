@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface DeskAppProps {
   lang?: string;
 }
 
 export default function DeskApp({ lang = "en" }: DeskAppProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
   const [mode, setMode] = useState<"desk" | "article" | "about">("desk");
 
   return (

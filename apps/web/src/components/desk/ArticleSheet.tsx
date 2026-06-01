@@ -1,11 +1,11 @@
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface ArticleSheetProps {
   lang?: string;
 }
 
 export default function ArticleSheet({ lang = "en" }: ArticleSheetProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
 
   return (
     <div className="card p-8 rounded-lg max-w-2xl mx-auto">

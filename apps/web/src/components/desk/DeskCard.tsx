@@ -1,11 +1,11 @@
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface DeskCardProps {
   lang?: string;
 }
 
 export default function DeskCard({ lang = "en" }: DeskCardProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
 
   return (
     <div className="card p-6 rounded-lg max-w-sm">

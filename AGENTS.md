@@ -901,17 +901,17 @@ Supported languages: `en`, `zh-Hans`, `zh-Hant`, `ja`, `ko`.
 
 ## 11.4.2 Usage in React Components
 
-Import the `useUI` hook and pass the `lang` prop:
+Import the `useI18n` hook and pass the `lang` prop:
 
 ```typescript
-import { useUI } from "../../hooks/useUI";
+import { useI18n } from "../../hooks/useI18n";
 
 interface MyComponentProps {
   lang?: string;
 }
 
 export default function MyComponent({ lang = "en" }: MyComponentProps) {
-  const { t } = useUI(lang);
+  const { t } = useI18n(lang);
   return <button>{t("comment.submit")}</button>;
 }
 ```

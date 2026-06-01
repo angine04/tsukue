@@ -80,21 +80,15 @@ Your article content here.
 ### 4. Run locally
 
 ```bash
-# Start the web app
+# Start the web app (includes API functions at /api/*)
 pnpm dev:web
-
-# Start the API (in another terminal)
-pnpm dev:api
 ```
 
 ### 5. Build for production
 
 ```bash
-# Build the static site
+# Build the static site (includes API functions)
 pnpm build:web
-
-# Build the API
-pnpm build:api
 ```
 
 ---
@@ -104,16 +98,8 @@ pnpm build:api
 ```
 tsukue/
 ├── apps/
-│   ├── web/              # Astro frontend (desk UI, articles, admin)
-│   └── api/              # Hono backend (comments, newsletter, admin)
+│   └── web/              # Astro frontend (desk UI, articles, admin)
 ├── packages/
-│   ├── config/           # Shared config (routes, i18n, fonts, site)
-│   ├── schemas/          # Zod validation schemas
-│   ├── types/            # TypeScript interfaces
-│   └── mail/             # Mail provider abstraction
-├── migrations/           # D1 database migrations
-├── pnpm-workspace.yaml   # pnpm monorepo config
-└── package.json          # Root scripts
 ```
 
 ---
@@ -210,7 +196,7 @@ pnpm deploy
 
 ```bash
 # Apply D1 migrations
-pnpm --filter api db:migrate
+wrangler d1 migrations apply DB
 ```
 
 ### Environment Variables
@@ -233,9 +219,7 @@ ENCRYPTION_KEY
 | `pnpm dev` | Start Astro dev server (with API functions) |
 | `pnpm build` | Build static site |
 | `pnpm deploy` | Deploy to Cloudflare Pages |
-| `pnpm build:api` | Build API worker |
 | `pnpm deploy:web` | Deploy to Cloudflare Pages |
-| `pnpm deploy:api` | Deploy to Cloudflare Workers |
 | `pnpm check` | Type-check all packages |
 | `pnpm test` | Run tests across monorepo |
 

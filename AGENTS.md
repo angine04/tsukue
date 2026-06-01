@@ -1531,9 +1531,6 @@ The project should be split into:
 apps/web
   Astro static site, MDX, React DeskApp, Tailwind, Framer Motion
 
-apps/api
-  Hono Worker, D1, Turnstile, comments, admin API, newsletter, mail
-
 packages/config
   shared route config, i18n config, reserved slugs, site metadata
 
@@ -1607,21 +1604,6 @@ Recommended structure:
 │  │        ├─ article.css
 │  │        ├─ mdx.css
 │  │        └─ admin.css
-│  └─ api/
-│     ├─ package.json
-│     ├─ wrangler.toml
-│     ├─ tsconfig.json
-│     └─ src/
-│        ├─ index.ts
-│        ├─ routes/
-│        │  ├─ comments.ts
-│        │  ├─ admin.ts
-│        │  ├─ newsletter.ts
-│        │  └─ health.ts
-│        ├─ db/
-│        ├─ mail/
-│        ├─ validation/
-│        └─ security/
 └─ packages/
    ├─ config/
    │  ├─ package.json
@@ -1649,25 +1631,20 @@ Recommended structure:
          └─ templates/
 ```
 
-Hono should live in:
+Hono should live in Cloudflare Pages Functions:
 
 ```text
-apps/api
+apps/web/functions/api/
 ```
-
-Do not put Hono inside `apps/web/src/pages/api` unless explicitly simplifying the project later.
 
 The default deployment model is:
 
 ```text
 apps/web
-  deploy to Cloudflare Pages
-
-apps/api
-  deploy to Cloudflare Workers
+  deploy to Cloudflare Pages (static site + API functions)
 
 /api/*
-  route to the Hono Worker
+  served by Pages Functions at apps/web/functions/api/[[path]].ts
 ```
 
 
@@ -1677,7 +1654,7 @@ Also update the **Decisions Already Made** section with:
 ```md
 Use a small pnpm monorepo.
 Use `apps/web` for Astro.
-Use `apps/api` for Hono.
+Use `apps/web/functions/api/` for Hono.
 Use `packages/config`, `packages/schemas`, and `packages/types` for shared code.
 Do not put the Hono backend inside the Astro app by default.
 ````
@@ -1699,10 +1676,8 @@ Root scripts:
 {
   "scripts": {
     "dev:web": "pnpm --filter web dev",
-    "dev:api": "pnpm --filter api dev",
     "build:web": "pnpm --filter web build",
     "deploy:web": "pnpm --filter web deploy",
-    "deploy:api": "pnpm --filter api deploy",
     "check": "pnpm -r check",
     "test": "pnpm -r test"
   }
@@ -1729,8 +1704,6 @@ Recommended scripts:
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "worker:dev": "wrangler dev worker/src/index.ts",
-    "worker:deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply DB",
     "db:migrate:local": "wrangler d1 migrations apply DB --local"
   }

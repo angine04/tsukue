@@ -185,6 +185,23 @@ CJK fonts are loaded per-language via system font fallbacks. To customize, updat
 
 ### Cloudflare (Recommended)
 
+The project includes GitHub Actions workflows for automatic deployment:
+
+- **CI**: Builds and type-checks on every PR
+- **Deploy Web**: Deploys to Cloudflare Pages on push to `main`
+- **Deploy API**: Deploys to Cloudflare Workers on push to `main`
+
+#### Required GitHub Secrets
+
+Set these in your repository settings:
+
+```
+CLOUDFLARE_API_TOKEN    # Create at https://dash.cloudflare.com/profile/api-tokens
+CLOUDFLARE_ACCOUNT_ID   # From your Cloudflare dashboard
+```
+
+#### Manual Deployment
+
 ```bash
 # Deploy web app to Cloudflare Pages
 pnpm deploy:web

@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
-    "deploy": "pnpm --filter web deploy:cf",
+    "deploy": "pnpm --filter web build && wrangler pages deploy apps/web/dist",
     "check": "pnpm -r check",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
@@ -21,6 +21,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "wrangler": "^3.0.0"
   }
 }

@@ -22,7 +22,7 @@ A tactile, editorial blog template built with Astro, React, and Hono. Designed t
 | Layer | Technology |
 |-------|-----------|
 | **Site** | Astro 6, React 19, Tailwind CSS v4, Framer Motion |
-| **Backend** | Hono, Cloudflare Workers, D1 |
+| **Backend** | Hono, Cloudflare Pages Functions, D1 |
 | **Content** | MDX, Astro Content Collections |
 | **Mail** | Provider-agnostic adapter (pluggable) |
 | **Spam** | Cloudflare Turnstile |
@@ -99,7 +99,16 @@ pnpm build:web
 tsukue/
 ├── apps/
 │   └── web/              # Astro frontend (desk UI, articles, admin)
-├── packages/
+├── functions/            # Hono API functions (Cloudflare Pages)
+│   └── api/
+│       └── [[path]].ts
+├── packages/             # Shared packages
+│   ├── config/           # Routes, i18n, site metadata
+│   ├── schemas/          # Zod validation schemas
+│   ├── types/            # TypeScript types
+│   └── mail/             # Mail provider abstraction
+├── migrations/           # D1 database migrations
+└── wrangler.toml         # Cloudflare Pages configuration
 ```
 
 ---
@@ -173,10 +182,23 @@ CJK fonts are loaded per-language via system font fallbacks. To customize, updat
 
 The project deploys as a single Cloudflare Pages site with API functions running at `/api/*`.
 
+#### Dashboard Settings
+
+If using Cloudflare Dashboard Git integration:
+
+| Setting | Value |
+|---------|-------|
+| **Build command** | `pnpm install && pnpm --filter web build` |
+| **Build output directory** | `apps/web/dist` |
+
+The `functions/` directory at the repo root is automatically detected by Cloudflare Pages.
+
+#### GitHub Actions (Automatic)
+
 - **CI**: Builds and type-checks on every PR
 - **Deploy**: Deploys to Cloudflare Pages on push to `main`
 
-#### Required GitHub Secrets
+##### Required GitHub Secrets
 
 Set these in your repository settings:
 
@@ -185,7 +207,7 @@ CLOUDFLARE_API_TOKEN    # Create at https://dash.cloudflare.com/profile/api-toke
 CLOUDFLARE_ACCOUNT_ID   # From your Cloudflare dashboard
 ```
 
-#### Manual Deployment
+#### Manual Deployment (CLI)
 
 ```bash
 # Deploy everything (static site + API functions)
@@ -216,12 +238,13 @@ ENCRYPTION_KEY
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start Astro dev server (with API functions) |
+| `pnpm dev` | Start Astro dev server |
 | `pnpm build` | Build static site |
-| `pnpm deploy` | Deploy to Cloudflare Pages |
-| `pnpm deploy:web` | Deploy to Cloudflare Pages |
+| `pnpm deploy` | Deploy to Cloudflare Pages (from root) |
 | `pnpm check` | Type-check all packages |
 | `pnpm test` | Run tests across monorepo |
+| `pnpm lint` | Lint all packages |
+| `pnpm format` | Format all packages |
 
 ---
 

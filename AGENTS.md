@@ -62,8 +62,8 @@ Content: Astro Content Collections + MDX
 Interactive UI: React island
 Animation: Framer Motion / Motion
 Styling: Tailwind + custom CSS
-Backend: Hono
-Runtime: Cloudflare Workers
+Backend: Hono (Pages Functions)
+Runtime: Cloudflare Pages
 Static hosting: Cloudflare Pages
 Database: Cloudflare D1
 Spam protection: Cloudflare Turnstile
@@ -1604,6 +1604,10 @@ Recommended structure:
 │  │        ├─ article.css
 │  │        ├─ mdx.css
 │  │        └─ admin.css
+├─ functions/
+│  └─ api/
+│     └─ [[path]].ts
+├─ wrangler.toml
 └─ packages/
    ├─ config/
    │  ├─ package.json
@@ -1676,11 +1680,13 @@ Root scripts:
 ```json
 {
   "scripts": {
-    "dev:web": "pnpm --filter web dev",
-    "build:web": "pnpm --filter web build",
-    "deploy:web": "pnpm --filter web deploy",
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "deploy": "pnpm --filter web build && wrangler pages deploy apps/web/dist",
     "check": "pnpm -r check",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format"
   }
 }
 ```
@@ -1894,8 +1900,8 @@ Use React island for desk.
 Use Framer Motion / Motion for animation.
 Use Tailwind.
 Use Hono.
-Use Cloudflare Pages for static site.
-Use Cloudflare Worker for backend API.
+Use Cloudflare Pages for static site and API functions.
+Use Hono in Pages Functions (not separate Worker).
 Use D1 for comments/newsletter metadata.
 Use provider-agnostic mail adapter.
 Use Newsreader + Cabin.

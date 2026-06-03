@@ -15,10 +15,4 @@ compatibility_date = "2025-01-09"
 [vars]
 TURNSTILE_SITE_KEY = ""
 
-# Build command for Pages
-# This builds Astro and then deploys everything
-[build]
-command = ""
-
-# Functions directory
-# Cloudflare Pages will auto-detect functions/ directory
+pages_build_output_dir = "apps/web/dist"

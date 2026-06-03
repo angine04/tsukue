@@ -2,4 +2,4 @@ export const SITE_NAME = "Tsukue";
 export const SITE_DESCRIPTION = "thoughts. essays. notes.";
 export const SITE_URL = "https://tsukue.angine.tech";
 export const AUTHOR_NAME = "Angine";
-export const AUTHOR_EMAIL = "hello@tsukue.angine.tech";
+export const AUTHOR_EMAIL = "me@angine.tech";

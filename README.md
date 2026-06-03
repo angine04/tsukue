@@ -211,7 +211,7 @@ A deploy workflow is included at `.github/workflows/deploy.yml` but disabled by 
 
 ```bash
 # Deploy everything (static site + API functions)
-pnpm deploy
+pnpm deploy:cf
 ```
 
 ### Database Setup
@@ -240,7 +240,7 @@ ENCRYPTION_KEY
 |---------|-------------|
 | `pnpm dev` | Start Astro dev server |
 | `pnpm build` | Build static site |
-| `pnpm deploy` | Deploy to Cloudflare Pages (from root) |
+| `pnpm deploy:cf` | Deploy to Cloudflare Pages (from root) |
 | `pnpm check` | Type-check all packages |
 | `pnpm test` | Run tests across monorepo |
 | `pnpm lint` | Lint all packages |

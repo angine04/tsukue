@@ -1682,7 +1682,7 @@ Root scripts:
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
-    "deploy": "pnpm --filter web build && wrangler pages deploy apps/web/dist",
+    "deploy:cf": "pnpm --filter web build && wrangler pages deploy apps/web/dist",
     "check": "pnpm -r check",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",

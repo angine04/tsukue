@@ -2,7 +2,7 @@
 
 A tactile, editorial blog template built with Astro, React, and Hono. Designed to feel like a physical desk with paper cards scattered across a wooden surface — warm, material, and distinctly personal.
 
-**[Live Demo →](https://tsukue.com)** (placeholder)
+**[Live Demo →](https://tsukue.angine.tech)** (placeholder)
 
 ---
 

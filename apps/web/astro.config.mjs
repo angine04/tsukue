@@ -5,7 +5,7 @@ import mdx from "@astrojs/mdx";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  site: "https://tsukue.com",
+  site: "https://tsukue.angine.tech",
   integrations: [react(), mdx()],
   vite: {
     plugins: [tailwindcss()],

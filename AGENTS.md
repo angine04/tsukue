@@ -1972,7 +1972,7 @@ remove semantic links from cards
 
 ---
 
-# 29. Implementation Priority
+# 28. Implementation Priority
 
 Build in this order:
 
@@ -2058,6 +2058,45 @@ article typography refinement
 performance profiling
 e2e tests
 ```
+
+---
+
+# 29. Git Workflow
+
+Use a trunk-based workflow with short-lived feature branches.
+
+## 29.1 Branch conventions
+
+| Branch | Purpose | Merge target |
+|--------|---------|--------------|
+| `main` | Production-ready code | — |
+| `develop` | Integration branch for features | `main` (via PR) |
+| `feat/*` | Individual feature work | `develop` |
+| `fix/*` | Bug fixes | `develop` |
+
+## 29.2 Branch rules
+
+- `main` is protected: require pull requests, require CI to pass
+- All changes go through `develop` first, never directly to `main`
+- Feature branches are short-lived and deleted after merge
+- Use descriptive names: `feat/desk-animation`, `fix/comments-api`
+
+## 29.3 Commit style
+
+Use conventional commits:
+
+```text
+feat: add desk card rotation
+fix: resolve mobile scroll issue
+refactor: extract card component
+chore: update dependencies
+docs: add deployment guide
+```
+
+## 29.4 Merge strategy
+
+Use squash merge for feature branches into `develop`.
+Use regular merge for `develop` into `main` (preserve history).
 
 ---
 

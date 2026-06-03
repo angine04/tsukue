@@ -2077,6 +2077,8 @@ Use a trunk-based workflow with short-lived feature branches.
 ## 29.2 Branch rules
 
 - `main` is protected: require pull requests, require CI to pass
+  - **You cannot push or merge directly to `main` from the command line**
+  - All changes to `main` must go through a pull request
 - All changes go through `develop` first, never directly to `main`
 - Feature branches are short-lived and deleted after merge
 - Use descriptive names: `feat/desk-animation`, `fix/comments-api`
@@ -2115,6 +2117,7 @@ For substantial feature work (multiple commits, architectural changes, cross-fil
 
 - Always use **regular merge** (merge commit) to preserve the full integration history
 - Never squash or rebase when merging `develop` into `main`
+- **Branch protection requires a PR**: open a PR from `develop` → `main` and merge via the GitHub UI
 
 ---
 

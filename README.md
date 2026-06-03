@@ -267,9 +267,9 @@ ENCRYPTION_KEY
 4. Merge strategy:
    - **Small fixes** (typo, one-liner, simple bug): squash or rebase for linear history
    - **Major features** (multi-commit, architectural): regular merge to preserve history
-5. When ready to release, merge `develop` into `main` via regular merge
+5. When ready to release, open a PR from `develop` → `main` and merge with regular merge
 
-**Never commit directly to `main`.**
+**Never commit directly to `main`.** Branch protection requires all changes go through PRs.
 
 ---
 

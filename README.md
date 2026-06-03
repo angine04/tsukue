@@ -248,6 +248,31 @@ ENCRYPTION_KEY
 
 ---
 
+## Development Workflow
+
+### Branches
+
+| Branch | Purpose |
+|--------|---------|
+| `main` | Production — deployed automatically via Cloudflare Pages |
+| `develop` | Integration — merge features here first |
+| `feat/*` | Feature work |
+| `fix/*` | Bug fixes |
+
+### Workflow
+
+1. Create a branch from `develop`: `git checkout -b feat/my-feature`
+2. Make changes, commit with conventional commits (`feat:`, `fix:`, etc.)
+3. Push the branch and open a PR to `develop`
+4. Merge strategy:
+   - **Small fixes** (typo, one-liner, simple bug): squash or rebase for linear history
+   - **Major features** (multi-commit, architectural): regular merge to preserve history
+5. When ready to release, merge `develop` into `main` via regular merge
+
+**Never commit directly to `main`.**
+
+---
+
 ## Philosophy
 
 This template is designed for writers who want:

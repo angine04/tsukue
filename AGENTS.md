@@ -2095,8 +2095,26 @@ docs: add deployment guide
 
 ## 29.4 Merge strategy
 
-Use squash merge for feature branches into `develop`.
-Use regular merge for `develop` into `main` (preserve history).
+### Small changes and fixes
+
+For small, single-purpose branches (typo fixes, one-liner changes, simple bug fixes):
+
+- **Squash merge** into `develop` — collapses to a single commit for a clean history
+- **Or rebase and fast-forward** if you want a linear history without merge commits
+- These branches should be short-lived and have a focused scope
+
+### Major feature branches
+
+For substantial feature work (multiple commits, architectural changes, cross-file changes):
+
+- **Regular merge** (merge commit) into `develop` — preserves the full commit history
+- This keeps the individual commits visible for later review and debugging
+- Use when the branch has meaningful intermediate commits that tell a story
+
+### develop into main
+
+- Always use **regular merge** (merge commit) to preserve the full integration history
+- Never squash or rebase when merging `develop` into `main`
 
 ---
 

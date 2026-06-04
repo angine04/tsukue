@@ -1,0 +1,5 @@
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -v '^pnpm-lock.yaml' || true)
+if [ -n "$STAGED_FILES" ]; then
+  npx secretlint $STAGED_FILES
+fi
+npx lint-staged

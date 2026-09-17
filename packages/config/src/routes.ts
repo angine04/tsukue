@@ -33,29 +33,88 @@ export const DEFAULT_ROUTE_CONFIG: RouteConfig = {
   defaultLang: "en",
 };
 
-export function postPath(post: { slug: string; lang: string }): string {
-  const config = DEFAULT_ROUTE_CONFIG;
-  if (config.postMode === "flat" && post.lang === config.defaultLang) {
-    return `/${post.slug}`;
-  }
+export const POST_SEGMENT = "posts";
+export const PARTIAL_SEGMENT = "partials";
+export const ABOUT_SEGMENT = "about";
+
+/**
+ * Locale segments to prepend for a given language.
+ *
+ * `flat-default-lang` and `prefixed-non-default` both serve the default
+ * language flat and prefix every other language; `prefixed-all` prefixes
+ * every language including the default.
+ */
+export function localeSegments(
+  lang: string,
+  config: RouteConfig = DEFAULT_ROUTE_CONFIG,
+): string[] {
   if (config.localeMode === "prefixed-all") {
-    return `/${post.lang}/${post.slug}`;
+    return [lang];
   }
-  if (
-    config.localeMode === "prefixed-non-default" &&
-    post.lang !== config.defaultLang
-  ) {
-    return `/${post.lang}/${post.slug}`;
-  }
-  return `/${post.slug}`;
+  return lang === config.defaultLang ? [] : [lang];
 }
 
-export function postPartialPath(post: { slug: string; lang: string }): string {
-  const base = postPath(post);
-  if (base.startsWith("/")) {
-    return `/partials${base}`;
+function joinPath(segments: string[]): string {
+  return `/${segments.filter(Boolean).join("/")}`;
+}
+
+export function postSegments(
+  post: { slug: string; lang: string },
+  config: RouteConfig = DEFAULT_ROUTE_CONFIG,
+): string[] {
+  const segments = localeSegments(post.lang, config);
+  if (config.postMode === "prefixed") {
+    segments.push(POST_SEGMENT);
   }
-  return `/partials/${base}`;
+  segments.push(post.slug);
+  return segments;
+}
+
+export function postPath(
+  post: { slug: string; lang: string },
+  config: RouteConfig = DEFAULT_ROUTE_CONFIG,
+): string {
+  return joinPath(postSegments(post, config));
+}
+
+/**
+ * Partial routes keep the locale prefix in front of the reserved `partials`
+ * segment, so a locale-prefixed article at `/zh-Hans/on-slowness` has its
+ * fragment at `/zh-Hans/partials/on-slowness`.
+ */
+export function postPartialSegments(
+  post: { slug: string; lang: string },
+  config: RouteConfig = DEFAULT_ROUTE_CONFIG,
+): string[] {
+  return [...localeSegments(post.lang, config), PARTIAL_SEGMENT, post.slug];
+}
+
+export function postPartialPath(
+  post: { slug: string; lang: string },
+  config: RouteConfig = DEFAULT_ROUTE_CONFIG,
+): string {
+  return joinPath(postPartialSegments(post, config));
+}
+
+export function aboutSegments(
+  lang?: string,
+  config: RouteConfig = DEFAULT_ROUTE_CONFIG,
+): string[] {
+  return [...localeSegments(lang ?? config.defaultLang, config), ABOUT_SEGMENT];
+}
+
+export function aboutPath(
+  lang?: string,
+  config: RouteConfig = DEFAULT_ROUTE_CONFIG,
+): string {
+  return joinPath(aboutSegments(lang, config));
+}
+
+export function homePath(
+  lang?: string,
+  config: RouteConfig = DEFAULT_ROUTE_CONFIG,
+): string {
+  return joinPath(localeSegments(lang ?? config.defaultLang, config));
 }
 
 export function isReservedSlug(slug: string): boolean {
@@ -70,11 +129,4 @@ export function validateSlug(slug: string): string | undefined {
     return `Slug "${slug}" must be kebab-case (lowercase letters, numbers, hyphens only).`;
   }
   return undefined;
-}
-export function aboutPath(lang?: string): string {
-  const config = DEFAULT_ROUTE_CONFIG;
-  if (lang && lang !== config.defaultLang) {
-    return `/${lang}/about`;
-  }
-  return "/about";
 }

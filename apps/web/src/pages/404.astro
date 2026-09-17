@@ -1,0 +1,16 @@
+---
+import { homePath, ui } from "@tsukue/config";
+import Layout from "../layouts/Layout.astro";
+
+const lang = "en";
+---
+
+<Layout title={ui("error.notFoundTitle", lang)} lang={lang} noindex>
+  <div class="desk min-h-screen">
+    <div class="sheet-surface sheet-notice">
+      <h1>{ui("error.notFoundTitle", lang)}</h1>
+      <p>{ui("error.notFoundBody", lang)}</p>
+      <a class="sheet-back" href={homePath(lang)}>{ui("nav.home", lang)}</a>
+    </div>
+  </div>
+</Layout>

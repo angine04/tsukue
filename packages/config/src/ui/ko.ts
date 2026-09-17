@@ -44,6 +44,9 @@ export const ko: UIDictionary = {
   "admin.reply": "답글",
   "admin.sendNewsletter": "메일 발송",
 
+  "error.notFoundTitle": "페이지를 찾을 수 없습니다",
+  "error.notFoundBody": "그 카드는 책상 위에 없습니다.",
+
   "common.loading": "로딩 중...",
   "common.error": "문제가 발생했습니다.",
   "common.close": "닫기",

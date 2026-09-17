@@ -26,17 +26,25 @@
   --font-serif-latin: "Newsreader", "Noto Serif", serif;
   --font-sans-latin: "Cabin", "Noto Sans", system-ui, sans-serif;
 
-  --font-serif-zh-hans: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
-  --font-sans-zh-hans: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", sans-serif;
+  --font-serif-zh-hans:
+    "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --font-sans-zh-hans:
+    "Noto Sans SC", "Source Han Sans SC", "PingFang SC", sans-serif;
 
-  --font-serif-zh-hant: "Noto Serif TC", "Source Han Serif TC", "Songti TC", serif;
-  --font-sans-zh-hant: "Noto Sans TC", "Source Han Sans TC", "PingFang TC", sans-serif;
+  --font-serif-zh-hant:
+    "Noto Serif TC", "Source Han Serif TC", "Songti TC", serif;
+  --font-sans-zh-hant:
+    "Noto Sans TC", "Source Han Sans TC", "PingFang TC", sans-serif;
 
   --font-serif-ja: "Noto Serif JP", "Source Han Serif JP", "Yu Mincho", serif;
-  --font-sans-ja: "Noto Sans JP", "Source Han Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-sans-ja:
+    "Noto Sans JP", "Source Han Sans JP", "Hiragino Sans", "Yu Gothic",
+    sans-serif;
 
   --font-serif-ko: "Noto Serif KR", "Source Han Serif KR", serif;
-  --font-sans-ko: "Noto Sans KR", "Source Han Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-sans-ko:
+    "Noto Sans KR", "Source Han Sans KR", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
 
   --font-serif: var(--font-serif-latin);
   --font-sans: var(--font-sans-latin);
@@ -73,6 +81,11 @@
 :lang(ko-KR) {
   --font-serif: var(--font-serif-ko);
   --font-sans: var(--font-sans-ko);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {

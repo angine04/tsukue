@@ -9,7 +9,9 @@ export default function AboutCard({ lang = "en" }: AboutCardProps) {
 
   return (
     <div className="card p-6 rounded-lg max-w-xs border-2 border-[var(--color-accent)]">
-      <h2 className="font-serif text-xl text-[var(--color-ink)]">{t("nav.about")}</h2>
+      <h1 className="font-serif text-xl text-[var(--color-ink)]">
+        {t("nav.about")}
+      </h1>
       <p className="text-[var(--color-muted)] mt-2">Writer & Engineer</p>
     </div>
   );

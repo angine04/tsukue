@@ -1,0 +1,84 @@
+---
+import { render } from "astro:content";
+import { SITE_NAME, homePath, ui } from "@tsukue/config";
+import ArticleContent from "../components/article/ArticleContent.astro";
+import AboutCard from "../components/desk/AboutCard";
+import Layout from "../layouts/Layout.astro";
+import {
+  absoluteUrl,
+  buildAlternates,
+  listContentRoutes,
+  loadPosts,
+} from "../lib/posts";
+
+// One route file resolves every content URL, so changing `postMode` or
+// `localeMode` in the route config reshapes the site without touching pages.
+export async function getStaticPaths() {
+  const entries = await loadPosts();
+  return listContentRoutes(entries).map((route) => ({
+    params: { path: route.path.slice(1) },
+    props:
+      route.kind === "article"
+        ? {
+            kind: "article" as const,
+            entry: route.entry,
+            meta: route.meta,
+            lang: route.meta.lang,
+            path: route.path,
+            alternates: buildAlternates(route.entry, entries),
+          }
+        : {
+            kind: "about" as const,
+            entry: null,
+            meta: null,
+            lang: route.lang,
+            path: route.path,
+            alternates: [],
+          },
+  }));
+}
+
+const { kind, entry, meta, lang, path, alternates } = Astro.props;
+const Article = entry ? (await render(entry)).Content : null;
+const canonical = absoluteUrl(path);
+---
+
+{
+  kind === "article" && entry && meta && Article ? (
+    <Layout
+      title={meta.title}
+      description={meta.description}
+      lang={meta.lang}
+      canonical={canonical}
+      alternates={alternates}
+      ogType="article"
+    >
+      <div class="desk min-h-screen">
+        <div class="sheet-surface">
+          <a class="sheet-back" href={homePath(meta.lang)}>
+            {ui("article.back", meta.lang)}
+          </a>
+          <ArticleContent meta={meta}>
+            <Article />
+          </ArticleContent>
+        </div>
+      </div>
+    </Layout>
+  ) : (
+    <Layout
+      title={ui("nav.about", lang)}
+      description={`${ui("nav.about", lang)} — ${SITE_NAME}`}
+      lang={lang}
+      canonical={canonical}
+    >
+      <div class="desk min-h-screen">
+        <div class="sheet-surface">
+          <a class="sheet-back" href={homePath(lang)}>
+            {ui("nav.back", lang)}
+          </a>
+          <AboutCard client:load lang={lang} />
+        </div>
+      </div>
+    </Layout>
+  )
+}

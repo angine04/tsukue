@@ -44,6 +44,9 @@ export const en: UIDictionary = {
   "admin.reply": "Reply",
   "admin.sendNewsletter": "Send Newsletter",
 
+  "error.notFoundTitle": "Page not found",
+  "error.notFoundBody": "That card is not on the desk.",
+
   "common.loading": "Loading...",
   "common.error": "Something went wrong.",
   "common.close": "Close",

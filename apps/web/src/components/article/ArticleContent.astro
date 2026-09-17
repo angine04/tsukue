@@ -1,0 +1,47 @@
+---
+import { ui } from "@tsukue/config";
+import type { Post } from "@tsukue/types";
+import { formatPostDate } from "../../lib/posts";
+
+interface Props {
+  meta: Post;
+}
+
+const { meta } = Astro.props;
+---
+
+<article class="article-content" lang={meta.lang}>
+  <header class="article-header">
+    <h1>{meta.title}</h1>
+    <p class="article-description">{meta.description}</p>
+
+    <div class="article-meta">
+      <time datetime={meta.date.toISOString()}>
+        {formatPostDate(meta.date, meta.lang)}
+      </time>
+      {
+        meta.updated && (
+          <span class="article-updated">
+            {ui("article.updated", meta.lang)}{" "}
+            <time datetime={meta.updated.toISOString()}>
+              {formatPostDate(meta.updated, meta.lang)}
+            </time>
+          </span>
+        )
+      }
+      {
+        meta.tags.length > 0 && (
+          <ul class="article-tags" aria-label={ui("article.tags", meta.lang)}>
+            {meta.tags.map((tag) => (
+              <li>{tag}</li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </header>
+
+  <div class="mdx-content">
+    <slot />
+  </div>
+</article>

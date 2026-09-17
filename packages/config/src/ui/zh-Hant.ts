@@ -44,6 +44,9 @@ export const zhHant: UIDictionary = {
   "admin.reply": "回覆",
   "admin.sendNewsletter": "發送郵件",
 
+  "error.notFoundTitle": "頁面不存在",
+  "error.notFoundBody": "這張卡片不在桌面上。",
+
   "common.loading": "載入中...",
   "common.error": "出錯了。",
   "common.close": "關閉",

@@ -1,0 +1,25 @@
+---
+import { render } from "astro:content";
+import { postPartialSegments } from "@tsukue/config";
+import ArticleContent from "../../components/article/ArticleContent.astro";
+import { loadPosts, toPostMeta } from "../../lib/posts";
+
+// Fragments for posts whose language is served unprefixed (`/partials/123`).
+export async function getStaticPaths() {
+  const entries = await loadPosts();
+  return entries
+    .filter((entry) => postPartialSegments(entry.data)[0] === "partials")
+    .map((entry) => ({
+      params: { path: postPartialSegments(entry.data)[1] },
+      props: { entry },
+    }));
+}
+
+const { entry } = Astro.props;
+const meta = toPostMeta(entry);
+const Article = (await render(entry)).Content;
+---
+
+<ArticleContent meta={meta}>
+  <Article />
+</ArticleContent>

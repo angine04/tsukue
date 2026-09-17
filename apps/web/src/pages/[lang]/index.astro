@@ -1,19 +1,34 @@
 ---
 import { SITE_DESCRIPTION, postPath, ui } from "@tsukue/config";
-import Layout from "../layouts/Layout.astro";
-import { absoluteUrl, loadPosts, toPostMeta } from "../lib/posts";
+import Layout from "../../layouts/Layout.astro";
+import {
+  absoluteUrl,
+  listLocalizedLangs,
+  loadPosts,
+  toPostMeta,
+} from "../../lib/posts";
 
-const lang = "en";
+export async function getStaticPaths() {
+  const entries = await loadPosts();
+  return listLocalizedLangs(entries).map((lang) => ({
+    params: { lang },
+    props: { lang },
+  }));
+}
+
+const { lang } = Astro.props;
 const entries = await loadPosts();
 const posts = entries
   .filter((entry) => entry.data.lang === lang)
   .map(toPostMeta);
 ---
 
-<Layout description={SITE_DESCRIPTION} lang={lang} canonical={absoluteUrl("/")}>
+<Layout
+  description={SITE_DESCRIPTION}
+  lang={lang}
+  canonical={absoluteUrl(Astro.url.pathname)}
+>
   <div class="desk min-h-screen">
-    <!-- Static index of every article, replaced by the desk rail once the
-         island lands. Keeps the site readable and crawlable without JS. -->
     <nav class="desk-index" aria-label={ui("nav.home", lang)}>
       <ul>
         {

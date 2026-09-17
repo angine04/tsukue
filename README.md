@@ -8,25 +8,33 @@ A tactile, editorial blog template built with Astro, React, and Hono. Designed t
 
 ## Features
 
+### Working today
+
+- **Static-First Architecture** — Real semantic HTML at build time, readable without JavaScript
+- **Multilingual Content** — One MDX file per language, grouped by `translationKey`
+- **Configurable Routing** — Flat or prefixed post routes, flat or prefixed locale routes
+- **Article Partials** — Chrome-free fragments at `/partials/*` for in-app article expansion
+- **SEO** — Canonical URLs, `hreflang` alternates, RSS, sitemap, and robots.txt
+- **Build-Time Content Validation** — Reserved slugs, conflicting routes, duplicate translation pairs, unsupported language tags, and drafts fail the build
+
+### Planned
+
 - **Tactile Desk Interface** — Blog posts as physical paper cards on a wooden desk surface
 - **Card-to-Article Expansion** — Seamless transitions from desk cards to full article sheets
-- **Multilingual Support** — i18n-ready with per-language MDX files
-- **Static-First Architecture** — Real semantic HTML at build time, SEO-safe
 - **Comments System** — Hono backend with Cloudflare D1, moderation, and Turnstile spam protection
 - **Newsletter** — Double opt-in subscription with unsubscribe support
 - **Admin Dashboard** — Protected comment moderation and subscriber management
-- **RSS & Sitemap** — Auto-generated
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Site** | Astro 6, React 19, Tailwind CSS v4, Framer Motion |
-| **Backend** | Hono, Cloudflare Pages Functions, D1 |
-| **Content** | MDX, Astro Content Collections |
-| **Mail** | Provider-agnostic adapter (pluggable) |
-| **Spam** | Cloudflare Turnstile |
-| **Package** | pnpm workspaces |
+| Layer       | Technology                                        |
+| ----------- | ------------------------------------------------- |
+| **Site**    | Astro 6, React 19, Tailwind CSS v4, Framer Motion |
+| **Backend** | Hono, Cloudflare Pages Functions, D1              |
+| **Content** | MDX, Astro Content Collections                    |
+| **Mail**    | Provider-agnostic adapter (pluggable)             |
+| **Spam**    | Cloudflare Turnstile                              |
+| **Package** | pnpm workspaces                                   |
 
 ---
 
@@ -73,7 +81,6 @@ lang: en
 translationKey: on-slowness-in-a-fast-world
 slug: on-slowness
 ---
-
 Your article content here.
 ```
 
@@ -143,10 +150,10 @@ Each post can specify card metadata in frontmatter:
 
 ```yaml
 card:
-  kind: article      # article | about
-  color: ivory       # ivory | sand | olive | terracotta
-  variant: wide      # wide | compact
-  rotation: -0.8     # degrees (-5 to +5)
+  kind: article # article | about
+  color: ivory # ivory | sand | olive | terracotta
+  variant: wide # wide | compact
+  rotation: -0.8 # degrees (-5 to +5)
   accent: brown
 ```
 
@@ -186,10 +193,10 @@ The project deploys as a single Cloudflare Pages site with API functions running
 
 Connect your repository in the Cloudflare Pages dashboard. The project will auto-deploy on every push to `main`.
 
-| Setting | Value |
-|---------|-------|
-| **Build command** | `pnpm install && pnpm --filter web build` |
-| **Build output directory** | `apps/web/dist` |
+| Setting                    | Value                                     |
+| -------------------------- | ----------------------------------------- |
+| **Build command**          | `pnpm install && pnpm --filter web build` |
+| **Build output directory** | `apps/web/dist`                           |
 
 The `functions/` directory at the repo root is automatically detected by Cloudflare Pages.
 
@@ -236,15 +243,15 @@ ENCRYPTION_KEY
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start Astro dev server |
-| `pnpm build` | Build static site |
+| Command          | Description                            |
+| ---------------- | -------------------------------------- |
+| `pnpm dev`       | Start Astro dev server                 |
+| `pnpm build`     | Build static site                      |
 | `pnpm deploy:cf` | Deploy to Cloudflare Pages (from root) |
-| `pnpm check` | Type-check all packages |
-| `pnpm test` | Run tests across monorepo |
-| `pnpm lint` | Lint all packages |
-| `pnpm format` | Format all packages |
+| `pnpm check`     | Type-check all packages                |
+| `pnpm test`      | Run tests across monorepo              |
+| `pnpm lint`      | Lint all packages                      |
+| `pnpm format`    | Format all packages                    |
 
 ---
 
@@ -252,12 +259,12 @@ ENCRYPTION_KEY
 
 ### Branches
 
-| Branch | Purpose |
-|--------|---------|
-| `main` | Production — deployed automatically via Cloudflare Pages |
-| `develop` | Integration — merge features here first |
-| `feat/*` | Feature work |
-| `fix/*` | Bug fixes |
+| Branch    | Purpose                                                  |
+| --------- | -------------------------------------------------------- |
+| `main`    | Production — deployed automatically via Cloudflare Pages |
+| `develop` | Integration — merge features here first                  |
+| `feat/*`  | Feature work                                             |
+| `fix/*`   | Bug fixes                                                |
 
 ### Workflow
 

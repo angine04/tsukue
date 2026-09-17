@@ -26,7 +26,8 @@ export const ja: UIDictionary = {
   "comment.body": "コメント",
   "comment.submit": "送信",
   "comment.placeholder": "コメントを書く...",
-  "comment.noComments": "まだコメントはありません。最初のコメントを書いてみませんか。",
+  "comment.noComments":
+    "まだコメントはありません。最初のコメントを書いてみませんか。",
   "comment.pending": "承認待ち",
   "comment.approved": "承認済み",
   "comment.hidden": "非表示",
@@ -43,6 +44,9 @@ export const ja: UIDictionary = {
   "admin.spam": "スパム",
   "admin.reply": "返信",
   "admin.sendNewsletter": "メールを送信",
+
+  "error.notFoundTitle": "ページが見つかりません",
+  "error.notFoundBody": "そのカードは机の上にありません。",
 
   "common.loading": "読み込み中...",
   "common.error": "エラーが発生しました。",

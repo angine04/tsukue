@@ -47,6 +47,10 @@ export interface UIDictionary {
   "admin.reply": string;
   "admin.sendNewsletter": string;
 
+  // Errors
+  "error.notFoundTitle": string;
+  "error.notFoundBody": string;
+
   // Common
   "common.loading": string;
   "common.error": string;

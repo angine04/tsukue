@@ -1,6 +1,88 @@
 .desk {
+  min-height: 100vh;
   background-color: var(--color-desk-base);
   background-image: url("/textures/desk-grain.svg");
-  background-size: cover;
-  background-position: center;
+  background-size: 240px 240px;
+  background-repeat: repeat;
+  padding: clamp(1.5rem, 5vw, 4rem) clamp(1rem, 4vw, 3rem);
+}
+
+.desk-index ul {
+  display: grid;
+  gap: 1rem;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.desk-index a {
+  display: block;
+  padding: 1.5rem 1.75rem;
+  background-color: var(--color-paper-ivory);
+  box-shadow: var(--shadow-card-rest);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: box-shadow 0.25s ease;
+}
+
+.desk-index a:hover,
+.desk-index a:focus-visible {
+  box-shadow: var(--shadow-card-focus);
+}
+
+.desk-index h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  margin: 0 0 0.35rem;
+}
+
+.desk-index p {
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.sheet-surface {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3.5rem);
+  background-color: var(--color-paper-ivory);
+  background-image: url("/textures/paper-fiber.svg");
+  box-shadow: var(--shadow-sheet);
+}
+
+.sheet-back {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.sheet-back:hover,
+.sheet-back:focus-visible {
+  text-decoration: underline;
+}
+
+.sheet-notice {
+  text-align: center;
+}
+
+.sheet-notice h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  margin: 0 0 0.5rem;
+}
+
+.sheet-notice p {
+  color: var(--color-muted);
+  margin: 0 0 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-index a {
+    transition: none;
+  }
 }

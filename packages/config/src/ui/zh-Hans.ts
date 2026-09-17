@@ -44,6 +44,9 @@ export const zhHans: UIDictionary = {
   "admin.reply": "回复",
   "admin.sendNewsletter": "发送邮件",
 
+  "error.notFoundTitle": "页面不存在",
+  "error.notFoundBody": "这张卡片不在桌面上。",
+
   "common.loading": "加载中...",
   "common.error": "出错了。",
   "common.close": "关闭",

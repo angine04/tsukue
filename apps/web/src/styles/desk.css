@@ -330,6 +330,14 @@
        targets of the neighbours. */
     --card-overlap: 0rem;
     padding-block: 1.5rem;
+    /* Touch scrolling is native, so CSS snapping can do the settle here with
+       no script involved. It is only unusable on pointer devices, where the
+       rail is moved programmatically and every write would be re-snapped. */
+    scroll-snap-type: x mandatory;
+  }
+
+  .desk-slot {
+    scroll-snap-align: center;
   }
 
   .desk-header {

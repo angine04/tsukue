@@ -5,8 +5,8 @@ import DeskCard from "./DeskCard";
 
 /**
  * The rail is laid out as a straight, scrollable row — that keeps native
- * scrolling, snapping and tab order intact — then each card is displaced onto
- * a curve per frame. A literal `offset-path` would bend the same way, but its
+ * scrolling and tab order intact — then each card is displaced onto a curve
+ * per frame. A literal `offset-path` would bend the same way, but its
  * arc-length parameterisation cannot be derived from a layout position, so
  * cards would bunch towards the ends. A parabola from the card's normalised
  * distance is exact and costs one multiply.
@@ -16,15 +16,23 @@ const ARC_BANK_DEG = 3;
 const ARC_SCALE_FALLOFF = 0.04;
 const MAX_RAIL_X = 1.5;
 
-/** Quiet time after the last scroll event before the rail settles. */
-const SNAP_IDLE_MS = 200;
-/** Already this close to centred: leave it alone rather than nudge. */
-const SNAP_DEADZONE_PX = 6;
-/** Settle travel is long, so its duration scales with the distance. */
-const SNAP_MIN_MS = 220;
-const SNAP_MAX_MS = 560;
-const SNAP_BASE_MS = 180;
-/** Explicit moves (keys, dots, clicks) should feel responsive, not lazy. */
+/**
+ * Wheel input is accumulated and spent on whole cards, rather than moving the
+ * rail by the raw delta and centring it afterwards.
+ *
+ * Moving freely and then correcting cannot avoid a visible snap. Snapping goes
+ * to the *nearest* card, so any scroll shorter than half a card is undone — and
+ * between discrete wheel notches the nearest card is still the one you started
+ * on, so a continuous assist fights the input outright. Booking input against
+ * whole cards instead means the rail is only ever travelling to a card, so
+ * there is no settle phase to perceive: it simply stops where it was sent.
+ */
+const WHEEL_STEP_PX = 110;
+const WHEEL_STEP_MS = 260;
+/** Lines and pages arrive in different units; normalise to pixels. */
+const WHEEL_LINE_PX = 16;
+
+/** Keys, dots and clicks. Longer than a wheel step: it is a deliberate move. */
 const NAV_MS = 340;
 
 interface DeskRailProps {
@@ -43,57 +51,23 @@ export default function DeskRail({
   const { t } = useI18n(lang);
   const railRef = useRef<HTMLUListElement>(null);
   const frameRef = useRef(0);
-  const settleRef = useRef(0);
-  const snapFrameRef = useRef(0);
-  const nearestRef = useRef(0);
+  const navFrameRef = useRef(0);
+  const wheelAccumRef = useRef(0);
   const railXRef = useRef<number[]>([]);
+
+  // The wheel listener is attached once, so the state it needs is mirrored
+  // into refs rather than re-attaching the listener on every focus change.
+  const focusedIndexRef = useRef(focusedIndex);
+  const navTargetRef = useRef<number | null>(null);
+  const moveToRef = useRef<(index: number, duration?: number) => void>(
+    () => {},
+  );
 
   const slotAt = useCallback(
     (index: number) =>
       railRef.current?.querySelector<HTMLElement>(`[data-slot="${index}"]`) ??
       null,
     [],
-  );
-
-  const cancelSnap = useCallback(() => {
-    if (snapFrameRef.current) {
-      cancelAnimationFrame(snapFrameRef.current);
-      snapFrameRef.current = 0;
-    }
-  }, []);
-
-  /**
-   * Hand-rolled rather than `scrollTo({ behavior: "smooth" })`. The native
-   * curve is fixed and front-loaded, which reads as a lurch on the short
-   * distances a settle-snap usually covers, and it cannot be tuned.
-   * easeInOutCubic leaves and arrives gently instead.
-   */
-  const animateTo = useCallback(
-    (target: number, duration: number) => {
-      const rail = railRef.current;
-      if (!rail) return;
-      cancelSnap();
-
-      const start = rail.scrollLeft;
-      const delta = target - start;
-      if (Math.abs(delta) < SNAP_DEADZONE_PX) return;
-
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        rail.scrollLeft = target;
-        return;
-      }
-
-      const began = performance.now();
-      const step = (now: number) => {
-        const progress = Math.min(1, (now - began) / duration);
-        const eased =
-          progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
-        rail.scrollLeft = start + delta * eased;
-        snapFrameRef.current = progress < 1 ? requestAnimationFrame(step) : 0;
-      };
-      snapFrameRef.current = requestAnimationFrame(step);
-    },
-    [cancelSnap],
   );
 
   /** Scroll offset that puts this card's centre on the rail's centre. */
@@ -106,6 +80,40 @@ export default function DeskRail({
     },
     [slotAt],
   );
+
+  /**
+   * Hand-rolled rather than `scrollTo({ behavior: "smooth" })`: the native
+   * curve is fixed and front-loaded, which reads as a lurch over one card's
+   * travel, and it cannot be tuned. easeInOutCubic leaves and arrives gently.
+   */
+  const animateTo = useCallback((target: number, duration: number) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    if (navFrameRef.current) cancelAnimationFrame(navFrameRef.current);
+
+    const start = rail.scrollLeft;
+    const delta = target - start;
+    if (Math.abs(delta) < 1) {
+      navFrameRef.current = 0;
+      return;
+    }
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      rail.scrollLeft = target;
+      navFrameRef.current = 0;
+      return;
+    }
+
+    const began = performance.now();
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - began) / duration);
+      const eased =
+        progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+      rail.scrollLeft = start + delta * eased;
+      navFrameRef.current = progress < 1 ? requestAnimationFrame(step) : 0;
+    };
+    navFrameRef.current = requestAnimationFrame(step);
+  }, []);
 
   const centerOn = useCallback(
     (index: number, duration = NAV_MS) => {
@@ -138,9 +146,8 @@ export default function DeskRail({
   }, [items.length, slotAt]);
 
   /**
-   * One pass over the cards produces both the focused index and each card's
-   * place on the curve. Frames only write CSS custom properties, so scrolling
-   * never re-renders React.
+   * One pass over the cards derives each card's place on the curve. Frames
+   * only write CSS custom properties, so scrolling never re-renders React.
    */
   const updateRailGeometry = useCallback(() => {
     const rail = railRef.current;
@@ -196,8 +203,13 @@ export default function DeskRail({
       );
     }
 
-    if (nearest !== focusedIndex) onFocusIndex(nearest);
-    nearestRef.current = nearest;
+    // While a move is animating, the position still belongs to the card being
+    // left, so deriving focus from it would revert to the old card and cancel
+    // the move's own intent. The move is authoritative until it lands.
+    if (!navFrameRef.current && nearest !== focusedIndex) {
+      focusedIndexRef.current = nearest;
+      onFocusIndex(nearest);
+    }
   }, [focusedIndex, items.length, onFocusIndex, slotAt]);
 
   const handleScroll = useCallback(() => {
@@ -206,30 +218,26 @@ export default function DeskRail({
       frameRef.current = 0;
       updateRailGeometry();
     });
+  }, [updateRailGeometry]);
 
-    // Settle-snap. CSS scroll snapping cannot do this job: it re-applies
-    // synchronously to each programmatic scrollLeft write, so the wheel
-    // handler below would advance the rail and be snapped straight back.
-    window.clearTimeout(settleRef.current);
-    settleRef.current = window.setTimeout(() => {
-      // An explicit move is already animating; don't fight it.
-      if (snapFrameRef.current) return;
-      const rail = railRef.current;
-      const target = targetFor(nearestRef.current);
-      if (!rail || target === null) return;
+  const moveTo = useCallback(
+    (index: number, duration = NAV_MS) => {
+      const next = Math.min(items.length - 1, Math.max(0, index));
+      // Compared against the ref, not the render's prop, so several notches
+      // inside one frame each still advance one card.
+      if (next === focusedIndexRef.current) return;
+      focusedIndexRef.current = next;
+      navTargetRef.current = next;
+      onFocusIndex(next);
+      centerOn(next, duration);
+      slotAt(next)?.querySelector("a")?.focus({ preventScroll: true });
+    },
+    [centerOn, items.length, slotAt],
+  );
 
-      const distance = Math.abs(rail.scrollLeft - target);
-      if (distance < SNAP_DEADZONE_PX) return;
-
-      // A short correction should not take as long as a full card's travel,
-      // and a long one should not be rushed.
-      const duration = Math.min(
-        SNAP_MAX_MS,
-        SNAP_BASE_MS + SNAP_MIN_MS + distance,
-      );
-      animateTo(target, duration);
-    }, SNAP_IDLE_MS);
-  }, [animateTo, targetFor, updateRailGeometry]);
+  useEffect(() => {
+    moveToRef.current = moveTo;
+  }, [moveTo]);
 
   // Seat the focused card on first paint, before any scrolling happens.
   // Mount-only on purpose: later focus changes animate through centerOn, and
@@ -256,56 +264,63 @@ export default function DeskRail({
   useEffect(
     () => () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
-      window.clearTimeout(settleRef.current);
-      cancelSnap();
+      if (navFrameRef.current) cancelAnimationFrame(navFrameRef.current);
     },
     [],
   );
 
-  // React attaches wheel listeners passively, so mapping vertical wheel input
-  // onto the rail needs a native non-passive listener.
+  // React attaches wheel listeners passively, so consuming wheel input needs a
+  // native non-passive listener.
   useEffect(() => {
     const rail = railRef.current;
     if (!rail) return;
 
     const onWheel = (event: WheelEvent) => {
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      const unit =
+        event.deltaMode === 1
+          ? WHEEL_LINE_PX
+          : event.deltaMode === 2
+            ? rail.clientHeight
+            : 1;
+      const dominant =
+        Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+          ? event.deltaY
+          : event.deltaX;
+      const delta = dominant * unit;
+      if (delta === 0) return;
 
-      const atStart = rail.scrollLeft <= 1;
-      const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 1;
-      if ((event.deltaY < 0 && atStart) || (event.deltaY > 0 && atEnd)) return;
+      const direction = Math.sign(delta);
+      // Reversing direction abandons whatever was banked the other way.
+      if (Math.sign(wheelAccumRef.current) !== direction) {
+        wheelAccumRef.current = 0;
+      }
+      wheelAccumRef.current += delta;
 
-      // The user is driving now; a settle in flight must yield immediately
-      // rather than compete for the scroll offset.
-      cancelSnap();
+      const current = focusedIndexRef.current;
+      const next = current + direction;
+      const blocked = next < 0 || next >= items.length;
 
+      if (Math.abs(wheelAccumRef.current) < WHEEL_STEP_PX) {
+        // Not enough for a whole card yet. Hold the input rather than moving
+        // to somewhere the rail would only have to leave again.
+        if (!blocked) event.preventDefault();
+        return;
+      }
+
+      if (blocked) {
+        // Nowhere left to go: release the gesture so the page can scroll.
+        wheelAccumRef.current = 0;
+        return;
+      }
+
+      wheelAccumRef.current -= direction * WHEEL_STEP_PX;
       event.preventDefault();
-      rail.scrollLeft += event.deltaY;
-    };
-
-    const onPointerDown = () => {
-      cancelSnap();
-      window.clearTimeout(settleRef.current);
+      moveToRef.current(next, WHEEL_STEP_MS);
     };
 
     rail.addEventListener("wheel", onWheel, { passive: false });
-    rail.addEventListener("pointerdown", onPointerDown);
-    return () => {
-      rail.removeEventListener("wheel", onWheel);
-      rail.removeEventListener("pointerdown", onPointerDown);
-    };
-  }, [cancelSnap]);
-
-  const moveTo = useCallback(
-    (index: number) => {
-      const next = Math.min(items.length - 1, Math.max(0, index));
-      if (next === focusedIndex) return;
-      onFocusIndex(next);
-      centerOn(next);
-      slotAt(next)?.querySelector("a")?.focus({ preventScroll: true });
-    },
-    [centerOn, focusedIndex, items.length, onFocusIndex, slotAt],
-  );
+    return () => rail.removeEventListener("wheel", onWheel);
+  }, [items.length]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLUListElement>) => {
     if (event.key === "ArrowLeft") {
@@ -330,7 +345,12 @@ export default function DeskRail({
     if (!slot) return;
     const index = Number(slot.dataset.slot);
     if (Number.isNaN(index)) return;
-    if (index !== focusedIndex) onFocusIndex(index);
+    // A move focuses its own destination; that is not a new request to honour.
+    if (navFrameRef.current && index === navTargetRef.current) return;
+    if (index !== focusedIndexRef.current) {
+      focusedIndexRef.current = index;
+      onFocusIndex(index);
+    }
     centerOn(index);
   };
 
@@ -382,10 +402,7 @@ export default function DeskRail({
                   aria-label={
                     item.kind === "article" ? item.title : t("nav.about")
                   }
-                  onClick={() => {
-                    onFocusIndex(index);
-                    centerOn(index);
-                  }}
+                  onClick={() => moveTo(index)}
                 />
               </li>
             ))}

@@ -17,22 +17,23 @@ const ARC_SCALE_FALLOFF = 0.04;
 const MAX_RAIL_X = 1.5;
 
 /**
- * Wheel input is accumulated and spent on whole cards, rather than moving the
- * rail by the raw delta and centring it afterwards.
+ * Wheel input moves the rail by exactly the delta, synchronously, and nothing
+ * moves it afterwards.
  *
- * Moving freely and then correcting cannot avoid a visible snap. Snapping goes
- * to the *nearest* card, so any scroll shorter than half a card is undone — and
- * between discrete wheel notches the nearest card is still the one you started
- * on, so a continuous assist fights the input outright. Booking input against
- * whole cards instead means the rail is only ever travelling to a card, so
- * there is no settle phase to perceive: it simply stops where it was sent.
+ * Every attempt to also land it on a card has been worse than the problem. A
+ * snap that runs after the gesture is a correction the eye catches. A snap that
+ * runs continuously cannot work at all: snapping targets the *nearest* card, so
+ * any input shorter than half a card is undone, and between two wheel notches
+ * the nearest card is still the one being left — measured, five 90px notches
+ * moved the rail nowhere and it finished where it started.
+ *
+ * So the rail follows the input and rests where the input leaves it. Landing on
+ * a card is something you ask for — the keys, the dots, or clicking a card —
+ * never something that happens to you.
  */
-const WHEEL_STEP_PX = 110;
-const WHEEL_STEP_MS = 260;
-/** Lines and pages arrive in different units; normalise to pixels. */
 const WHEEL_LINE_PX = 16;
 
-/** Keys, dots and clicks. Longer than a wheel step: it is a deliberate move. */
+/** Explicit moves are deliberate, so they animate onto the card. */
 const NAV_MS = 340;
 
 interface DeskRailProps {
@@ -52,7 +53,6 @@ export default function DeskRail({
   const railRef = useRef<HTMLUListElement>(null);
   const frameRef = useRef(0);
   const navFrameRef = useRef(0);
-  const wheelAccumRef = useRef(0);
   const railXRef = useRef<number[]>([]);
 
   // The wheel listener is attached once, so the state it needs is mirrored
@@ -146,8 +146,10 @@ export default function DeskRail({
   }, [items.length, slotAt]);
 
   /**
-   * One pass over the cards derives each card's place on the curve. Frames
-   * only write CSS custom properties, so scrolling never re-renders React.
+   * One pass over the cards derives each card's place on the curve, and which
+   * card the rail is currently sitting on. Frames only write CSS custom
+   * properties, so scrolling never re-renders React except when the focused
+   * card actually changes.
    */
   const updateRailGeometry = useCallback(() => {
     const rail = railRef.current;
@@ -223,8 +225,8 @@ export default function DeskRail({
   const moveTo = useCallback(
     (index: number, duration = NAV_MS) => {
       const next = Math.min(items.length - 1, Math.max(0, index));
-      // Compared against the ref, not the render's prop, so several notches
-      // inside one frame each still advance one card.
+      // Compared against the ref, not the render's prop, so several requests
+      // inside one frame each still advance.
       if (next === focusedIndexRef.current) return;
       focusedIndexRef.current = next;
       navTargetRef.current = next;
@@ -289,38 +291,26 @@ export default function DeskRail({
       const delta = dominant * unit;
       if (delta === 0) return;
 
-      const direction = Math.sign(delta);
-      // Reversing direction abandons whatever was banked the other way.
-      if (Math.sign(wheelAccumRef.current) !== direction) {
-        wheelAccumRef.current = 0;
-      }
-      wheelAccumRef.current += delta;
-
-      const current = focusedIndexRef.current;
-      const next = current + direction;
-      const blocked = next < 0 || next >= items.length;
-
-      if (Math.abs(wheelAccumRef.current) < WHEEL_STEP_PX) {
-        // Not enough for a whole card yet. Hold the input rather than moving
-        // to somewhere the rail would only have to leave again.
-        if (!blocked) event.preventDefault();
-        return;
-      }
-
-      if (blocked) {
+      const atStart = rail.scrollLeft <= 1;
+      const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 1;
+      if ((delta < 0 && atStart) || (delta > 0 && atEnd)) {
         // Nowhere left to go: release the gesture so the page can scroll.
-        wheelAccumRef.current = 0;
         return;
       }
 
-      wheelAccumRef.current -= direction * WHEEL_STEP_PX;
+      // Anything already animating would fight the hand, so it yields first.
+      if (navFrameRef.current) {
+        cancelAnimationFrame(navFrameRef.current);
+        navFrameRef.current = 0;
+      }
+
       event.preventDefault();
-      moveToRef.current(next, WHEEL_STEP_MS);
+      rail.scrollLeft += delta;
     };
 
     rail.addEventListener("wheel", onWheel, { passive: false });
     return () => rail.removeEventListener("wheel", onWheel);
-  }, [items.length]);
+  }, []);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLUListElement>) => {
     if (event.key === "ArrowLeft") {

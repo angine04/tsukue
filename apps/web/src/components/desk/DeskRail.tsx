@@ -44,9 +44,16 @@ interface DeskRailProps {
   lang: string;
   focusedIndex: number;
   onFocusIndex: (index: number) => void;
+  onOpenArticle: (item: DeskItem) => void;
 }
 
-function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
+function DeskRail({
+  items,
+  lang,
+  focusedIndex,
+  onFocusIndex,
+  onOpenArticle,
+}: DeskRailProps) {
   const { t } = useI18n(lang);
   const railRef = useRef<HTMLUListElement>(null);
   const frameRef = useRef(0);
@@ -162,6 +169,20 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
     (index: number, duration = NAV_MS) => {
       const target = targetFor(index);
       if (target === null) return;
+
+      // Update z-index immediately at animation start so depth order matches
+      // the target position, not the current one. Without this, a card moving
+      // to center keeps its old z-index during the animation, causing it to
+      // clip through neighbors that are now closer to the viewer.
+      const slots = slotsRef.current;
+      zFocusRef.current = index;
+      for (let i = 0; i < slots.length; i += 1) {
+        slots[i]?.style.setProperty(
+          "z-index",
+          String(100 - Math.abs(i - index)),
+        );
+      }
+
       animateTo(target, duration);
     },
     [animateTo, targetFor],
@@ -384,19 +405,23 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
       const target = targetFor(index);
 
       // Clicking anything that is not already centred brings it to the centre;
-      // only the centred card follows its link. Deciding this from the actual
+      // only the centred card opens its article. Deciding this from the actual
       // offset rather than from `focusedIndex` matters now that scrolling is
       // free: the focused card is merely the nearest one, so it is usually a
-      // little off centre and would otherwise navigate on the first click.
+      // little off centre and would otherwise open on the first click.
       if (rail && target !== null && Math.abs(rail.scrollLeft - target) > 1) {
         event.preventDefault();
         focusedIndexRef.current = index;
         navTargetRef.current = index;
         onFocusIndex(index);
         centerOn(index);
+      } else {
+        // Centred card: open the article instead of navigating
+        event.preventDefault();
+        onOpenArticle(items[index]);
       }
     },
-    [centerOn, onFocusIndex, targetFor],
+    [centerOn, items, onFocusIndex, onOpenArticle, targetFor],
   );
 
   return (

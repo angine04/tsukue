@@ -14,9 +14,6 @@
   padding: clamp(1.25rem, 2.2vw, 1.9rem);
   border-radius: 3px;
   background-color: var(--card-paper);
-  background-image: var(--paper-texture-image);
-  background-size: var(--paper-texture-size);
-  background-position: var(--paper-texture-position);
   color: var(--card-ink);
   text-decoration: none;
   box-shadow: var(--shadow-card-rest);
@@ -28,10 +25,34 @@
   transform-origin: center center;
 }
 
-/* Darker paper needs light text and light grain. */
+/*
+ * Rough stock, shared by desk cards and the article sheet. The lit noise is
+ * multiplied over the surface colour, so the shading picks up the paper's hue
+ * instead of greying it out. Both surfaces must be positioned and create a
+ * stacking context so this layer lands above their fill but under the text.
+ */
+.desk-card,
+.sheet-surface {
+  position: relative;
+  z-index: 0;
+}
+
+.desk-card::before,
+.sheet-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #fff;
+  filter: url(#rough-paper);
+  mix-blend-mode: multiply;
+  opacity: var(--paper-roughness);
+  pointer-events: none;
+}
+
+/* Darker paper needs light text. */
 .desk-card[data-color="olive"],
 .desk-card[data-color="terracotta"] {
-  --paper-grain: 255 255 255;
   --card-ink: var(--color-card-ivory);
   --card-muted: var(--color-card-muted-on-dark);
 }

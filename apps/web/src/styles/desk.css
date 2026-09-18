@@ -170,14 +170,12 @@
 
 /* ------------------------------------------------------------ paper sheet */
 
+/* Positioned and roughened by the shared paper rule in cards.css. */
 .sheet-surface {
   max-width: 46rem;
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3.5rem);
   background-color: var(--color-paper-ivory);
-  background-image: var(--paper-texture-image);
-  background-size: var(--paper-texture-size);
-  background-position: var(--paper-texture-position);
   box-shadow: var(--shadow-sheet);
 }
 

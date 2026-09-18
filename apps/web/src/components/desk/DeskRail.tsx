@@ -289,30 +289,34 @@ export default function DeskRail({
         ))}
       </ul>
 
-      <div className="desk-rail-footer">
-        <span className="desk-scroll-label">← {t("desk.scrollLeft")}</span>
-        <span className="desk-rail-rule" aria-hidden="true" />
-        <ol className="desk-dots">
-          {items.map((item, index) => (
-            <li key={item.href}>
-              <button
-                type="button"
-                className="desk-dot"
-                data-active={index === focusedIndex ? "" : undefined}
-                aria-current={index === focusedIndex ? "true" : undefined}
-                aria-label={
-                  item.kind === "article" ? item.title : t("nav.about")
-                }
-                onClick={() => {
-                  onFocusIndex(index);
-                  centerOn(index);
-                }}
-              />
-            </li>
-          ))}
-        </ol>
-        <span className="desk-rail-rule" aria-hidden="true" />
-        <span className="desk-scroll-label">{t("desk.scrollRight")} →</span>
+      <div className="desk-rail-bottom">
+        <div className="desk-rail-footer">
+          <span className="desk-scroll-label">← {t("desk.scrollLeft")}</span>
+          <span className="desk-rail-rule" aria-hidden="true" />
+          <ol className="desk-dots">
+            {items.map((item, index) => (
+              <li key={item.href}>
+                <button
+                  type="button"
+                  className="desk-dot"
+                  data-active={index === focusedIndex ? "" : undefined}
+                  aria-current={index === focusedIndex ? "true" : undefined}
+                  aria-label={
+                    item.kind === "article" ? item.title : t("nav.about")
+                  }
+                  onClick={() => {
+                    onFocusIndex(index);
+                    centerOn(index);
+                  }}
+                />
+              </li>
+            ))}
+          </ol>
+          <span className="desk-rail-rule" aria-hidden="true" />
+          <span className="desk-scroll-label">{t("desk.scrollRight")} →</span>
+        </div>
+
+        <p className="desk-hint">{t("desk.clickToRead")}</p>
       </div>
     </div>
   );

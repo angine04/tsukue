@@ -1,6 +1,5 @@
 import { MotionConfig } from "framer-motion";
 import { useState } from "react";
-import { useI18n } from "../../hooks/useI18n";
 import type { DeskItem } from "../../lib/cards";
 import DeskHeader from "./DeskHeader";
 import DeskRail from "./DeskRail";
@@ -11,7 +10,6 @@ interface DeskAppProps {
 }
 
 export default function DeskApp({ items, lang = "en" }: DeskAppProps) {
-  const { t } = useI18n(lang);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   return (
@@ -24,7 +22,6 @@ export default function DeskApp({ items, lang = "en" }: DeskAppProps) {
           focusedIndex={focusedIndex}
           onFocusIndex={setFocusedIndex}
         />
-        <p className="desk-hint">{t("desk.clickToRead")}</p>
       </div>
     </MotionConfig>
   );

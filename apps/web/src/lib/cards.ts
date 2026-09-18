@@ -5,7 +5,7 @@ import type { CardAccent, CardColor, CardVariant } from "@tsukue/types";
  * rotation; otherwise a stable per-post angle is derived from the post id so a
  * rebuild never reshuffles the desk.
  */
-const ROTATION_SPREAD = 4;
+const ROTATION_SPREAD = 7;
 
 export function seededRotation(seed: string): number {
   let hash = 0x811c9dc5;

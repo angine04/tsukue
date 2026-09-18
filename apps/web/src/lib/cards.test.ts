@@ -12,8 +12,8 @@ describe("seededRotation", () => {
     const ids = Array.from({ length: 500 }, (_, index) => `en/post-${index}`);
     for (const id of ids) {
       const angle = seededRotation(id);
-      expect(angle).toBeGreaterThanOrEqual(-5);
-      expect(angle).toBeLessThanOrEqual(5);
+      expect(angle).toBeGreaterThanOrEqual(-10);
+      expect(angle).toBeLessThanOrEqual(10);
     }
   });
 
@@ -24,7 +24,7 @@ describe("seededRotation", () => {
     const negative = angles.filter((angle) => angle < 0).length;
     expect(negative).toBeGreaterThan(150);
     expect(negative).toBeLessThan(350);
-    expect(Math.max(...angles) - Math.min(...angles)).toBeGreaterThan(6);
+    expect(Math.max(...angles) - Math.min(...angles)).toBeGreaterThan(10);
   });
 
   it("decorrelates neighbouring posts, which an unfinalised hash does not", () => {

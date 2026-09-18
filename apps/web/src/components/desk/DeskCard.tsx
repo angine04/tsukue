@@ -8,19 +8,23 @@ interface DeskCardProps {
   index: number;
   lang: string;
   focused: boolean;
+  /** Cards further from the focus sit behind their neighbours when they overlap. */
+  focusDistance: number;
   onSelect: (index: number, event: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 /**
  * A card in the rail. Rotation is animated as a CSS custom property rather
  * than a transform, so the mobile layout can damp it with plain CSS and the
- * server still renders the scattered angle.
+ * server still renders the scattered angle. The rail adds --arc-lift, --bank
+ * and --rail-scale to the slot each frame; they inherit down to here.
  */
 export default function DeskCard({
   item,
   index,
   lang,
   focused,
+  focusDistance,
   onSelect,
 }: DeskCardProps) {
   const { t } = useI18n(lang);
@@ -28,7 +32,11 @@ export default function DeskCard({
   const rotation = focused ? 0 : item.rotation;
 
   return (
-    <li className="desk-slot" data-slot={index}>
+    <li
+      className="desk-slot"
+      data-slot={index}
+      style={{ zIndex: 100 - focusDistance }}
+    >
       <motion.a
         href={item.href}
         className="desk-card"

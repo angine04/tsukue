@@ -1,8 +1,27 @@
 .desk {
+  position: relative;
+  z-index: 0;
   min-height: 100vh;
   padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 3vw, 2.5rem);
   background-color: var(--color-desk-base);
   background-image: var(--desk-texture-image);
+}
+
+/*
+ * Lit wood grain, layered over the gradient planks. Fixed rather than
+ * absolute so the filter raster is capped at one viewport no matter how tall
+ * the document gets — the article page is far taller than the screen and a
+ * full-height turbulence pass would be far more expensive.
+ */
+.desk::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  filter: url(#wood-grain);
+  mix-blend-mode: multiply;
+  opacity: var(--wood-roughness, 0.34);
+  pointer-events: none;
 }
 
 .desk-app {
@@ -72,20 +91,42 @@
   min-height: 0;
 }
 
+/*
+ * Deliberately no `scroll-snap-type` here. Snapping re-applies synchronously
+ * to every programmatic scrollLeft write, which silently swallowed the whole
+ * wheel handler (ten wheel steps moved the rail 0px). The rail snaps to the
+ * focused card from JS once a gesture settles instead.
+ */
 .desk-rail {
-  --card-width: clamp(17rem, 22vw, 20.5rem);
-  --card-height: clamp(19rem, 42vh, 23rem);
-  --card-gap: clamp(1rem, 2vw, 2rem);
+  --card-width: clamp(19rem, 26vw, 24rem);
+  --card-height: clamp(21rem, 50vh, 26rem);
+  /* Overlap has to be a negative margin, not a gap: flex gap rejects
+     negative lengths. Half goes on each slot so neighbours close by the
+     full amount. */
+  --card-overlap: clamp(0.75rem, 2vw, 2.5rem);
 
+  /* Must stay positioned: slot.offsetLeft is measured against the nearest
+     positioned ancestor, and without this it picks up the desk's padding and
+     every centring calculation lands one padding-width off. */
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--card-gap);
+  gap: 0;
   margin: 0;
-  padding: 1.5rem calc(50% - var(--card-width) / 2);
+  padding-block: clamp(2.5rem, 6vh, 5.5rem);
+  /* Sized from the cards actually at each end (set by the rail) plus half the
+     overlap back, since the outer slots carry a negative margin too. Without
+     the measured widths the narrow name card cannot reach the centre. */
+  padding-inline-start: calc(
+    50% - var(--rail-edge-start, var(--card-width)) / 2 + var(--card-overlap) /
+      2
+  );
+  padding-inline-end: calc(
+    50% - var(--rail-edge-end, var(--card-width)) / 2 + var(--card-overlap) / 2
+  );
   list-style: none;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-snap-type: x proximity;
   scrollbar-width: none;
   overscroll-behavior-x: contain;
 }
@@ -95,8 +136,15 @@
 }
 
 .desk-slot {
+  /* Defaults live here so they inherit down to the card; the rail overwrites
+     them inline per frame. */
+  --arc-lift: 0px;
+  --bank: 0deg;
+  --rail-scale: 1;
+
+  position: relative;
   flex: 0 0 auto;
-  scroll-snap-align: center;
+  margin-inline: calc(var(--card-overlap) / -2);
 }
 
 .desk-rail-footer {
@@ -231,10 +279,12 @@
 
 @media (max-width: 720px) {
   .desk-rail {
-    --card-width: min(80vw, 19rem);
-    --card-height: clamp(17rem, 38vh, 21rem);
-    --card-gap: 1rem;
-    padding-block: 1rem;
+    --card-width: min(84vw, 21rem);
+    --card-height: clamp(18rem, 42vh, 22rem);
+    /* Cards are nearly full width here, so overlap would bury the tap
+       targets of the neighbours. */
+    --card-overlap: 0rem;
+    padding-block: 1.5rem;
   }
 
   .desk-header {

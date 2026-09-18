@@ -18,10 +18,18 @@
   text-decoration: none;
   box-shadow: var(--shadow-card-rest);
   /* Framer Motion animates --card-rotation; the transform owns the damping so
-     mobile can flatten the scatter without a hydration mismatch. */
+     mobile can flatten the scatter without a hydration mismatch.
+     --arc-lift, --bank and --rail-scale are written by the rail onto the slot
+     and inherit down — declaring defaults for them *here* would shadow that
+     inheritance and pin them to zero. Their fallbacks live in the transform,
+     and the slot carries the defaults. */
   --card-rotation: 0deg;
   --rotation-damping: 1;
-  transform: rotate(calc(var(--card-rotation) * var(--rotation-damping)));
+  transform: translateY(var(--arc-lift, 0px))
+    rotate(
+      calc(var(--card-rotation) * var(--rotation-damping) + var(--bank, 0deg))
+    )
+    scale(var(--rail-scale, 1));
   transform-origin: center center;
 }
 
@@ -90,14 +98,9 @@
   box-shadow: var(--shadow-card-focus);
 }
 
-/* Corner marks, like a trimmed proof sheet. */
-.desk-card[data-focused]::after {
-  content: "";
-  position: absolute;
-  inset: 0.5rem;
-  border: 1px solid color-mix(in srgb, var(--card-ink) 12%, transparent);
-  pointer-events: none;
-}
+/* Focus is signalled by the mechanisms in AGENTS 8.2 — straightened rotation,
+   deeper shadow, higher z-index and slightly larger scale. An inset border was
+   tried here too, but at any visible opacity it read as a rendering artefact. */
 
 .desk-card-eyebrow {
   font-family: var(--font-sans);

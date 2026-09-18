@@ -48,12 +48,24 @@
     4px 22px 44px rgba(38, 21, 9, 0.18), 8px 48px 88px rgba(38, 21, 9, 0.16);
 
   /*
-   * Paper is roughened by the inline #rough-paper SVG filter (see Layout):
-   * feTurbulence lit by feDiffuseLighting, multiplied over the card colour.
-   * That supersedes the gradient grain this used to carry, which left a
-   * visible lattice where its two fiber passes crossed.
+   * Paper and wood grain, baked into small repeating tiles.
+   *
+   * These are the same feTurbulence + feDiffuseLighting pair the page used to
+   * run live, with stitchTiles so the tile repeats seamlessly. Running them as
+   * a live `filter` on each card meant the browser had to re-composite that
+   * filtered layer against its backdrop every time the card moved — which is
+   * every frame while scrolling. A tile is a static background: the browser
+   * rasterises it once and repeats it, so a moving card is a pure transform.
+   *
+   * The shading strength is carried in the tile's alpha, so no blend mode is
+   * needed either. Alpha rises where the lit noise falls, turning the bright
+   * crevices of the lighting into the dark ink of the grain.
    */
-  --paper-roughness: 0.5;
+  --paper-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='p' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' seed='3' stitchTiles='stitch' result='n'/%3E%3CfeDiffuseLighting in='n' lighting-color='%23fff' surfaceScale='2'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.24 0 0 0 0 0.16 0 0 0 0 0.1 -0.1667 -0.1667 -0.1667 0 0.5'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23p)'/%3E%3C/svg%3E");
+  --paper-tile-size: 256px 256px;
+
+  --wood-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512'%3E%3Cfilter id='w' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.32 0.004' numOctaves='4' seed='9' stitchTiles='stitch' result='g'/%3E%3CfeDiffuseLighting in='g' lighting-color='%23fff' surfaceScale='1.6'%3E%3CfeDistantLight azimuth='100' elevation='55'/%3E%3C/feDiffuseLighting%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.2 0 0 0 0 0.12 0 0 0 0 0.06 -0.1133 -0.1133 -0.1133 0 0.34'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23w)'/%3E%3C/svg%3E");
+  --wood-tile-size: 512px 512px;
 
   /*
    * Desk lighting as a lamp above the surface: a broad warm pool near the

@@ -26,6 +26,15 @@
      inheriting down and pin the card to a straight, unarced position. */
   --card-rotation: 0deg;
   --rotation-damping: 1;
+  /*
+   * Promoted to its own layer. The card's paint is expensive and completely
+   * static — a four-layer blurred shadow and a tiled paper background — but
+   * its transform changes every frame while scrolling. Without promotion the
+   * transform invalidates the card's painted region and the desk behind it,
+   * which carries eight background layers, so both are repainted per frame.
+   * Promoted, they rasterise once and only the transform changes.
+   */
+  will-change: transform;
   transform: translateY(
       calc(var(--rail-x, 0) * var(--rail-x, 0) * var(--arc-depth, 30px))
     )

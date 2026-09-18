@@ -209,11 +209,6 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
     // where a card with old overlap but new z-index suddenly pops above/below
     // neighbors. Wait until the animation settles so position and z-order agree.
     if (nearest !== zFocusRef.current && !navFrameRef.current) {
-      console.log("[DeskRail] Updating z-index:", {
-        nearest,
-        prev: zFocusRef.current,
-        navFrame: navFrameRef.current,
-      });
       zFocusRef.current = nearest;
       for (let index = 0; index < slots.length; index += 1) {
         slots[index]?.style.setProperty(

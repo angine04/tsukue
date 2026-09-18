@@ -1,14 +1,18 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import {
+  AUTHOR_NAME,
+  AUTHOR_ROLE,
   DEFAULT_ROUTE_CONFIG,
   SITE_URL,
   SUPPORTED_LANGS,
+  aboutPath,
   aboutSegments,
   homePath,
   localeSegments,
   postPath,
 } from "@tsukue/config";
 import { DEFAULT_CARD, type Post } from "@tsukue/types";
+import { seededRotation, type DeskArticle, type DeskItem } from "./cards";
 import { findContentIssues } from "./content-validation";
 
 export type PostEntry = CollectionEntry<"posts">;
@@ -71,6 +75,49 @@ export function toPostMeta(entry: PostEntry): Post {
 
 export function absoluteUrl(path: string): string {
   return new URL(path, SITE_URL).href;
+}
+
+/**
+ * Turns posts for one language into the cards the desk renders. The About card
+ * is appended so it sits at the end of the rail as a name card, and it always
+ * points at the default language's About page — localized About routes are
+ * deferred until they have real content.
+ */
+export function buildDeskItems(
+  entries: readonly PostEntry[],
+  lang: string,
+): DeskItem[] {
+  const articles: DeskArticle[] = entries
+    .filter((entry) => entry.data.lang === lang)
+    .map((entry) => {
+      const meta = toPostMeta(entry);
+      const card = meta.card ?? DEFAULT_CARD;
+      return {
+        kind: "article",
+        href: postPath(entry.data),
+        lang: meta.lang,
+        title: meta.title,
+        description: meta.description,
+        eyebrow: (meta.tags[0] ?? card.kind).toUpperCase(),
+        dateLabel: formatPostDate(meta.date, meta.lang),
+        color: card.color,
+        variant: card.variant,
+        accent: card.accent,
+        // An author-pinned angle wins; otherwise the id seeds a stable one.
+        rotation: entry.data.card?.rotation ?? seededRotation(entry.id),
+      };
+    });
+
+  return [
+    ...articles,
+    {
+      kind: "about",
+      href: aboutPath(),
+      name: AUTHOR_NAME,
+      role: AUTHOR_ROLE,
+      rotation: seededRotation("about"),
+    },
+  ];
 }
 
 export interface ArticleRoute {

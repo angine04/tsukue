@@ -15,7 +15,17 @@ const ARC_DEPTH_PX = 30;
 const ARC_BANK_DEG = 3;
 const ARC_SCALE_FALLOFF = 0.04;
 const MAX_RAIL_X = 1.5;
-const SETTLE_MS = 140;
+
+/** Quiet time after the last scroll event before the rail settles. */
+const SNAP_IDLE_MS = 200;
+/** Already this close to centred: leave it alone rather than nudge. */
+const SNAP_DEADZONE_PX = 6;
+/** Settle travel is long, so its duration scales with the distance. */
+const SNAP_MIN_MS = 220;
+const SNAP_MAX_MS = 560;
+const SNAP_BASE_MS = 180;
+/** Explicit moves (keys, dots, clicks) should feel responsive, not lazy. */
+const NAV_MS = 340;
 
 interface DeskRailProps {
   items: DeskItem[];
@@ -34,6 +44,7 @@ export default function DeskRail({
   const railRef = useRef<HTMLUListElement>(null);
   const frameRef = useRef(0);
   const settleRef = useRef(0);
+  const snapFrameRef = useRef(0);
   const nearestRef = useRef(0);
   const railXRef = useRef<number[]>([]);
 
@@ -44,20 +55,65 @@ export default function DeskRail({
     [],
   );
 
-  const centerOn = useCallback(
+  const cancelSnap = useCallback(() => {
+    if (snapFrameRef.current) {
+      cancelAnimationFrame(snapFrameRef.current);
+      snapFrameRef.current = 0;
+    }
+  }, []);
+
+  /**
+   * Hand-rolled rather than `scrollTo({ behavior: "smooth" })`. The native
+   * curve is fixed and front-loaded, which reads as a lurch on the short
+   * distances a settle-snap usually covers, and it cannot be tuned.
+   * easeInOutCubic leaves and arrives gently instead.
+   */
+  const animateTo = useCallback(
+    (target: number, duration: number) => {
+      const rail = railRef.current;
+      if (!rail) return;
+      cancelSnap();
+
+      const start = rail.scrollLeft;
+      const delta = target - start;
+      if (Math.abs(delta) < SNAP_DEADZONE_PX) return;
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        rail.scrollLeft = target;
+        return;
+      }
+
+      const began = performance.now();
+      const step = (now: number) => {
+        const progress = Math.min(1, (now - began) / duration);
+        const eased =
+          progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+        rail.scrollLeft = start + delta * eased;
+        snapFrameRef.current = progress < 1 ? requestAnimationFrame(step) : 0;
+      };
+      snapFrameRef.current = requestAnimationFrame(step);
+    },
+    [cancelSnap],
+  );
+
+  /** Scroll offset that puts this card's centre on the rail's centre. */
+  const targetFor = useCallback(
     (index: number) => {
       const rail = railRef.current;
       const slot = slotAt(index);
-      if (!rail || !slot) return;
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      rail.scrollTo({
-        left: slot.offsetLeft + slot.offsetWidth / 2 - rail.clientWidth / 2,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
+      if (!rail || !slot) return null;
+      return slot.offsetLeft + slot.offsetWidth / 2 - rail.clientWidth / 2;
     },
     [slotAt],
+  );
+
+  const centerOn = useCallback(
+    (index: number, duration = NAV_MS) => {
+      const target = targetFor(index);
+      if (target === null) return;
+      animateTo(target, duration);
+    },
+    [animateTo, targetFor],
   );
 
   /**
@@ -156,15 +212,24 @@ export default function DeskRail({
     // handler below would advance the rail and be snapped straight back.
     window.clearTimeout(settleRef.current);
     settleRef.current = window.setTimeout(() => {
+      // An explicit move is already animating; don't fight it.
+      if (snapFrameRef.current) return;
       const rail = railRef.current;
-      const slot = slotAt(nearestRef.current);
-      if (!rail || !slot) return;
-      const target =
-        slot.offsetLeft + slot.offsetWidth / 2 - rail.clientWidth / 2;
-      if (Math.abs(rail.scrollLeft - target) < 1) return;
-      centerOn(nearestRef.current);
-    }, SETTLE_MS);
-  }, [centerOn, slotAt, updateRailGeometry]);
+      const target = targetFor(nearestRef.current);
+      if (!rail || target === null) return;
+
+      const distance = Math.abs(rail.scrollLeft - target);
+      if (distance < SNAP_DEADZONE_PX) return;
+
+      // A short correction should not take as long as a full card's travel,
+      // and a long one should not be rushed.
+      const duration = Math.min(
+        SNAP_MAX_MS,
+        SNAP_BASE_MS + SNAP_MIN_MS + distance,
+      );
+      animateTo(target, duration);
+    }, SNAP_IDLE_MS);
+  }, [animateTo, targetFor, updateRailGeometry]);
 
   // Seat the focused card on first paint, before any scrolling happens.
   // Mount-only on purpose: later focus changes animate through centerOn, and
@@ -173,10 +238,9 @@ export default function DeskRail({
     const rail = railRef.current;
     if (!rail) return;
     syncRailPadding();
-    const slot = slotAt(focusedIndex);
-    if (!slot) return;
-    rail.scrollLeft =
-      slot.offsetLeft + slot.offsetWidth / 2 - rail.clientWidth / 2;
+    const target = targetFor(focusedIndex);
+    if (target === null) return;
+    rail.scrollLeft = target;
     updateRailGeometry();
   }, []);
 
@@ -193,6 +257,7 @@ export default function DeskRail({
     () => () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
       window.clearTimeout(settleRef.current);
+      cancelSnap();
     },
     [],
   );
@@ -210,13 +275,26 @@ export default function DeskRail({
       const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 1;
       if ((event.deltaY < 0 && atStart) || (event.deltaY > 0 && atEnd)) return;
 
+      // The user is driving now; a settle in flight must yield immediately
+      // rather than compete for the scroll offset.
+      cancelSnap();
+
       event.preventDefault();
       rail.scrollLeft += event.deltaY;
     };
 
+    const onPointerDown = () => {
+      cancelSnap();
+      window.clearTimeout(settleRef.current);
+    };
+
     rail.addEventListener("wheel", onWheel, { passive: false });
-    return () => rail.removeEventListener("wheel", onWheel);
-  }, []);
+    rail.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      rail.removeEventListener("wheel", onWheel);
+      rail.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [cancelSnap]);
 
   const moveTo = useCallback(
     (index: number) => {

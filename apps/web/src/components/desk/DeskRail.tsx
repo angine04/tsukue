@@ -119,21 +119,8 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
   const remeasure = useCallback(() => {
     syncRailPadding();
     measure();
-    // Padding changed, so re-derive what is under the centre as well.
-    const rail = railRef.current;
-    if (rail) {
-      const centre = rail.scrollLeft + rail.clientWidth / 2;
-      let nearest = 0;
-      let closest = Number.POSITIVE_INFINITY;
-      for (let index = 0; index < centresRef.current.length; index += 1) {
-        const distance = Math.abs(centresRef.current[index] - centre);
-        if (distance < closest) {
-          closest = distance;
-          nearest = index;
-        }
-      }
-      zFocusRef.current = nearest;
-    }
+    // Padding changed, so the centre position may have shifted. The next
+    // updateRailGeometry call will recompute nearest and update z-index.
   }, [measure, syncRailPadding]);
 
   /**
@@ -217,8 +204,16 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
     }
 
     // Depth order only changes when the focus does, so it is not part of the
-    // per-frame work.
-    if (nearest !== zFocusRef.current) {
+    // per-frame work. Crucially, z-index updates are deferred while an explicit
+    // move is animating: updating z-index mid-animation causes visual glitches
+    // where a card with old overlap but new z-index suddenly pops above/below
+    // neighbors. Wait until the animation settles so position and z-order agree.
+    if (nearest !== zFocusRef.current && !navFrameRef.current) {
+      console.log("[DeskRail] Updating z-index:", {
+        nearest,
+        prev: zFocusRef.current,
+        navFrame: navFrameRef.current,
+      });
       zFocusRef.current = nearest;
       for (let index = 0; index < slots.length; index += 1) {
         slots[index]?.style.setProperty(

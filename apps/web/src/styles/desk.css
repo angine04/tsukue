@@ -161,14 +161,17 @@
 
   position: relative;
   flex: 0 0 auto;
-  /* Overlap fades to zero as a card approaches the focus position. At center
-     (rail-x = 0), margin is 0 (no overlap). At the edges (rail-x ≈ 1.5),
-     margin is -overlap/2 * 2.25 ≈ full overlap. The quadratic matches the arc
-     and scale curves. Clamped to prevent excessive overlap beyond MAX_RAIL_X. */
+  /* Focused card gets pushed away from neighbors (positive margin) to prevent
+     text overlap. All other cards maintain full overlap for the scattered desk
+     aesthetic. Scale rail-x by 3 before squaring to create a sharp cutoff:
+     margin drops from +12.8px to -12.8px between rail-x 0.0 and 0.6. */
   margin-inline: clamp(
     calc(var(--card-overlap) / -2),
-    calc(var(--card-overlap) / -2 * var(--rail-x, 0) * var(--rail-x, 0)),
-    0px
+    calc(
+      var(--card-overlap) / 2 * 3 *
+        (1 - var(--rail-x, 0) * 3 * var(--rail-x, 0) * 3)
+    ),
+    calc(var(--card-overlap) / 2 * 3)
   );
 }
 

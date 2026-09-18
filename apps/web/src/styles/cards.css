@@ -19,43 +19,48 @@
   box-shadow: var(--shadow-card-rest);
   /* Framer Motion animates --card-rotation; the transform owns the damping so
      mobile can flatten the scatter without a hydration mismatch.
-     --arc-lift, --bank and --rail-scale are written by the rail onto the slot
-     and inherit down — declaring defaults for them *here* would shadow that
-     inheritance and pin them to zero. Their fallbacks live in the transform,
-     and the slot carries the defaults. */
+     The rail writes only --rail-x onto the slot, and everything else is derived
+     from it here: one property per card per frame instead of three, which cut
+     the style invalidation that dominated a scrolling frame. The defaults must
+     live on the slot, not here — declaring them here would shadow the value
+     inheriting down and pin the card to a straight, unarced position. */
   --card-rotation: 0deg;
   --rotation-damping: 1;
-  transform: translateY(var(--arc-lift, 0px))
-    rotate(
-      calc(var(--card-rotation) * var(--rotation-damping) + var(--bank, 0deg))
+  /*
+   * Promoted to its own layer. The card's paint is expensive and completely
+   * static — a four-layer blurred shadow and a tiled paper background — but
+   * its transform changes every frame while scrolling. Without promotion the
+   * transform invalidates the card's painted region and the desk behind it,
+   * which carries eight background layers, so both are repainted per frame.
+   * Promoted, they rasterise once and only the transform changes.
+   */
+  will-change: transform;
+  transform: translateY(
+      calc(var(--rail-x, 0) * var(--rail-x, 0) * var(--arc-depth, 30px))
     )
-    scale(var(--rail-scale, 1));
+    rotate(
+      calc(
+        var(--card-rotation) * var(--rotation-damping) + var(--rail-x, 0) *
+          var(--bank-spread, -3deg)
+      )
+    )
+    scale(
+      calc(1 - var(--rail-x, 0) * var(--rail-x, 0) * var(--arc-falloff, 0.04))
+    );
   transform-origin: center center;
 }
 
 /*
  * Rough stock, shared by desk cards and the article sheet. The lit noise is
- * multiplied over the surface colour, so the shading picks up the paper's hue
- * instead of greying it out. Both surfaces must be positioned and create a
- * stacking context so this layer lands above their fill but under the text.
+ * carried as a repeating background tile rather than a live filter, so moving
+ * a card only transforms it — nothing is re-composited against the backdrop
+ * and nothing has to be re-filtered.
  */
 .desk-card,
 .sheet-surface {
-  position: relative;
-  z-index: 0;
-}
-
-.desk-card::before,
-.sheet-surface::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: #fff;
-  filter: url(#rough-paper);
-  mix-blend-mode: multiply;
-  opacity: var(--paper-roughness);
-  pointer-events: none;
+  background-image: var(--paper-tile);
+  background-size: var(--paper-tile-size);
+  background-repeat: repeat;
 }
 
 /* Darker paper needs light text. */

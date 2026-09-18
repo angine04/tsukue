@@ -7,24 +7,15 @@
   min-height: 100vh;
   padding: var(--desk-pad-y) var(--desk-pad-x);
   background-color: var(--color-desk-base);
-  background-image: var(--desk-texture-image);
-}
-
-/*
- * Lit wood grain, layered over the gradient planks. Fixed rather than
- * absolute so the filter raster is capped at one viewport no matter how tall
- * the document gets — the article page is far taller than the screen and a
- * full-height turbulence pass would be far more expensive.
- */
-.desk::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  filter: url(#wood-grain);
-  mix-blend-mode: multiply;
-  opacity: var(--wood-roughness, 0.34);
-  pointer-events: none;
+  /* The grain tile is layered over the gradient planks. It used to be a
+     viewport-sized fixed pseudo-element carrying a live feTurbulence filter
+     and a multiply blend — a second full-screen filtered layer to keep
+     compositing on every frame. As a repeating tile it is rasterised once. */
+  background-image: var(--wood-tile), var(--desk-texture-image);
+  background-blend-mode: normal;
+  background-repeat: repeat;
+  background-size:
+    var(--wood-tile-size), auto, auto, auto, auto, auto, auto, auto;
 }
 
 /*
@@ -161,10 +152,12 @@
 
 .desk-slot {
   /* Defaults live here so they inherit down to the card; the rail overwrites
-     them inline per frame. */
-  --arc-lift: 0px;
-  --bank: 0deg;
-  --rail-scale: 1;
+     --rail-x inline per frame. The arc constants sit here too because the
+     transform is derived from them in CSS rather than computed in JS. */
+  --rail-x: 0;
+  --arc-depth: 30px;
+  --bank-spread: -3deg;
+  --arc-falloff: 0.04;
 
   position: relative;
   flex: 0 0 auto;

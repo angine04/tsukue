@@ -57,6 +57,7 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
   const centresRef = useRef<number[]>([]);
   const halfRef = useRef(480);
   const railXRef = useRef<number[]>([]);
+  const lastScrollRef = useRef(0);
   const zFocusRef = useRef(-1);
 
   // The wheel listener is attached once, so the state it needs is mirrored
@@ -170,6 +171,10 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
    * One pass per frame, writing a single custom property per card. The arc,
    * bank and scale all come off that one value in CSS.
    */
+  /**
+   * One pass per frame, writing a single custom property per card. The arc,
+   * bank and scale all come off that one value in CSS.
+   */
   const updateRailGeometry = useCallback(() => {
     const rail = railRef.current;
     if (!rail) return;
@@ -179,6 +184,12 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
     const centres = centresRef.current;
     const slots = slotsRef.current;
     const cached = railXRef.current;
+
+    // Detect scroll momentum: if scrollLeft changed between frames, the user's
+    // wheel gesture or the browser's inertial scroll is still running. Defer
+    // z-index updates until it settles to avoid mid-scroll pop.
+    const scrolling = Math.abs(rail.scrollLeft - lastScrollRef.current) > 0.5;
+    lastScrollRef.current = rail.scrollLeft;
 
     let nearest = 0;
     let closest = Number.POSITIVE_INFINITY;
@@ -205,10 +216,11 @@ function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
 
     // Depth order only changes when the focus does, so it is not part of the
     // per-frame work. Crucially, z-index updates are deferred while an explicit
-    // move is animating: updating z-index mid-animation causes visual glitches
-    // where a card with old overlap but new z-index suddenly pops above/below
-    // neighbors. Wait until the animation settles so position and z-order agree.
-    if (nearest !== zFocusRef.current && !navFrameRef.current) {
+    // move is animating OR while scrolling momentum is active: updating z-index
+    // mid-scroll causes visual glitches where a card with old overlap but new
+    // z-index suddenly pops above/below neighbors. Wait until the animation
+    // settles so position and z-order agree.
+    if (nearest !== zFocusRef.current && !navFrameRef.current && !scrolling) {
       zFocusRef.current = nearest;
       for (let index = 0; index < slots.length; index += 1) {
         slots[index]?.style.setProperty(

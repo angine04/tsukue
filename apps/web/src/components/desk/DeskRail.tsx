@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useRef } from "react";
 import { useI18n } from "../../hooks/useI18n";
 import type { DeskItem } from "../../lib/cards";
 import DeskCard from "./DeskCard";
@@ -10,10 +10,13 @@ import DeskCard from "./DeskCard";
  * arc-length parameterisation cannot be derived from a layout position, so
  * cards would bunch towards the ends. A parabola from the card's normalised
  * distance is exact and costs one multiply.
+ *
+ * Scrolling is the hot path, so the per-frame work is kept to the minimum:
+ * card geometry is measured once and cached rather than read back every frame,
+ * and each card receives a single custom property, with the arc, bank and
+ * scale derived from it in CSS. Writing three properties instead tripled the
+ * style invalidation for no gain.
  */
-const ARC_DEPTH_PX = 30;
-const ARC_BANK_DEG = 3;
-const ARC_SCALE_FALLOFF = 0.04;
 const MAX_RAIL_X = 1.5;
 
 /**
@@ -43,43 +46,95 @@ interface DeskRailProps {
   onFocusIndex: (index: number) => void;
 }
 
-export default function DeskRail({
-  items,
-  lang,
-  focusedIndex,
-  onFocusIndex,
-}: DeskRailProps) {
+function DeskRail({ items, lang, focusedIndex, onFocusIndex }: DeskRailProps) {
   const { t } = useI18n(lang);
   const railRef = useRef<HTMLUListElement>(null);
   const frameRef = useRef(0);
   const navFrameRef = useRef(0);
+
+  /** Measured once per layout change; scrolling never changes these. */
+  const slotsRef = useRef<(HTMLElement | null)[]>([]);
+  const centresRef = useRef<number[]>([]);
+  const halfRef = useRef(480);
   const railXRef = useRef<number[]>([]);
+  const zFocusRef = useRef(-1);
 
   // The wheel listener is attached once, so the state it needs is mirrored
   // into refs rather than re-attaching the listener on every focus change.
   const focusedIndexRef = useRef(focusedIndex);
   const navTargetRef = useRef<number | null>(null);
-  const moveToRef = useRef<(index: number, duration?: number) => void>(
-    () => {},
-  );
 
-  const slotAt = useCallback(
-    (index: number) =>
-      railRef.current?.querySelector<HTMLElement>(`[data-slot="${index}"]`) ??
-      null,
-    [],
-  );
+  const targetFor = useCallback((index: number) => {
+    const rail = railRef.current;
+    const centre = centresRef.current[index];
+    if (!rail || centre === undefined) return null;
+    return centre - rail.clientWidth / 2;
+  }, []);
 
-  /** Scroll offset that puts this card's centre on the rail's centre. */
-  const targetFor = useCallback(
-    (index: number) => {
-      const rail = railRef.current;
-      const slot = slotAt(index);
-      if (!rail || !slot) return null;
-      return slot.offsetLeft + slot.offsetWidth / 2 - rail.clientWidth / 2;
-    },
-    [slotAt],
-  );
+  /**
+   * Read every card box once and keep it. These are layout positions in the
+   * rail's content space, so they are invariant under scrolling — re-reading
+   * them per frame forced a style flush for nothing.
+   */
+  const measure = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const slots: (HTMLElement | null)[] = [];
+    const centres: number[] = [];
+    for (let index = 0; index < items.length; index += 1) {
+      const slot =
+        rail.querySelector<HTMLElement>(`[data-slot="${index}"]`) ?? null;
+      slots.push(slot);
+      centres.push(slot ? slot.offsetLeft + slot.offsetWidth / 2 : Number.NaN);
+    }
+    slotsRef.current = slots;
+    centresRef.current = centres;
+    halfRef.current = rail.clientWidth / 2 || 1;
+    railXRef.current = [];
+  }, [items.length]);
+
+  /**
+   * The rail's leading and trailing padding must match the width of the cards
+   * actually sitting at each end, because that is what lets them reach the
+   * centre. Card widths vary (`wide`, `compact`, `name-card`), and a single
+   * --card-width assumption left the narrower About card 56px short of centre.
+   */
+  const syncRailPadding = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const cardWidth = (index: number) =>
+      rail.querySelector<HTMLElement>(`[data-slot="${index}"] .desk-card`)
+        ?.offsetWidth;
+    const first = cardWidth(0);
+    const last = cardWidth(items.length - 1);
+    if (first) {
+      rail.style.setProperty("--rail-edge-start", `${first}px`);
+    }
+    if (last) {
+      rail.style.setProperty("--rail-edge-end", `${last}px`);
+    }
+  }, [items.length]);
+
+  /** Re-measure after anything that can change the layout. */
+  const remeasure = useCallback(() => {
+    syncRailPadding();
+    measure();
+    // Padding changed, so re-derive what is under the centre as well.
+    const rail = railRef.current;
+    if (rail) {
+      const centre = rail.scrollLeft + rail.clientWidth / 2;
+      let nearest = 0;
+      let closest = Number.POSITIVE_INFINITY;
+      for (let index = 0; index < centresRef.current.length; index += 1) {
+        const distance = Math.abs(centresRef.current[index] - centre);
+        if (distance < closest) {
+          closest = distance;
+          nearest = index;
+        }
+      }
+      zFocusRef.current = nearest;
+    }
+  }, [measure, syncRailPadding]);
 
   /**
    * Hand-rolled rather than `scrollTo({ behavior: "smooth" })`: the native
@@ -125,54 +180,23 @@ export default function DeskRail({
   );
 
   /**
-   * The rail's leading and trailing padding must match the width of the cards
-   * actually sitting at each end, because that is what lets them reach the
-   * centre. Card widths vary (`wide`, `compact`, `name-card`), and a single
-   * --card-width assumption left the narrower About card 56px short of centre.
-   */
-  const syncRailPadding = useCallback(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const cardWidth = (index: number) =>
-      slotAt(index)?.querySelector<HTMLElement>(".desk-card")?.offsetWidth;
-    const first = cardWidth(0);
-    const last = cardWidth(items.length - 1);
-    if (first) {
-      rail.style.setProperty("--rail-edge-start", `${first}px`);
-    }
-    if (last) {
-      rail.style.setProperty("--rail-edge-end", `${last}px`);
-    }
-  }, [items.length, slotAt]);
-
-  /**
-   * One pass over the cards derives each card's place on the curve, and which
-   * card the rail is currently sitting on. Frames only write CSS custom
-   * properties, so scrolling never re-renders React except when the focused
-   * card actually changes.
+   * One pass per frame, writing a single custom property per card. The arc,
+   * bank and scale all come off that one value in CSS.
    */
   const updateRailGeometry = useCallback(() => {
     const rail = railRef.current;
     if (!rail) return;
 
-    const { length } = items;
     const centre = rail.scrollLeft + rail.clientWidth / 2;
-    const half = rail.clientWidth / 2 || 1;
-
-    // Read every box before writing anything: interleaving the two would
-    // force a layout flush per card.
-    const slots: (HTMLElement | null)[] = [];
-    const centres: number[] = [];
-    for (let index = 0; index < length; index += 1) {
-      const slot = slotAt(index);
-      slots.push(slot);
-      centres.push(slot ? slot.offsetLeft + slot.offsetWidth / 2 : Number.NaN);
-    }
+    const half = halfRef.current;
+    const centres = centresRef.current;
+    const slots = slotsRef.current;
+    const cached = railXRef.current;
 
     let nearest = 0;
     let closest = Number.POSITIVE_INFINITY;
 
-    for (let index = 0; index < length; index += 1) {
+    for (let index = 0; index < centres.length; index += 1) {
       const slotCentre = centres[index];
       if (Number.isNaN(slotCentre)) continue;
 
@@ -187,22 +211,21 @@ export default function DeskRail({
         Math.min(MAX_RAIL_X, (slotCentre - centre) / half),
       );
 
-      const slot = slots[index];
-      if (!slot) continue;
-      if (Math.abs((railXRef.current[index] ?? Number.NaN) - x) < 0.002) {
-        continue;
-      }
-      railXRef.current[index] = x;
+      if (Math.abs((cached[index] ?? Number.NaN) - x) < 0.002) continue;
+      cached[index] = x;
+      slots[index]?.style.setProperty("--rail-x", x.toFixed(4));
+    }
 
-      slot.style.setProperty(
-        "--arc-lift",
-        `${(ARC_DEPTH_PX * x * x).toFixed(1)}px`,
-      );
-      slot.style.setProperty("--bank", `${(-ARC_BANK_DEG * x).toFixed(2)}deg`);
-      slot.style.setProperty(
-        "--rail-scale",
-        (1 - ARC_SCALE_FALLOFF * x * x).toFixed(4),
-      );
+    // Depth order only changes when the focus does, so it is not part of the
+    // per-frame work.
+    if (nearest !== zFocusRef.current) {
+      zFocusRef.current = nearest;
+      for (let index = 0; index < slots.length; index += 1) {
+        slots[index]?.style.setProperty(
+          "z-index",
+          String(100 - Math.abs(index - nearest)),
+        );
+      }
     }
 
     // While a move is animating, the position still belongs to the card being
@@ -212,7 +235,7 @@ export default function DeskRail({
       focusedIndexRef.current = nearest;
       onFocusIndex(nearest);
     }
-  }, [focusedIndex, items.length, onFocusIndex, slotAt]);
+  }, [focusedIndex, onFocusIndex]);
 
   const handleScroll = useCallback(() => {
     if (frameRef.current) return;
@@ -232,14 +255,12 @@ export default function DeskRail({
       navTargetRef.current = next;
       onFocusIndex(next);
       centerOn(next, duration);
-      slotAt(next)?.querySelector("a")?.focus({ preventScroll: true });
+      slotsRef.current[next]
+        ?.querySelector("a")
+        ?.focus({ preventScroll: true });
     },
-    [centerOn, items.length, slotAt],
+    [centerOn, items.length, onFocusIndex],
   );
-
-  useEffect(() => {
-    moveToRef.current = moveTo;
-  }, [moveTo]);
 
   // Seat the focused card on first paint, before any scrolling happens.
   // Mount-only on purpose: later focus changes animate through centerOn, and
@@ -247,7 +268,7 @@ export default function DeskRail({
   useEffect(() => {
     const rail = railRef.current;
     if (!rail) return;
-    syncRailPadding();
+    remeasure();
     const target = targetFor(focusedIndex);
     if (target === null) return;
     rail.scrollLeft = target;
@@ -256,12 +277,18 @@ export default function DeskRail({
 
   useEffect(() => {
     const onResize = () => {
-      syncRailPadding();
+      remeasure();
+      // Card widths are viewport-relative, so a resize moves every card under
+      // a stationary scroll offset and the focused card drifts off centre.
+      // Put it back without animating: the layout changed, not the selection.
+      const rail = railRef.current;
+      const target = targetFor(focusedIndexRef.current);
+      if (rail && target !== null) rail.scrollLeft = target;
       handleScroll();
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [handleScroll, syncRailPadding]);
+  }, [handleScroll, remeasure, targetFor]);
 
   useEffect(
     () => () => {
@@ -291,12 +318,17 @@ export default function DeskRail({
       const delta = dominant * unit;
       if (delta === 0) return;
 
+      // Cheap boundary test against cached geometry, so a gesture at either end
+      // costs nothing and can fall through to scroll the page.
+      const maxScroll = Math.max(
+        0,
+        (centresRef.current[centresRef.current.length - 1] ?? 0) +
+          halfRef.current -
+          rail.clientWidth,
+      );
       const atStart = rail.scrollLeft <= 1;
-      const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 1;
-      if ((delta < 0 && atStart) || (delta > 0 && atEnd)) {
-        // Nowhere left to go: release the gesture so the page can scroll.
-        return;
-      }
+      const atEnd = rail.scrollLeft >= maxScroll - 1;
+      if ((delta < 0 && atStart) || (delta > 0 && atEnd)) return;
 
       // Anything already animating would fight the hand, so it yields first.
       if (navFrameRef.current) {
@@ -344,26 +376,26 @@ export default function DeskRail({
     centerOn(index);
   };
 
-  const handleSelect = (
-    index: number,
-    event: React.MouseEvent<HTMLAnchorElement>,
-  ) => {
-    const rail = railRef.current;
-    const target = targetFor(index);
+  const handleSelect = useCallback(
+    (index: number, event: React.MouseEvent<HTMLAnchorElement>) => {
+      const rail = railRef.current;
+      const target = targetFor(index);
 
-    // Clicking anything that is not already centred brings it to the centre;
-    // only the centred card follows its link. Deciding this from the actual
-    // offset rather than from `focusedIndex` matters now that scrolling is
-    // free: the focused card is merely the nearest one, so it is usually a
-    // little off centre and would otherwise navigate on the first click.
-    if (rail && target !== null && Math.abs(rail.scrollLeft - target) > 1) {
-      event.preventDefault();
-      focusedIndexRef.current = index;
-      navTargetRef.current = index;
-      onFocusIndex(index);
-      centerOn(index);
-    }
-  };
+      // Clicking anything that is not already centred brings it to the centre;
+      // only the centred card follows its link. Deciding this from the actual
+      // offset rather than from `focusedIndex` matters now that scrolling is
+      // free: the focused card is merely the nearest one, so it is usually a
+      // little off centre and would otherwise navigate on the first click.
+      if (rail && target !== null && Math.abs(rail.scrollLeft - target) > 1) {
+        event.preventDefault();
+        focusedIndexRef.current = index;
+        navTargetRef.current = index;
+        onFocusIndex(index);
+        centerOn(index);
+      }
+    },
+    [centerOn, onFocusIndex, targetFor],
+  );
 
   return (
     <div className="desk-rail-wrap">
@@ -381,7 +413,6 @@ export default function DeskRail({
             index={index}
             lang={lang}
             focused={index === focusedIndex}
-            focusDistance={Math.abs(index - focusedIndex)}
             onSelect={handleSelect}
           />
         ))}
@@ -416,3 +447,5 @@ export default function DeskRail({
     </div>
   );
 }
+
+export default memo(DeskRail);

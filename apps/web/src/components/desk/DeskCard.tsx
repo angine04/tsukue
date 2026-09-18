@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
+import { memo } from "react";
 import { useI18n } from "../../hooks/useI18n";
 import type { DeskItem } from "../../lib/cards";
 import NameCard from "./NameCard";
@@ -8,35 +9,29 @@ interface DeskCardProps {
   index: number;
   lang: string;
   focused: boolean;
-  /** Cards further from the focus sit behind their neighbours when they overlap. */
-  focusDistance: number;
   onSelect: (index: number, event: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 /**
- * A card in the rail. Rotation is animated as a CSS custom property rather
- * than a transform, so the mobile layout can damp it with plain CSS and the
- * server still renders the scattered angle. The rail adds --arc-lift, --bank
- * and --rail-scale to the slot each frame; they inherit down to here.
+ * A card in the rail.
+ *
+ * Rotation is animated as a CSS custom property rather than a transform, so the
+ * mobile layout can damp it with plain CSS and the server still renders the
+ * scattered angle. The rail writes --rail-x onto the slot each frame and the
+ * arc, bank and scale are derived from it in CSS, so a scrolling frame costs
+ * one property per card.
+ *
+ * Memoised, and deliberately not given the card's distance from the focus:
+ * passing that made every card re-render on every focus change during a scroll.
+ * Depth order is applied to the slot by the rail instead.
  */
-export default function DeskCard({
-  item,
-  index,
-  lang,
-  focused,
-  focusDistance,
-  onSelect,
-}: DeskCardProps) {
+function DeskCard({ item, index, lang, focused, onSelect }: DeskCardProps) {
   const { t } = useI18n(lang);
   const reducedMotion = useReducedMotion();
   const rotation = focused ? 0 : item.rotation;
 
   return (
-    <li
-      className="desk-slot"
-      data-slot={index}
-      style={{ zIndex: 100 - focusDistance }}
-    >
+    <li className="desk-slot" data-slot={index}>
       <motion.a
         href={item.href}
         className="desk-card"
@@ -73,3 +68,5 @@ export default function DeskCard({
     </li>
   );
 }
+
+export default memo(DeskCard);

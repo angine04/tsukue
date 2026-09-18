@@ -161,10 +161,12 @@
 
 .desk-slot {
   /* Defaults live here so they inherit down to the card; the rail overwrites
-     them inline per frame. */
-  --arc-lift: 0px;
-  --bank: 0deg;
-  --rail-scale: 1;
+     --rail-x inline per frame. The arc constants sit here too because the
+     transform is derived from them in CSS rather than computed in JS. */
+  --rail-x: 0;
+  --arc-depth: 30px;
+  --bank-spread: -3deg;
+  --arc-falloff: 0.04;
 
   position: relative;
   flex: 0 0 auto;

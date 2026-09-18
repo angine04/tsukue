@@ -19,17 +19,25 @@
   box-shadow: var(--shadow-card-rest);
   /* Framer Motion animates --card-rotation; the transform owns the damping so
      mobile can flatten the scatter without a hydration mismatch.
-     --arc-lift, --bank and --rail-scale are written by the rail onto the slot
-     and inherit down — declaring defaults for them *here* would shadow that
-     inheritance and pin them to zero. Their fallbacks live in the transform,
-     and the slot carries the defaults. */
+     The rail writes only --rail-x onto the slot, and everything else is derived
+     from it here: one property per card per frame instead of three, which cut
+     the style invalidation that dominated a scrolling frame. The defaults must
+     live on the slot, not here — declaring them here would shadow the value
+     inheriting down and pin the card to a straight, unarced position. */
   --card-rotation: 0deg;
   --rotation-damping: 1;
-  transform: translateY(var(--arc-lift, 0px))
-    rotate(
-      calc(var(--card-rotation) * var(--rotation-damping) + var(--bank, 0deg))
+  transform: translateY(
+      calc(var(--rail-x, 0) * var(--rail-x, 0) * var(--arc-depth, 30px))
     )
-    scale(var(--rail-scale, 1));
+    rotate(
+      calc(
+        var(--card-rotation) * var(--rotation-damping) + var(--rail-x, 0) *
+          var(--bank-spread, -3deg)
+      )
+    )
+    scale(
+      calc(1 - var(--rail-x, 0) * var(--rail-x, 0) * var(--arc-falloff, 0.04))
+    );
   transform-origin: center center;
 }
 

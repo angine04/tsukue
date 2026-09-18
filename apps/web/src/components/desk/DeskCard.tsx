@@ -1,4 +1,3 @@
-import { motion, useReducedMotion } from "framer-motion";
 import { memo } from "react";
 import { useI18n } from "../../hooks/useI18n";
 import type { DeskItem } from "../../lib/cards";
@@ -27,12 +26,11 @@ interface DeskCardProps {
  */
 function DeskCard({ item, index, lang, focused, onSelect }: DeskCardProps) {
   const { t } = useI18n(lang);
-  const reducedMotion = useReducedMotion();
   const rotation = item.rotation;
 
   return (
     <li className="desk-slot" data-slot={index}>
-      <motion.a
+      <a
         href={item.href}
         className="desk-card"
         data-kind={item.kind}
@@ -41,13 +39,7 @@ function DeskCard({ item, index, lang, focused, onSelect }: DeskCardProps) {
         data-focused={focused ? "" : undefined}
         aria-current={focused ? "true" : undefined}
         onClick={(event) => onSelect(index, event)}
-        initial={false}
-        animate={{ "--card-rotation": `${rotation}deg` }}
-        transition={
-          reducedMotion
-            ? { duration: 0 }
-            : { type: "spring", stiffness: 240, damping: 28 }
-        }
+        style={{ "--card-rotation": `${rotation}deg` } as React.CSSProperties}
       >
         {item.kind === "article" ? (
           <>
@@ -64,7 +56,7 @@ function DeskCard({ item, index, lang, focused, onSelect }: DeskCardProps) {
             <NameCard name={item.name} role={item.role} />
           </>
         )}
-      </motion.a>
+      </a>
     </li>
   );
 }

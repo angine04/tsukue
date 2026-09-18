@@ -124,6 +124,7 @@ export default function DeskApp({ items, lang = "en" }: DeskAppProps) {
         <AnimatePresence>
           {mode.type === "article" && (
             <ArticleSheet
+              slug={mode.slug}
               html={mode.html}
               lang={mode.lang}
               onClose={handleCloseArticle}

@@ -95,6 +95,7 @@ export function buildDeskItems(
       return {
         kind: "article",
         href: postPath(entry.data),
+        slug: entry.data.slug,
         lang: meta.lang,
         title: meta.title,
         description: meta.description,

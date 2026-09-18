@@ -3,12 +3,14 @@ import { useEffect, useRef } from "react";
 import { useI18n } from "../../hooks/useI18n";
 
 interface ArticleSheetProps {
+  slug: string;
   html: string;
   lang: string;
   onClose: () => void;
 }
 
 export default function ArticleSheet({
+  slug,
   html,
   lang,
   onClose,
@@ -32,7 +34,8 @@ export default function ArticleSheet({
       transition={{ duration: 0.2 }}
       onClick={onClose}
     >
-      <motion.div
+      <motion.article
+        layoutId={`card-${slug}-${lang}`}
         className="article-sheet"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -48,7 +51,7 @@ export default function ArticleSheet({
           ×
         </button>
         <div ref={contentRef} className="article-sheet-content" />
-      </motion.div>
+      </motion.article>
     </motion.div>
   );
 }

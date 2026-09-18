@@ -31,6 +31,7 @@ export function seededRotation(seed: string): number {
 export interface DeskArticle {
   kind: "article";
   href: string;
+  slug: string;
   lang: string;
   title: string;
   description: string;

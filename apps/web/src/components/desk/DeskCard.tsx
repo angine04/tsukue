@@ -28,7 +28,7 @@ interface DeskCardProps {
 function DeskCard({ item, index, lang, focused, onSelect }: DeskCardProps) {
   const { t } = useI18n(lang);
   const reducedMotion = useReducedMotion();
-  const rotation = focused ? 0 : item.rotation;
+  const rotation = item.rotation;
 
   return (
     <li className="desk-slot" data-slot={index}>

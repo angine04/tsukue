@@ -348,11 +348,21 @@ export default function DeskRail({
     index: number,
     event: React.MouseEvent<HTMLAnchorElement>,
   ) => {
-    // Off-centre cards take focus first; the centred card follows its link.
-    if (index === focusedIndex) return;
-    event.preventDefault();
-    onFocusIndex(index);
-    centerOn(index);
+    const rail = railRef.current;
+    const target = targetFor(index);
+
+    // Clicking anything that is not already centred brings it to the centre;
+    // only the centred card follows its link. Deciding this from the actual
+    // offset rather than from `focusedIndex` matters now that scrolling is
+    // free: the focused card is merely the nearest one, so it is usually a
+    // little off centre and would otherwise navigate on the first click.
+    if (rail && target !== null && Math.abs(rail.scrollLeft - target) > 1) {
+      event.preventDefault();
+      focusedIndexRef.current = index;
+      navTargetRef.current = index;
+      onFocusIndex(index);
+      centerOn(index);
+    }
   };
 
   return (

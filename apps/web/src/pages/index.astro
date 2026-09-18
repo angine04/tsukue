@@ -1,32 +1,14 @@
 ---
-import { SITE_DESCRIPTION, postPath, ui } from "@tsukue/config";
+import { SITE_DESCRIPTION } from "@tsukue/config";
+import DeskApp from "../components/desk/DeskApp";
 import Layout from "../layouts/Layout.astro";
-import { absoluteUrl, loadPosts, toPostMeta } from "../lib/posts";
+import { absoluteUrl, buildDeskItems, loadPosts } from "../lib/posts";
 
 const lang = "en";
 const entries = await loadPosts();
-const posts = entries
-  .filter((entry) => entry.data.lang === lang)
-  .map(toPostMeta);
+const items = buildDeskItems(entries, lang);
 ---
 
 <Layout description={SITE_DESCRIPTION} lang={lang} canonical={absoluteUrl("/")}>
-  <div class="desk min-h-screen">
-    <!-- Static index of every article, replaced by the desk rail once the
-         island lands. Keeps the site readable and crawlable without JS. -->
-    <nav class="desk-index" aria-label={ui("nav.home", lang)}>
-      <ul>
-        {
-          posts.map((post) => (
-            <li>
-              <a href={postPath(post)}>
-                <h2>{post.title}</h2>
-                <p>{post.description}</p>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
-  </div>
+  <DeskApp client:load items={items} lang={lang} />
 </Layout>

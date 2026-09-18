@@ -1,18 +1,23 @@
 import { useI18n } from "../../hooks/useI18n";
+import NameCard from "./NameCard";
 
 interface AboutCardProps {
   lang?: string;
 }
 
+/**
+ * The About sheet. Rendered both from the desk and directly at the About
+ * route, so it carries no interactivity and needs no hydration.
+ */
 export default function AboutCard({ lang = "en" }: AboutCardProps) {
   const { t } = useI18n(lang);
 
   return (
-    <div className="card p-6 rounded-lg max-w-xs border-2 border-[var(--color-accent)]">
-      <h1 className="font-serif text-xl text-[var(--color-ink)]">
-        {t("nav.about")}
-      </h1>
-      <p className="text-[var(--color-muted)] mt-2">Writer & Engineer</p>
+    <div className="about-sheet">
+      <span className="about-sheet-eyebrow">
+        {t("nav.about").toUpperCase()}
+      </span>
+      <NameCard />
     </div>
   );
 }

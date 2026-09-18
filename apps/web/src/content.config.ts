@@ -44,7 +44,7 @@ const posts = defineCollection({
           variant: CardVariant.default("wide"),
           // Left undefined when the author has not picked a rotation, so the
           // desk can fall back to a stable slug-derived angle.
-          rotation: z.number().min(-5).max(5).optional(),
+          rotation: z.number().min(-10).max(10).optional(),
           accent: CardAccent.default("brown"),
         })
         .optional(),

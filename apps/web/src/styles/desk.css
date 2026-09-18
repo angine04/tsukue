@@ -1,53 +1,274 @@
 .desk {
+  --desk-pad-x: clamp(1rem, 3vw, 2.5rem);
+  --desk-pad-y: clamp(1.25rem, 3vw, 2.5rem);
+
+  position: relative;
+  z-index: 0;
   min-height: 100vh;
+  padding: var(--desk-pad-y) var(--desk-pad-x);
   background-color: var(--color-desk-base);
-  background-image: url("/textures/desk-grain.svg");
-  background-size: 240px 240px;
-  background-repeat: repeat;
-  padding: clamp(1.5rem, 5vw, 4rem) clamp(1rem, 4vw, 3rem);
+  background-image: var(--desk-texture-image);
 }
 
-.desk-index ul {
-  display: grid;
-  gap: 1rem;
+/*
+ * Lit wood grain, layered over the gradient planks. Fixed rather than
+ * absolute so the filter raster is capped at one viewport no matter how tall
+ * the document gets — the article page is far taller than the screen and a
+ * full-height turbulence pass would be far more expensive.
+ */
+.desk::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  filter: url(#wood-grain);
+  mix-blend-mode: multiply;
+  opacity: var(--wood-roughness, 0.34);
+  pointer-events: none;
+}
+
+/*
+ * The homepage root carries both classes, so this is the same box as `.desk`.
+ * The desk padding is therefore dropped rather than offset with a negative
+ * margin — a negative margin on the same element just shifts the whole desk
+ * up by the padding instead of widening it. Insets are re-applied per child
+ * (header, rail footer, hint), which leaves the rail full-bleed so its
+ * scrolling clip box is the viewport.
+ */
+.desk-app {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------------- header */
+
+/* Floated over the desk rather than taking a row of its own, so the rail's
+   box can reach the viewport edges. */
+.desk-header {
+  position: absolute;
+  top: var(--desk-pad-y);
+  right: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 96rem;
+  margin-inline: auto;
+  padding-inline: var(--desk-pad-x);
+}
+
+.desk-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.desk-wordmark-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.6rem, 3vw, 2.15rem);
+  line-height: 1;
+  color: var(--color-desk-ink);
+}
+
+.desk-wordmark-tagline {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  color: var(--color-desk-ink);
+}
+
+.desk-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.desk-nav a {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--color-desk-ink);
+  text-decoration: none;
+}
+
+.desk-nav a:hover,
+.desk-nav a:focus-visible {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------ rail */
+
+.desk-rail-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/*
+ * Absolute so the rail's own box is the whole wrap — and the wrap is the only
+ * in-flow child of the viewport-height app, so the rail's clipping box ends up
+ * being the viewport itself. As a flex child it would stop short above the
+ * controls and hint, and clip card shadows against a visible edge.
+ *
+ * Deliberately no `scroll-snap-type`: snapping re-applies synchronously to
+ * every programmatic scrollLeft write, which silently swallowed the whole
+ * wheel handler (ten wheel steps moved the rail 0px). The rail snaps to the
+ * focused card from JS once a gesture settles instead.
+ *
+ * Staying positioned also matters for the maths: slot.offsetLeft resolves
+ * against the nearest positioned ancestor, and without that it picks up the
+ * desk's padding and every centring calculation lands a padding-width off.
+ */
+.desk-rail {
+  position: absolute;
+  inset: 0;
+  --card-width: clamp(19rem, 26vw, 24rem);
+  --card-height: clamp(18rem, 46vh, 26rem);
+  /* Overlap has to be a negative margin, not a gap: flex gap rejects
+     negative lengths. Half goes on each slot so neighbours close by the
+     full amount. */
+  --card-overlap: clamp(0.75rem, 2vw, 2.5rem);
+
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding-block: 1rem;
+  /* Sized from the cards actually at each end (set by the rail) plus half the
+     overlap back, since the outer slots carry a negative margin too. Without
+     the measured widths the narrow name card cannot reach the centre. */
+  padding-inline-start: calc(
+    50% - var(--rail-edge-start, var(--card-width)) / 2 + var(--card-overlap) /
+      2
+  );
+  padding-inline-end: calc(
+    50% - var(--rail-edge-end, var(--card-width)) / 2 + var(--card-overlap) / 2
+  );
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.desk-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.desk-slot {
+  /* Defaults live here so they inherit down to the card; the rail overwrites
+     them inline per frame. */
+  --arc-lift: 0px;
+  --bank: 0deg;
+  --rail-scale: 1;
+
+  position: relative;
+  flex: 0 0 auto;
+  margin-inline: calc(var(--card-overlap) / -2);
+}
+
+/* Controls and hint share one overlaid stack, so the rail underneath keeps a
+   clean viewport-sized box. The stack itself ignores pointer input; only the
+   dot controls opt back in, so wheel scrolling still reaches the rail. */
+.desk-rail-bottom {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.35rem, 1.2vh, 0.85rem);
+  padding-block: 0.5rem calc(var(--desk-pad-y) * 0.75);
+  pointer-events: none;
+}
+
+.desk-rail-footer {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  width: 100%;
   max-width: 46rem;
-  margin: 0 auto;
+  padding-inline: var(--desk-pad-x);
+}
+
+.desk-dot {
+  pointer-events: auto;
+}
+
+.desk-scroll-label {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--color-desk-ink);
+  white-space: nowrap;
+}
+
+.desk-rail-rule {
+  flex: 1;
+  height: 1px;
+  background: rgb(255 255 255 / 25%);
+}
+
+.desk-dots {
+  display: flex;
+  gap: 0.15rem;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.desk-index a {
-  display: block;
-  padding: 1.5rem 1.75rem;
-  background-color: var(--color-paper-ivory);
-  box-shadow: var(--shadow-card-rest);
-  color: var(--color-ink);
-  text-decoration: none;
-  transition: box-shadow 0.25s ease;
+.desk-dot {
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
 }
 
-.desk-index a:hover,
-.desk-index a:focus-visible {
-  box-shadow: var(--shadow-card-focus);
+.desk-dot::before {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 40%);
+  transform: translate(-50%, -50%);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 }
 
-.desk-index h2 {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  margin: 0 0 0.35rem;
+.desk-dot[data-active]::before {
+  background: var(--color-desk-ink);
+  transform: translate(-50%, -50%) scale(1.4);
 }
 
-.desk-index p {
+.desk-hint {
   margin: 0;
-  color: var(--color-muted);
+  padding-inline: var(--desk-pad-x);
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-desk-ink);
 }
 
+/* ------------------------------------------------------------ paper sheet */
+
+/* Positioned and roughened by the shared paper rule in cards.css. */
 .sheet-surface {
   max-width: 46rem;
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3.5rem);
   background-color: var(--color-paper-ivory);
-  background-image: url("/textures/paper-fiber.svg");
   box-shadow: var(--shadow-sheet);
 }
 
@@ -81,8 +302,55 @@
   margin: 0 0 1.5rem;
 }
 
+.about-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-left: 3px solid var(--color-accent);
+  background-color: var(--color-paper-sand);
+}
+
+.about-sheet-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--color-card-muted);
+}
+
+/* --------------------------------------------------------------- reduced */
+
+@media (max-width: 720px) {
+  .desk-rail {
+    --card-width: min(84vw, 21rem);
+    --card-height: clamp(18rem, 42vh, 22rem);
+    /* Cards are nearly full width here, so overlap would bury the tap
+       targets of the neighbours. */
+    --card-overlap: 0rem;
+    padding-block: 1.5rem;
+    /* Touch scrolling is native, so CSS snapping can do the settle here with
+       no script involved. It is only unusable on pointer devices, where the
+       rail is moved programmatically and every write would be re-snapped. */
+    scroll-snap-type: x mandatory;
+  }
+
+  .desk-slot {
+    scroll-snap-align: center;
+  }
+
+  .desk-header {
+    align-items: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .desk-index a {
+  .desk-rail {
+    scroll-behavior: auto;
+  }
+
+  .desk-dot::before {
     transition: none;
   }
 }

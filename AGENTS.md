@@ -37,7 +37,7 @@ paper-like
 desk-like
 material but not photorealistic
 CSS-achievable
-````
+```
 
 Avoid:
 
@@ -117,12 +117,12 @@ No-JS article reading must work.
 
 The React island may create:
 
-* horizontal card rail
-* card focus state
-* card-to-article expansion
-* History API URL sync
-* comments UI
-* article partial loading
+- horizontal card rail
+- card focus state
+- card-to-article expansion
+- History API URL sync
+- comments UI
+- article partial loading
 
 But the canonical article content still comes from Astro-rendered MDX.
 
@@ -238,17 +238,11 @@ Build should fail if any MDX post uses a reserved slug.
 Create route helpers similar to:
 
 ```ts
-export function postPath(post: {
-  slug: string;
-  lang: string;
-}): string {
+export function postPath(post: { slug: string; lang: string }): string {
   // Use routeConfig and i18nConfig.
 }
 
-export function postPartialPath(post: {
-  slug: string;
-  lang: string;
-}): string {
+export function postPartialPath(post: { slug: string; lang: string }): string {
   // Use routeConfig and i18nConfig.
 }
 
@@ -382,9 +376,9 @@ The About page is special.
 
 It should have:
 
-* a canonical static route
-* a desk card representation
-* a business/name-card visual style
+- a canonical static route
+- a desk card representation
+- a business/name-card visual style
 
 The desk card should not look like a normal article card.
 
@@ -407,8 +401,8 @@ Every article route must include:
 
 ```html
 <title>...</title>
-<meta name="description" content="...">
-<link rel="canonical" href="...">
+<meta name="description" content="..." />
+<link rel="canonical" href="..." />
 <article>
   <h1>...</h1>
   ...
@@ -420,22 +414,22 @@ Every article route must include:
 For translations, automatically group posts by `translationKey` and generate:
 
 ```html
-<link rel="alternate" hreflang="en" href="...">
-<link rel="alternate" hreflang="zh-Hans" href="...">
-<link rel="alternate" hreflang="ja" href="...">
-<link rel="alternate" hreflang="x-default" href="...">
+<link rel="alternate" hreflang="en" href="..." />
+<link rel="alternate" hreflang="zh-Hans" href="..." />
+<link rel="alternate" hreflang="ja" href="..." />
+<link rel="alternate" hreflang="x-default" href="..." />
 ```
 
 Set the correct language:
 
 ```html
-<html lang="zh-Hans">
+<html lang="zh-Hans"></html>
 ```
 
 or, where appropriate:
 
 ```html
-<article lang="zh-Hans">
+<article lang="zh-Hans"></article>
 ```
 
 ## 6.3 Sitemap and RSS
@@ -563,12 +557,12 @@ But avoid extreme size differences in the main carousel.
 
 ## 8.4 Scattered effect
 
-Non-focused cards may rotate slightly.
+Non-focused cards rotate away from the focused card.
 
 Reasonable rotation range:
 
 ```text
--5deg to +5deg
+-10deg to +10deg
 ```
 
 Focused card rotation should be near:
@@ -578,6 +572,40 @@ Focused card rotation should be near:
 ```
 
 Prefer deterministic rotations from frontmatter or a slug-based seed. Do not use unstable random rotations on each render.
+
+Adjacent cards may overlap. Because overlap hides the neighbour behind, the
+card nearest the focus must paint above the rest, so z-order is assigned by
+distance from the focused card rather than by DOM order.
+
+## 8.4.1 Rail curvature
+
+Cards must not sit on a straight line; a flat row reads as a synthetic strip.
+
+The rail lays out as a normal scrollable row — that keeps native scrolling,
+tab order, and focus maths intact — and each card is then displaced onto a
+curve from its normalised distance to the centre of the rail:
+
+```text
+vertical lift  = depth * distance^2      (outer cards sit lower)
+bank rotation  = -spread * distance      (outer cards fan outward)
+scale          = 1 - falloff * distance^2
+```
+
+Distance is signed and normalised so that 1.0 is the edge of the visible rail.
+
+Prefer this over a literal `offset-path`. An `offset-path` bends the same way,
+but its arc-length parameterisation cannot be derived from a layout position,
+so cards bunch towards the ends; the parabola is exact and costs one multiply.
+
+These are per-frame values. Write them as CSS custom properties from a single
+scroll pass that reads every card's box before writing anything, so a frame
+costs one layout flush rather than one per card. Do not route them through
+component state — that would re-render React on every scroll frame.
+
+Do not use CSS `scroll-snap-type` on the rail if wheel input is mapped to
+horizontal movement: snapping re-applies synchronously to each programmatic
+`scrollLeft` write and will silently swallow every wheel step. Snap from JS
+once a gesture settles instead.
 
 ## 8.5 Scroll behavior
 
@@ -816,17 +844,25 @@ Example:
   --font-serif-latin: "Newsreader", "Noto Serif", serif;
   --font-sans-latin: "Cabin", "Noto Sans", system-ui, sans-serif;
 
-  --font-serif-zh-hans: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
-  --font-sans-zh-hans: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", sans-serif;
+  --font-serif-zh-hans:
+    "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --font-sans-zh-hans:
+    "Noto Sans SC", "Source Han Sans SC", "PingFang SC", sans-serif;
 
-  --font-serif-zh-hant: "Noto Serif TC", "Source Han Serif TC", "Songti TC", serif;
-  --font-sans-zh-hant: "Noto Sans TC", "Source Han Sans TC", "PingFang TC", sans-serif;
+  --font-serif-zh-hant:
+    "Noto Serif TC", "Source Han Serif TC", "Songti TC", serif;
+  --font-sans-zh-hant:
+    "Noto Sans TC", "Source Han Sans TC", "PingFang TC", sans-serif;
 
   --font-serif-ja: "Noto Serif JP", "Source Han Serif JP", "Yu Mincho", serif;
-  --font-sans-ja: "Noto Sans JP", "Source Han Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-sans-ja:
+    "Noto Sans JP", "Source Han Sans JP", "Hiragino Sans", "Yu Gothic",
+    sans-serif;
 
   --font-serif-ko: "Noto Serif KR", "Source Han Serif KR", serif;
-  --font-sans-ko: "Noto Sans KR", "Source Han Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-sans-ko:
+    "Noto Sans KR", "Source Han Sans KR", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
 
   --font-serif: var(--font-serif-latin);
   --font-sans: var(--font-sans-latin);
@@ -1652,8 +1688,6 @@ apps/web
   served by Pages Functions at functions/api/[[path]].ts
 ```
 
-
-
 Also update the **Decisions Already Made** section with:
 
 ```md
@@ -1662,11 +1696,11 @@ Use `apps/web` for Astro.
 Use `functions/api/` for Hono Pages Functions.
 Use `packages/config`, `packages/schemas`, and `packages/types` for shared code.
 Do not put the Hono backend inside the Astro app by default.
-````
+```
 
 And add this near the commands section:
 
-```md
+````md
 Root `pnpm-workspace.yaml`:
 
 ```yaml
@@ -1674,6 +1708,7 @@ packages:
   - "apps/*"
   - "packages/*"
 ```
+````
 
 Root scripts:
 
@@ -1767,7 +1802,7 @@ return c.json(
       message: "Comment body is required.",
     },
   },
-  400
+  400,
 );
 ```
 
@@ -2067,12 +2102,12 @@ Use a trunk-based workflow with short-lived feature branches.
 
 ## 29.1 Branch conventions
 
-| Branch | Purpose | Merge target |
-|--------|---------|--------------|
-| `main` | Production-ready code | — |
+| Branch    | Purpose                         | Merge target    |
+| --------- | ------------------------------- | --------------- |
+| `main`    | Production-ready code           | —               |
 | `develop` | Integration branch for features | `main` (via PR) |
-| `feat/*` | Individual feature work | `develop` |
-| `fix/*` | Bug fixes | `develop` |
+| `feat/*`  | Individual feature work         | `develop`       |
+| `fix/*`   | Bug fixes                       | `develop`       |
 
 ## 29.2 Branch rules
 

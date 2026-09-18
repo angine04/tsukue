@@ -10,16 +10,17 @@ A tactile, editorial blog template built with Astro, React, and Hono. Designed t
 
 ### Working today
 
-- **Static-First Architecture** — Real semantic HTML at build time, readable without JavaScript
+- **Tactile Desk Homepage** — Posts as paper cards scattered on a warm wood surface; one card focused at a time, with wheel, drag, dot, and arrow-key navigation that all agree
+- **Static-First Architecture** — Cards are real links and articles are real semantic HTML, readable without JavaScript
 - **Multilingual Content** — One MDX file per language, grouped by `translationKey`
 - **Configurable Routing** — Flat or prefixed post routes, flat or prefixed locale routes
 - **Article Partials** — Chrome-free fragments at `/partials/*` for in-app article expansion
 - **SEO** — Canonical URLs, `hreflang` alternates, RSS, sitemap, and robots.txt
 - **Build-Time Content Validation** — Reserved slugs, conflicting routes, duplicate translation pairs, unsupported language tags, and drafts fail the build
+- **CSS-Only Textures** — Paper grain and wood grain drawn with gradients; the site requests no texture images
 
 ### Planned
 
-- **Tactile Desk Interface** — Blog posts as physical paper cards on a wooden desk surface
 - **Card-to-Article Expansion** — Seamless transitions from desk cards to full article sheets
 - **Comments System** — Hono backend with Cloudflare D1, moderation, and Turnstile spam protection
 - **Newsletter** — Double opt-in subscription with unsubscribe support

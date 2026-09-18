@@ -77,6 +77,40 @@ const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
     <meta name="twitter:card" content="summary" />
   </head>
   <body data-lang={lang}>
+    <!-- Inline so the paper texture costs no request. feDiffuseLighting is
+         what makes it read as rough stock rather than flat noise: the
+         turbulence is lit from an angle instead of merely tinting. -->
+    <svg class="filter-defs" aria-hidden="true" focusable="false">
+      <!-- The default filter region is the bounding box grown by 10% on every
+           side, which spills a lit halo past each card onto the desk. Pin it
+           to the element's own box. -->
+      <filter id="rough-paper" x="0" y="0" width="100%" height="100%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.04"
+          numOctaves="5"
+          result="noise"></feTurbulence>
+        <feDiffuseLighting in="noise" lighting-color="#fff" surfaceScale="2">
+          <feDistantLight azimuth="45" elevation="60"></feDistantLight>
+        </feDiffuseLighting>
+      </filter>
+
+      <!-- Stretched turbulence: slow along Y and fast along X, so it reads as
+           grain running with the planks. Lit from the same side as the paper
+           so desk and cards agree about where the light is. -->
+      <filter id="wood-grain" x="0" y="0" width="100%" height="100%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.32 0.004"
+          numOctaves="4"
+          seed="9"
+          result="grain"></feTurbulence>
+        <feDiffuseLighting in="grain" lighting-color="#fff" surfaceScale="1.6">
+          <feDistantLight azimuth="100" elevation="55"></feDistantLight>
+        </feDiffuseLighting>
+      </filter>
+    </svg>
+
     <slot />
   </body>
 </html>

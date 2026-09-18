@@ -1,10 +1,172 @@
-.card {
-  background-color: var(--color-paper-ivory);
+/* Card material. Colour is per-card from frontmatter, so text tones come from
+   card-scoped custom properties rather than the global ink/muted pair. */
+.desk-card {
+  --card-paper: var(--color-card-ivory);
+  --card-ink: var(--color-ink);
+  --card-muted: var(--color-card-muted);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  width: var(--card-width);
+  min-height: var(--card-height);
+  padding: clamp(1.25rem, 2.2vw, 1.9rem);
+  border-radius: 3px;
+  background-color: var(--card-paper);
+  color: var(--card-ink);
+  text-decoration: none;
   box-shadow: var(--shadow-card-rest);
-  transition: box-shadow 0.3s ease;
+  /* Framer Motion animates --card-rotation; the transform owns the damping so
+     mobile can flatten the scatter without a hydration mismatch.
+     --arc-lift, --bank and --rail-scale are written by the rail onto the slot
+     and inherit down — declaring defaults for them *here* would shadow that
+     inheritance and pin them to zero. Their fallbacks live in the transform,
+     and the slot carries the defaults. */
+  --card-rotation: 0deg;
+  --rotation-damping: 1;
+  transform: translateY(var(--arc-lift, 0px))
+    rotate(
+      calc(var(--card-rotation) * var(--rotation-damping) + var(--bank, 0deg))
+    )
+    scale(var(--rail-scale, 1));
+  transform-origin: center center;
 }
 
-.card:focus,
-.card:hover {
+/*
+ * Rough stock, shared by desk cards and the article sheet. The lit noise is
+ * multiplied over the surface colour, so the shading picks up the paper's hue
+ * instead of greying it out. Both surfaces must be positioned and create a
+ * stacking context so this layer lands above their fill but under the text.
+ */
+.desk-card,
+.sheet-surface {
+  position: relative;
+  z-index: 0;
+}
+
+.desk-card::before,
+.sheet-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #fff;
+  filter: url(#rough-paper);
+  mix-blend-mode: multiply;
+  opacity: var(--paper-roughness);
+  pointer-events: none;
+}
+
+/* Darker paper needs light text. */
+.desk-card[data-color="olive"],
+.desk-card[data-color="terracotta"] {
+  --card-ink: var(--color-card-ivory);
+  --card-muted: var(--color-card-muted-on-dark);
+}
+
+.desk-card[data-color="ivory"] {
+  --card-paper: var(--color-card-ivory);
+}
+
+.desk-card[data-color="sand"] {
+  --card-paper: var(--color-card-sand);
+}
+
+.desk-card[data-color="warm-paper"] {
+  --card-paper: var(--color-card-warm);
+}
+
+.desk-card[data-color="olive"] {
+  --card-paper: var(--color-card-olive);
+}
+
+.desk-card[data-color="terracotta"] {
+  --card-paper: var(--color-card-terracotta);
+}
+
+.desk-card[data-variant="compact"] {
+  --card-width: clamp(14rem, 18vw, 16rem);
+}
+
+.desk-card[data-kind="about"] {
+  --card-width: clamp(14rem, 18vw, 17rem);
+  justify-content: center;
+}
+
+.desk-card[data-focused] {
   box-shadow: var(--shadow-card-focus);
+}
+
+/* Focus is signalled by the mechanisms in AGENTS 8.2 — straightened rotation,
+   deeper shadow, higher z-index and slightly larger scale. An inset border was
+   tried here too, but at any visible opacity it read as a rendering artefact. */
+
+.desk-card-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--card-muted);
+}
+
+.desk-card-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.35rem, 1.9vw, 1.75rem);
+  font-weight: 400;
+  line-height: 1.18;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.desk-card-description {
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: var(--card-muted);
+  margin: 0;
+  /* Descriptions are decorative next to the headline; keep cards even. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.desk-card-date {
+  margin-top: auto;
+  font-family: var(--font-serif);
+  font-size: 0.86rem;
+  color: var(--card-muted);
+}
+
+.name-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.name-card-name {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-style: italic;
+  line-height: 1.1;
+}
+
+.name-card-role {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--card-muted, var(--color-card-muted));
+}
+
+/*
+ * Small screens get a calmer desk. This has to live here rather than in
+ * desk.css: Layout loads cards.css after desk.css, so an equal-specificity
+ * override in desk.css would lose to the --rotation-damping: 1 above.
+ */
+@media (max-width: 720px) {
+  .desk-card {
+    --rotation-damping: 0.35;
+  }
 }

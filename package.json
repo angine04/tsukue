@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "pnpm --filter web dev",
     "dev:api": "pnpm --filter web build && wrangler pages dev apps/web/dist --port 8788",
+    "db:migrate": "wrangler d1 migrations apply DB",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "build": "pnpm --filter web build",
     "deploy:cf": "pnpm --filter web build && wrangler pages deploy apps/web/dist --project-name=tsukue",
     "check": "pnpm -r check",

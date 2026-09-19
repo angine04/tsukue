@@ -3,7 +3,6 @@ import {
   AUTHOR_NAME,
   AUTHOR_ROLE,
   DEFAULT_ROUTE_CONFIG,
-  SITE_URL,
   SUPPORTED_LANGS,
   aboutPath,
   aboutSegments,
@@ -16,12 +15,9 @@ import { DEFAULT_CARD, type Post } from "@tsukue/types";
 import { seededRotation, type DeskArticle, type DeskItem } from "./cards";
 import { findContentIssues } from "./content-validation";
 
-export type PostEntry = CollectionEntry<"posts">;
+export { absoluteUrl, buildAlternates, type AlternateLink } from "./alternates";
 
-export interface AlternateLink {
-  hreflang: string;
-  href: string;
-}
+export type PostEntry = CollectionEntry<"posts">;
 
 /**
  * Every published post, newest first. Drafts are dropped from production
@@ -72,10 +68,6 @@ export function toPostMeta(entry: PostEntry): Post {
       : undefined,
     translation: data.translation,
   };
-}
-
-export function absoluteUrl(path: string): string {
-  return new URL(path, SITE_URL).href;
 }
 
 /**
@@ -182,33 +174,6 @@ export function listHomePaths(entries: readonly PostEntry[]): string[] {
       ...listLocalizedLangs(entries).map((lang) => homePath(lang)),
     ]),
   ];
-}
-
-/** hreflang links for every language version of this post, plus x-default. */
-export function buildAlternates(
-  entry: PostEntry,
-  all: readonly PostEntry[],
-): AlternateLink[] {
-  const group = all.filter(
-    (candidate) => candidate.data.translationKey === entry.data.translationKey,
-  );
-
-  const links = group.map((candidate) => ({
-    hreflang: candidate.data.lang,
-    href: absoluteUrl(postPath(candidate.data)),
-  }));
-
-  const fallback = group.find(
-    (candidate) => candidate.data.lang === DEFAULT_ROUTE_CONFIG.defaultLang,
-  );
-  if (fallback) {
-    links.push({
-      hreflang: "x-default",
-      href: absoluteUrl(postPath(fallback.data)),
-    });
-  }
-
-  return links.sort((a, b) => a.hreflang.localeCompare(b.hreflang));
 }
 
 /**

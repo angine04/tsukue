@@ -1576,6 +1576,9 @@ packages/schemas
 packages/types
   shared TypeScript types
 
+packages/api
+  the Pages Functions backend: comment, newsletter and notification routes
+
 packages/mail
   optional shared mail adapter interfaces/templates
 ```

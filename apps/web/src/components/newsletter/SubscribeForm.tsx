@@ -20,7 +20,7 @@ export default function SubscribeForm({
   const [message, setMessage] = useState("");
   const sending = status === "sending";
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);

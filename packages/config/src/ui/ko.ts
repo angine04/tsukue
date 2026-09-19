@@ -39,6 +39,28 @@ export const ko: UIDictionary = {
   "comment.closed": "아직 댓글을 받지 않습니다.",
   "comment.error": "전송하지 못했습니다. 다시 시도해 주세요.",
 
+  "newsletter.title": "뉴스레터",
+  "newsletter.intro":
+    "쓸 만한 것이 있을 때 가끔 보내는 편지입니다. 정해진 주기는 없습니다.",
+  "newsletter.emailLabel": "이메일",
+  "newsletter.subscribe": "구독하기",
+  "newsletter.sending": "보내는 중…",
+  "newsletter.pending":
+    "거의 다 됐습니다 — 받은편지함에서 확인 링크를 열어 주세요.",
+  "newsletter.hint":
+    "확인 메일 한 통이 갑니다. 열기 전에는 아무것도 보내지 않습니다.",
+  "newsletter.error": "전송되지 않았습니다. 다시 시도해 주세요.",
+  "newsletter.closed": "지금은 구독을 받을 수 없습니다.",
+  "newsletter.confirmed.title": "구독 확인됨",
+  "newsletter.confirmed.body":
+    "이 주소가 확인되었습니다. 다음 편지가 여기로 도착합니다.",
+  "newsletter.unsubscribed.title": "구독 해지됨",
+  "newsletter.unsubscribed.body":
+    "이 주소는 목록에서 삭제되었습니다. 더 이상 아무것도 보내지 않습니다.",
+  "newsletter.invalid.title": "유효하지 않은 링크",
+  "newsletter.invalid.body":
+    "이 사이트가 보낸 링크가 아니거나, 더 이상 쓸 수 없습니다.",
+
   "admin.title": "관리 패널",
   "admin.pendingComments": "승인 대기 댓글",
   "admin.approvedComments": "승인된 댓글",

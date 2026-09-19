@@ -40,6 +40,27 @@ export const ja: UIDictionary = {
   "comment.closed": "コメントはまだ受け付けていません。",
   "comment.error": "送信できませんでした。もう一度お試しください。",
 
+  "newsletter.title": "ニュースレター",
+  "newsletter.intro":
+    "書き残したいことがあるときに、ときどき送る手紙です。決まった頻度はありません。",
+  "newsletter.emailLabel": "メールアドレス",
+  "newsletter.subscribe": "登録する",
+  "newsletter.sending": "送信中…",
+  "newsletter.pending":
+    "あと少しです — 受信トレイの確認リンクを開いてください。",
+  "newsletter.hint": "確認メールが1通届きます。開くまで何も送られません。",
+  "newsletter.error": "送信できませんでした。もう一度お試しください。",
+  "newsletter.closed": "現在は登録を受け付けていません。",
+  "newsletter.confirmed.title": "登録が完了しました",
+  "newsletter.confirmed.body":
+    "このアドレスの登録を確認しました。次の便はここに届きます。",
+  "newsletter.unsubscribed.title": "配信を停止しました",
+  "newsletter.unsubscribed.body":
+    "このアドレスは名簿から削除されました。今後何も届きません。",
+  "newsletter.invalid.title": "リンクが無効です",
+  "newsletter.invalid.body":
+    "このサイトが発行したリンクではないか、すでに無効になっています。",
+
   "admin.title": "管理パネル",
   "admin.pendingComments": "承認待ちコメント",
   "admin.approvedComments": "承認済みコメント",

@@ -39,6 +39,27 @@ export const en: UIDictionary = {
   "comment.closed": "Comments are not open yet.",
   "comment.error": "That did not go through. Please try again.",
 
+  "newsletter.title": "Newsletter",
+  "newsletter.intro":
+    "Occasional letters when there is something worth writing down. No schedule.",
+  "newsletter.emailLabel": "Email",
+  "newsletter.subscribe": "Subscribe",
+  "newsletter.sending": "Sending…",
+  "newsletter.pending": "Almost — check your inbox for a link to confirm.",
+  "newsletter.hint":
+    "One email to confirm. Nothing is sent until you follow it.",
+  "newsletter.error": "That did not go through. Please try again.",
+  "newsletter.closed": "Subscribing is not available right now.",
+  "newsletter.confirmed.title": "Subscribed",
+  "newsletter.confirmed.body":
+    "That address is confirmed. The next letter will arrive there.",
+  "newsletter.unsubscribed.title": "Unsubscribed",
+  "newsletter.unsubscribed.body":
+    "That address has been removed. Nothing more will be sent.",
+  "newsletter.invalid.title": "That link is not valid",
+  "newsletter.invalid.body":
+    "It is not a link this site issued, or it has been replaced since.",
+
   "admin.title": "Admin Dashboard",
   "admin.pendingComments": "Pending Comments",
   "admin.approvedComments": "Approved Comments",

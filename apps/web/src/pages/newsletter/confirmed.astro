@@ -1,0 +1,24 @@
+---
+import { homePath, ui } from "@tsukue/config";
+import Layout from "../../layouts/Layout.astro";
+
+const lang = "en";
+const title = ui("newsletter.confirmed.title", lang);
+---
+
+{
+  /*
+  A receipt, not a page: it is reached by following a link out of an email, so
+  it is `noindex`. The confirmation already happened in the API — this only
+  reports it, which is also why there is no canonical URL to offer.
+*/
+}
+<Layout title={title} lang={lang} noindex>
+  <main class="desk">
+    <div class="sheet-surface sheet-notice">
+      <h1>{title}</h1>
+      <p>{ui("newsletter.confirmed.body", lang)}</p>
+      <a class="sheet-back" href={homePath(lang)}>{ui("nav.back", lang)}</a>
+    </div>
+  </main>
+</Layout>

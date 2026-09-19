@@ -39,6 +39,23 @@ export const zhHans: UIDictionary = {
   "comment.closed": "评论功能尚未开放。",
   "comment.error": "提交失败，请重试。",
 
+  "newsletter.title": "通讯",
+  "newsletter.intro": "偶尔写下的信。没有固定频率。",
+  "newsletter.emailLabel": "邮箱",
+  "newsletter.subscribe": "订阅",
+  "newsletter.sending": "发送中…",
+  "newsletter.pending": "就差一步——请到邮箱里点击确认链接。",
+  "newsletter.hint": "会先收到一封确认邮件，确认之前不会发送任何内容。",
+  "newsletter.error": "没有发送成功，请再试一次。",
+  "newsletter.closed": "暂时无法订阅。",
+  "newsletter.confirmed.title": "已确认",
+  "newsletter.confirmed.body": "这个邮箱已确认订阅，下一封信会寄到这里。",
+  "newsletter.unsubscribed.title": "已退订",
+  "newsletter.unsubscribed.body":
+    "这个邮箱已从名单中移除，不会再收到任何邮件。",
+  "newsletter.invalid.title": "链接无效",
+  "newsletter.invalid.body": "这不是本站发出的链接，或者它已经失效。",
+
   "admin.title": "管理面板",
   "admin.pendingComments": "待审核评论",
   "admin.approvedComments": "已批准评论",

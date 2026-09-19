@@ -124,6 +124,16 @@ export function isReservedSlug(slug: string): boolean {
 }
 
 /**
+ * The subscribe page.
+ *
+ * Default language only, like the result pages: a reader arrives from a link
+ * out of an email, and no subscriber row records a language to choose with.
+ */
+export function newsletterPath(): string {
+  return joinPath([NEWSLETTER_SEGMENT]);
+}
+
+/**
  * Where a reader lands after confirming or leaving a newsletter.
  *
  * Static pages rather than something the API renders: each is the receipt for

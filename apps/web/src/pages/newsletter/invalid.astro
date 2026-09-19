@@ -1,0 +1,25 @@
+---
+import { homePath, ui } from "@tsukue/config";
+import Layout from "../../layouts/Layout.astro";
+
+const lang = "en";
+const title = ui("newsletter.invalid.title", lang);
+---
+
+{
+  /*
+  Where a link that is not ours, or no longer usable, ends up: a confirmation
+  link for a subscriber who has since unsubscribed, or an unsubscribe link for a
+  row that has been deleted. Saying which would tell a stranger whether an
+  address was ever on the list.
+*/
+}
+<Layout title={title} lang={lang} noindex>
+  <main class="desk">
+    <div class="sheet-surface sheet-notice">
+      <h1>{title}</h1>
+      <p>{ui("newsletter.invalid.body", lang)}</p>
+      <a class="sheet-back" href={homePath(lang)}>{ui("nav.back", lang)}</a>
+    </div>
+  </main>
+</Layout>

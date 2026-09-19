@@ -41,6 +41,23 @@ export interface UIDictionary {
   "comment.closed": string;
   "comment.error": string;
 
+  // Newsletter
+  "newsletter.title": string;
+  "newsletter.intro": string;
+  "newsletter.emailLabel": string;
+  "newsletter.subscribe": string;
+  "newsletter.sending": string;
+  "newsletter.pending": string;
+  "newsletter.hint": string;
+  "newsletter.closed": string;
+  "newsletter.error": string;
+  "newsletter.confirmed.title": string;
+  "newsletter.confirmed.body": string;
+  "newsletter.unsubscribed.title": string;
+  "newsletter.unsubscribed.body": string;
+  "newsletter.invalid.title": string;
+  "newsletter.invalid.body": string;
+
   // Admin
   "admin.title": string;
   "admin.pendingComments": string;

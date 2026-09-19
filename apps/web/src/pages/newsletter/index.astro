@@ -1,0 +1,36 @@
+---
+import { SITE_DESCRIPTION, homePath, newsletterPath, ui } from "@tsukue/config";
+import SubscribeForm from "../../components/newsletter/SubscribeForm";
+import Layout from "../../layouts/Layout.astro";
+import { absoluteUrl } from "../../lib/posts";
+import "../../styles/newsletter.css";
+
+const lang = "en";
+const title = ui("newsletter.title", lang);
+
+// Public by design, so it is baked into the page rather than fetched. Empty
+// means the form is replaced by a notice, rather than a button that cannot work.
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+---
+
+<Layout
+  title={title}
+  description={SITE_DESCRIPTION}
+  lang={lang}
+  canonical={absoluteUrl(newsletterPath())}
+>
+  <main class="desk">
+    <div class="sheet-surface newsletter-sheet">
+      <a class="sheet-back" href={homePath(lang)}>← {ui("nav.back", lang)}</a>
+      <h1>{title}</h1>
+      <p class="newsletter-intro">{ui("newsletter.intro", lang)}</p>
+      {
+        siteKey ? (
+          <SubscribeForm client:load lang={lang} siteKey={siteKey} />
+        ) : (
+          <p class="newsletter-closed">{ui("newsletter.closed", lang)}</p>
+        )
+      }
+    </div>
+  </main>
+</Layout>

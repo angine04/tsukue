@@ -1,0 +1,31 @@
+{
+  "name": "@tsukue/comments",
+  "version": "0.0.1",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./env": "./src/env.ts",
+    "./render": "./src/render.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tsukue/config": "workspace:*",
+    "@tsukue/mail": "workspace:*",
+    "@tsukue/schemas": "workspace:*",
+    "@tsukue/types": "workspace:*",
+    "hono": "^4.12.23",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

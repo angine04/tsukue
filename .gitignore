@@ -16,6 +16,10 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+# Wrangler's local secret store. Holds the same secrets as production, so it
+# needs the same protection as .env — it is not covered by the patterns above.
+.dev.vars
+.dev.vars.*
 
 # macOS-specific files
 .DS_Store

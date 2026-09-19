@@ -1,18 +1,30 @@
 name = "tsukue"
 compatibility_date = "2025-01-09"
 
-# D1 database binding (uncomment after creating database)
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "tsukue-db"
-# database_id = "<your-d1-database-id>"
+# Top-level keys must appear before the first table header. In TOML anything
+# after `[[d1_databases]]` belongs to that table, so `pages_build_output_dir`
+# used to be parsed as a field of the database entry — which made Wrangler
+# treat the whole file as invalid for Pages and ignore it.
+pages_build_output_dir = "apps/web/dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tsukue-db"
+database_id = "2e720ba8-f620-4cf6-8a22-2dbff097c614"
+
+# Only one database, so preview deployments bind the same one as production.
+# That matters once comments are live: a preview deploy would read and write
+# production data. Give preview its own database and an [env.preview] override
+# before relying on preview deployments.
 
 # KV namespace binding (uncomment after creating KV namespace)
 # [[kv_namespaces]]
 # binding = "CACHE"
 # id = "<your-kv-namespace-id>"
 
-[vars]
-TURNSTILE_SITE_KEY = ""
-
-pages_build_output_dir = "apps/web/dist"
+# No `[vars]` here. The Turnstile site key is public and belongs to the build,
+# not to the runtime: the widget is rendered by the browser from a key baked
+# into the page, and no Function ever reads it. It is supplied at build time as
+# PUBLIC_TURNSTILE_SITE_KEY (see README). The matching secret is
+# `wrangler pages secret put TURNSTILE_SECRET`, and it is the only half the
+# server needs.

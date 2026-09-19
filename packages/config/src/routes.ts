@@ -121,11 +121,28 @@ export function isReservedSlug(slug: string): boolean {
   return RESERVED_SLUGS.has(slug);
 }
 
+/**
+ * The shape a post slug must have.
+ *
+ * Exported so the comment API can reject anything the router could not have
+ * produced, instead of keeping a second opinion about what a slug looks like
+ * that would drift from this one. It also keeps newline characters and
+ * unbounded lengths out of anything downstream that treats a slug as a label —
+ * a mail subject, for instance.
+ */
+export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Generous next to any real slug, and small enough to bound what gets stored. */
+export const SLUG_MAX_LENGTH = 128;
+
 export function validateSlug(slug: string): string | undefined {
   if (isReservedSlug(slug)) {
     return `Slug "${slug}" is reserved and cannot be used for a post.`;
   }
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+  if (slug.length > SLUG_MAX_LENGTH) {
+    return `Slug "${slug.slice(0, 32)}…" is longer than ${SLUG_MAX_LENGTH} characters.`;
+  }
+  if (!SLUG_PATTERN.test(slug)) {
     return `Slug "${slug}" must be kebab-case (lowercase letters, numbers, hyphens only).`;
   }
   return undefined;

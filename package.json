@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter web build && wrangler pages dev apps/web/dist --port 8788",
     "build": "pnpm --filter web build",
     "deploy:cf": "pnpm --filter web build && wrangler pages deploy apps/web/dist --project-name=tsukue",
     "check": "pnpm -r check",
@@ -18,6 +19,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@tsukue/comments": "workspace:*",
     "hono": "^4.12.23",
     "zod": "^3.25.76"
   },

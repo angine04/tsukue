@@ -14,9 +14,9 @@ export default function AboutCard({ lang = "en" }: AboutCardProps) {
 
   return (
     <div className="about-sheet">
-      <span className="about-sheet-eyebrow">
-        {t("nav.about").toUpperCase()}
-      </span>
+      {/* The page's heading. The eyebrow styling is the page's only label, and
+          it was a span, which left the About route with no heading at all. */}
+      <h1 className="about-sheet-eyebrow">{t("nav.about").toUpperCase()}</h1>
       <NameCard />
     </div>
   );

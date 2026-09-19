@@ -68,6 +68,8 @@ export const ko: UIDictionary = {
   "comment.invalid.body":
     "이 사이트가 보낸 링크가 아니거나, 더 이상 쓸 수 없습니다.",
 
+  "comment.reported": "감사합니다 — 관리자가 확인합니다.",
+
   "admin.title": "관리 패널",
   "admin.pendingComments": "승인 대기 댓글",
   "admin.approvedComments": "승인된 댓글",
@@ -117,6 +119,9 @@ export const ko: UIDictionary = {
   "admin.subscriberStatus.unsubscribed": "해지됨",
   "admin.subscriberStatus.bounced": "반송",
   "admin.subscriberStatus.complained": "스팸 신고",
+
+  "admin.noReports": "신고된 것이 없습니다.",
+  "admin.reports": "신고 {{count}}",
 
   "error.notFoundTitle": "페이지를 찾을 수 없습니다",
   "error.notFoundBody": "그 카드는 책상 위에 없습니다.",

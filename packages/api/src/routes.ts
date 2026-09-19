@@ -7,11 +7,14 @@ import type { ApiEnv } from "./env.js";
 import {
   COMMENT_LIMITS,
   countRecentDuplicates,
+  countRecentReports,
   countRecentSubmissions,
   isOverLinkLimit,
 } from "./limits.js";
 import {
+  getComment,
   insertComment,
+  insertReport,
   listApprovedComments,
   resolveReplyParent,
   toPublicComment,
@@ -37,6 +40,7 @@ type ErrorCode =
   | "TURNSTILE_FAILED"
   | "RATE_LIMITED"
   | "DUPLICATE_COMMENT"
+  | "COMMENT_NOT_FOUND"
   | "NOT_CONFIGURED";
 
 function fail(code: ErrorCode, message: string) {
@@ -278,6 +282,59 @@ export function createCommentsApp() {
       { ok: true as const, data: { id: storage.id, status: "pending" } },
       201,
     );
+  });
+
+  /**
+   * Flags a comment for a moderator (AGENTS 13.3).
+   *
+   * Unlike submitting, this asks for no challenge: a flag costs one row per
+   * source per comment — the unique index enforces that — and making somebody
+   * prove they are human before they can complain is a good way to hear about a
+   * bad comment only from people who like solving puzzles. The window below is
+   * what bounds a script instead.
+   *
+   * The answer never says whether this source had already flagged it, or where
+   * the comment is in moderation: a report is a signal to the site, not a
+   * request with an outcome to report back on.
+   */
+  app.post("/comments/:id/report", async (c) => {
+    const salt = c.env.HASH_SALT;
+    if (!salt) {
+      console.error("Report rejected: HASH_SALT is not configured.");
+      return c.json(fail("NOT_CONFIGURED", NOT_CONFIGURED_MESSAGE), 500);
+    }
+
+    const id = c.req.param("id");
+    const comment = await getComment(c.env.DB, id);
+    if (!comment) {
+      return c.json(fail("COMMENT_NOT_FOUND", "No such comment."), 404);
+    }
+
+    const ip = c.req.header("cf-connecting-ip");
+    const ipHash = ip ? await hashIdentifier(ip, salt) : undefined;
+    const now = new Date();
+
+    if (ipHash) {
+      const recent = await countRecentReports(c.env.DB, ipHash, now);
+      if (recent >= COMMENT_LIMITS.maxReportsPerWindow) {
+        return c.json(
+          fail(
+            "RATE_LIMITED",
+            "That is a lot of reports. Please try again later.",
+          ),
+          429,
+        );
+      }
+    }
+
+    await insertReport(c.env.DB, {
+      id: crypto.randomUUID(),
+      commentId: id,
+      ipHash,
+      createdAt: now.toISOString(),
+    });
+
+    return c.json({ ok: true as const, data: { status: "reported" } }, 202);
   });
 
   // Reply-notification unsubscribes, registered here so the paths sit with the

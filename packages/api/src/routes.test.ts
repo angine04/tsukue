@@ -13,7 +13,7 @@ import { HONEYPOT_FIELD, createCommentsApp } from "./routes.js";
  * is worth nothing if the stand-in quietly accepts writes through a read, or
  * the reverse.
  */
-function recordingDb(recentCount = 0) {
+function recordingDb(recentCount = 0, options: { comment?: unknown } = {}) {
   const reads: string[] = [];
   const writes: Array<{ sql: string; values: unknown[] }> = [];
 
@@ -26,6 +26,11 @@ function recordingDb(recentCount = 0) {
             async first<T>(): Promise<T | null> {
               if (isWrite) throw new Error(`first() on a write: ${sql}`);
               reads.push(sql);
+              // The one lookup that wants a row rather than a count. Matched on
+              // the id, because the rate limit counts rows from the same table.
+              if (sql.includes("WHERE id = ?")) {
+                return (options.comment ?? null) as T | null;
+              }
               return { count: recentCount } as T;
             },
             async all<T>() {
@@ -201,6 +206,80 @@ describe("POST /comments, when the server is not configured", () => {
         body: JSON.stringify(submission()),
       },
       { DB: db },
+    );
+
+    expect(response.status).toBe(500);
+    expect(writes).toEqual([]);
+  });
+});
+
+describe("POST /comments/:id/report", () => {
+  const existing = { id: "comment-1", slug: "on-slowness", status: "approved" };
+
+  function flag(db: D1Database, id = "comment-1") {
+    return createCommentsApp().request(
+      `/comments/${id}/report`,
+      {
+        method: "POST",
+        headers: { "cf-connecting-ip": "203.0.113.7" },
+      },
+      env(db),
+    );
+  }
+
+  it("records the flag and answers without saying where the comment stands", async () => {
+    const { db, writes } = recordingDb(0, { comment: existing });
+
+    const response = await flag(db);
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({
+      ok: true,
+      data: { status: "reported" },
+    });
+    expect(writes).toHaveLength(1);
+    expect(writes[0].values).toContain("comment-1");
+  });
+
+  it("stores a hash of the source, never the address it came from", async () => {
+    const { db, writes } = recordingDb(0, { comment: existing });
+
+    await flag(db);
+
+    const bound = writes[0].values;
+    expect(bound).not.toContain("203.0.113.7");
+    expect(
+      bound.some((value) => typeof value === "string" && value.length === 64),
+    ).toBe(true);
+  });
+
+  it("flags nothing that is not there", async () => {
+    const { db, writes } = recordingDb();
+
+    const response = await flag(db, "no-such-comment");
+
+    expect(response.status).toBe(404);
+    expect(writes).toEqual([]);
+  });
+
+  it("stops a source that is flagging everything it can see", async () => {
+    const { db, writes } = recordingDb(COMMENT_LIMITS.maxReportsPerWindow, {
+      comment: existing,
+    });
+
+    const response = await flag(db);
+
+    expect(response.status).toBe(429);
+    expect(writes).toEqual([]);
+  });
+
+  it("refuses every flag the same way when it cannot hash the source", async () => {
+    const { db, writes } = recordingDb(0, { comment: existing });
+
+    const response = await createCommentsApp().request(
+      "/comments/comment-1/report",
+      { method: "POST", headers: { "cf-connecting-ip": "203.0.113.7" } },
+      { DB: db } as ApiEnv,
     );
 
     expect(response.status).toBe(500);

@@ -170,6 +170,8 @@ export interface AdminComment {
   isAuthor: boolean;
   /** True when the commenter left an address we could notify. */
   hasEmail: boolean;
+  /** How many readers have flagged this. Zero for most. */
+  reportCount: number;
   ipHash?: string;
 }
 
@@ -185,8 +187,128 @@ function toAdminComment(row: CommentRow): AdminComment {
     createdAt: row.created_at,
     isAuthor: row.author_is_admin === 1,
     hasEmail: row.author_email_encrypted !== null,
+    // Filled in by the callers that can batch the lookup; a comment with no
+    // reports is the common case and should not cost a query of its own.
+    reportCount: 0,
     ipHash: row.ip_hash ?? undefined,
   };
+}
+
+/**
+ * How many readers have flagged each of these comments, in one query.
+ *
+ * Batched rather than a subquery per row because the queue is read on every
+ * page load by whoever is moderating, and D1 bills rows: one grouped query over
+ * an indexed column costs less than a hundred correlated ones.
+ */
+export async function countReports(
+  db: D1Database,
+  commentIds: string[],
+): Promise<Record<string, number>> {
+  if (commentIds.length === 0) return {};
+  const placeholders = commentIds.map(() => "?").join(", ");
+  const result = await db
+    .prepare(
+      `SELECT comment_id, COUNT(*) AS count FROM comment_reports
+       WHERE comment_id IN (${placeholders})
+       GROUP BY comment_id`,
+    )
+    .bind(...commentIds)
+    .all<{ comment_id: string; count: number }>();
+
+  const counts: Record<string, number> = {};
+  for (const row of result.results) counts[row.comment_id] = row.count;
+  return counts;
+}
+
+/**
+ * Comments that have been flagged, most recently flagged first.
+ *
+ * Its own listing rather than a filter on the queue, because a report is a
+ * signal about a comment rather than a status in its life: a reported comment
+ * may be sitting in any tab, and looking for it there is how a report gets
+ * missed.
+ */
+export async function listReportedComments(
+  db: D1Database,
+  limit = 100,
+): Promise<AdminComment[]> {
+  const bounded = Math.min(Math.max(limit, 1), 200);
+  const flagged = await db
+    .prepare(
+      `SELECT comment_id, COUNT(*) AS count FROM comment_reports
+       GROUP BY comment_id
+       ORDER BY MAX(created_at) DESC
+       LIMIT ?`,
+    )
+    .bind(bounded)
+    .all<{ comment_id: string; count: number }>();
+
+  if (flagged.results.length === 0) return [];
+
+  const ids = flagged.results.map((row) => row.comment_id);
+  const placeholders = ids.map(() => "?").join(", ");
+  const comments = await db
+    .prepare(
+      `SELECT ${READ_COLUMNS} FROM comments WHERE id IN (${placeholders})`,
+    )
+    .bind(...ids)
+    .all<CommentRow>();
+
+  const counts = new Map(
+    flagged.results.map((row) => [row.comment_id, row.count]),
+  );
+  // In the order the reports came in, not the order the comments were written.
+  const byId = new Map(comments.results.map((row) => [row.id, row]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((row): row is CommentRow => row !== undefined)
+    .map((row) => ({
+      ...toAdminComment(row),
+      reportCount: counts.get(row.id) ?? 0,
+    }));
+}
+
+/** How many comments have been flagged at all, for the moderator's header. */
+export async function countReportedComments(db: D1Database): Promise<number> {
+  const row = await db
+    .prepare("SELECT COUNT(DISTINCT comment_id) AS count FROM comment_reports")
+    .first<{ count: number }>();
+  return row?.count ?? 0;
+}
+
+/** Records one reader's flag. A repeat from the same source is ignored. */
+export async function insertReport(
+  db: D1Database,
+  report: { id: string; commentId: string; ipHash?: string; createdAt: string },
+): Promise<void> {
+  await db
+    .prepare(
+      `INSERT OR IGNORE INTO comment_reports (id, comment_id, ip_hash, created_at)
+       VALUES (?, ?, ?, ?)`,
+    )
+    .bind(report.id, report.commentId, report.ipHash ?? null, report.createdAt)
+    .run();
+}
+
+/**
+ * The queue, with each comment's report count attached.
+ *
+ * Wrapped around the query rather than inside it so the count lookup stays one
+ * grouped query for the whole page.
+ */
+export async function attachReportCounts(
+  db: D1Database,
+  comments: AdminComment[],
+): Promise<AdminComment[]> {
+  const counts = await countReports(
+    db,
+    comments.map((comment) => comment.id),
+  );
+  return comments.map((comment) => ({
+    ...comment,
+    reportCount: counts[comment.id] ?? 0,
+  }));
 }
 
 /**

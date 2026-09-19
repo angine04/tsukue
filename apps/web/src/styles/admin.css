@@ -315,3 +315,14 @@
   font-size: 0.85rem;
   color: var(--color-muted);
 }
+
+/*
+ * A comment readers have flagged.
+ *
+ * Solid rather than tinted, because it is the one badge in the queue that asks
+ * for action and the rest are descriptions.
+ */
+.admin-badge--flag {
+  background: var(--color-accent);
+  color: var(--color-paper-ivory);
+}

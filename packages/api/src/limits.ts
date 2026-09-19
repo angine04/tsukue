@@ -14,6 +14,14 @@ export const COMMENT_LIMITS = {
   maxPerWindow: 5,
   /** Identical author + body on the same post inside this window is a double post. */
   duplicateWindowMinutes: 60,
+  /**
+   * How many comments one source may flag in the window above.
+   *
+   * Reporting needs no challenge — asking somebody to prove they are human
+   * before they can complain is a good way to hear only from the patient — so
+   * this window is what bounds a script instead.
+   */
+  maxReportsPerWindow: 10,
 } as const;
 
 /** RFC 9110-ish URL match; deliberately not clever enough to miss an obvious link. */
@@ -50,6 +58,26 @@ export async function countRecentSubmissions(
   const row = await db
     .prepare(
       "SELECT COUNT(*) AS count FROM comments WHERE ip_hash = ? AND created_at > ?",
+    )
+    .bind(ipHash, isoBefore(now, COMMENT_LIMITS.windowMinutes))
+    .first<{ count: number }>();
+  return row?.count ?? 0;
+}
+
+/**
+ * How many comments one source has flagged recently.
+ *
+ * Counted the same way submissions are: from the rows themselves, so the limit
+ * cannot drift from what it limits.
+ */
+export async function countRecentReports(
+  db: D1Database,
+  ipHash: string,
+  now: Date = new Date(),
+): Promise<number> {
+  const row = await db
+    .prepare(
+      "SELECT COUNT(*) AS count FROM comment_reports WHERE ip_hash = ? AND created_at > ?",
     )
     .bind(ipHash, isoBefore(now, COMMENT_LIMITS.windowMinutes))
     .first<{ count: number }>();

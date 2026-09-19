@@ -61,6 +61,8 @@ export const zhHant: UIDictionary = {
   "comment.invalid.title": "連結無效",
   "comment.invalid.body": "這不是本站發出的連結，或者它已經失效。",
 
+  "comment.reported": "謝謝——管理員會看一下。",
+
   "admin.title": "管理面板",
   "admin.pendingComments": "待審核評論",
   "admin.approvedComments": "已批准評論",
@@ -110,6 +112,9 @@ export const zhHant: UIDictionary = {
   "admin.subscriberStatus.unsubscribed": "已取消訂閱",
   "admin.subscriberStatus.bounced": "退信",
   "admin.subscriberStatus.complained": "標記為垃圾郵件",
+
+  "admin.noReports": "還沒有人檢舉。",
+  "admin.reports": "被檢舉 {{count}}",
 
   "error.notFoundTitle": "頁面不存在",
   "error.notFoundBody": "這張卡片不在桌面上。",

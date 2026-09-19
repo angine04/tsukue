@@ -32,6 +32,8 @@ interface AdminComment {
   createdAt: string;
   isAuthor: boolean;
   hasEmail: boolean;
+  /** How many readers have flagged this comment. */
+  reportCount: number;
   ipHash?: string;
 }
 
@@ -103,9 +105,12 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
       : (sessionStorage.getItem(TOKEN_KEY) ?? ""),
   );
   const [tab, setTab] = useState<Tab>("pending");
+  /** True while the queue is showing flagged comments instead of a status. */
+  const [reportedOnly, setReportedOnly] = useState(false);
   const [comments, setComments] = useState<AdminComment[] | null>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [reported, setReported] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -118,11 +123,17 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
   );
 
   const load = useCallback(
-    async (status: Tab) => {
+    async (status: Tab, reportedOnly: boolean) => {
       setError("");
       try {
+        // Flagged comments are their own listing, not a status: a report says
+        // something about a comment rather than moving it, so a reported
+        // comment may be sitting in any tab.
+        const listPath = reportedOnly
+          ? "/api/admin/reports"
+          : `/api/admin/comments?status=${status}`;
         const [listResponse, statsResponse] = await Promise.all([
-          fetch(`/api/admin/comments?status=${status}`, { headers: headers() }),
+          fetch(listPath, { headers: headers() }),
           fetch("/api/admin/stats", { headers: headers() }),
         ]);
 
@@ -143,10 +154,15 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
           data: { comments: AdminComment[] };
         };
         const stats = (await statsResponse.json()) as {
-          data: { counts: Record<string, number>; audit: AuditEntry[] };
+          data: {
+            counts: Record<string, number>;
+            reported: number;
+            audit: AuditEntry[];
+          };
         };
         setComments(list.data.comments);
         setCounts(stats.data.counts);
+        setReported(stats.data.reported);
         setAudit(stats.data.audit);
       } catch {
         setError(t("admin.couldNotReach"));
@@ -157,8 +173,8 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
   );
 
   useEffect(() => {
-    void load(tab);
-  }, [load, tab]);
+    void load(tab, reportedOnly);
+  }, [load, tab, reportedOnly]);
 
   /**
    * Every action refetches rather than patching local state: the list is
@@ -182,7 +198,7 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
             tFormat("admin.actionFailed", { status: response.status }),
         );
       } else {
-        await load(tab);
+        await load(tab, reportedOnly);
       }
     } catch {
       setError(t("admin.couldNotReach"));
@@ -212,7 +228,7 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
       } else {
         setReplyTo(null);
         setReplyBody("");
-        await load(tab);
+        await load(tab, reportedOnly);
       }
     } catch {
       setError(t("admin.couldNotReach"));
@@ -228,7 +244,7 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
         <button
           type="button"
           className="admin-refresh"
-          onClick={() => void load(tab)}
+          onClick={() => void load(tab, reportedOnly)}
         >
           {t("admin.refresh")}
         </button>
@@ -240,14 +256,31 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
             key={name}
             type="button"
             className="admin-tab"
-            data-active={name === tab ? "" : undefined}
-            aria-current={name === tab ? "true" : undefined}
-            onClick={() => setTab(name)}
+            data-active={!reportedOnly && name === tab ? "" : undefined}
+            aria-current={!reportedOnly && name === tab ? "true" : undefined}
+            onClick={() => {
+              setReportedOnly(false);
+              setTab(name);
+            }}
           >
             {t(STATUS_LABEL[name])}
             <span className="admin-tab-count">{counts[name] ?? 0}</span>
           </button>
         ))}
+        {/*
+          Last, and separate from the statuses: it lists comments rather than
+          filtering them, and it is the only way to find a flagged comment that
+          is not in the tab a moderator happens to be looking at.
+        */}
+        <button
+          type="button"
+          className="admin-tab admin-tab--reported"
+          data-active={reportedOnly ? "" : undefined}
+          aria-current={reportedOnly ? "true" : undefined}
+          onClick={() => setReportedOnly(true)}
+        >
+          {tFormat("admin.reports", { count: reported })}
+        </button>
       </nav>
 
       {error ? (
@@ -260,7 +293,9 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
         <p className="admin-empty">{t("admin.loading")}</p>
       ) : comments.length === 0 ? (
         <p className="admin-empty">
-          {tFormat("admin.nothingHere", { status: t(STATUS_LABEL[tab]) })}
+          {reportedOnly
+            ? t("admin.noReports")
+            : tFormat("admin.nothingHere", { status: t(STATUS_LABEL[tab]) })}
         </p>
       ) : (
         <ul className="admin-list">
@@ -292,6 +327,11 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
                     title={t("admin.reachableHint")}
                   >
                     {t("admin.reachableBadge")}
+                  </span>
+                ) : null}
+                {comment.reportCount > 0 ? (
+                  <span className="admin-badge admin-badge--flag">
+                    {tFormat("admin.reports", { count: comment.reportCount })}
                   </span>
                 ) : null}
               </div>

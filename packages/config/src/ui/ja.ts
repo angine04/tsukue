@@ -68,6 +68,8 @@ export const ja: UIDictionary = {
   "comment.invalid.body":
     "このサイトが発行したリンクではないか、すでに使えなくなっています。",
 
+  "comment.reported": "ありがとうございます — 管理者が確認します。",
+
   "admin.title": "管理パネル",
   "admin.pendingComments": "承認待ちコメント",
   "admin.approvedComments": "承認済みコメント",
@@ -118,6 +120,9 @@ export const ja: UIDictionary = {
   "admin.subscriberStatus.unsubscribed": "配信停止",
   "admin.subscriberStatus.bounced": "バウンス",
   "admin.subscriberStatus.complained": "迷惑メール報告",
+
+  "admin.noReports": "通報はまだありません。",
+  "admin.reports": "通報 {{count}}",
 
   "error.notFoundTitle": "ページが見つかりません",
   "error.notFoundBody": "そのカードは机の上にありません。",

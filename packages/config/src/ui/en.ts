@@ -67,6 +67,8 @@ export const en: UIDictionary = {
   "comment.invalid.body":
     "It is not a link this site issued, or it is no longer usable.",
 
+  "comment.reported": "Thanks — a moderator will take a look.",
+
   "admin.title": "Admin Dashboard",
   "admin.pendingComments": "Pending Comments",
   "admin.approvedComments": "Approved Comments",
@@ -115,6 +117,9 @@ export const en: UIDictionary = {
   "admin.subscriberStatus.unsubscribed": "Unsubscribed",
   "admin.subscriberStatus.bounced": "Bounced",
   "admin.subscriberStatus.complained": "Complained",
+
+  "admin.noReports": "Nothing has been reported.",
+  "admin.reports": "Reported {{count}}",
 
   "error.notFoundTitle": "Page not found",
   "error.notFoundBody": "That card is not on the desk.",

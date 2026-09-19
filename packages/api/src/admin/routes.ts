@@ -6,9 +6,12 @@ import { authenticateAdmin, isSameOrigin, type AdminAuthEnv } from "./auth.js";
 import { notifyReplyAuthor } from "../notifications/send.js";
 import { registerNewsletterAdminRoutes } from "../newsletter/admin.js";
 import {
+  attachReportCounts,
   countByStatus,
+  countReportedComments,
   getComment,
   insertAuditEntry,
+  listReportedComments,
   insertComment,
   listAuditEntries,
   listCommentsByStatus,
@@ -105,18 +108,38 @@ export function createAdminApp() {
     }
 
     const limit = Number.parseInt(c.req.query("limit") ?? "100", 10);
-    const comments = await listCommentsByStatus(c.env.DB, {
-      status: parsed.data,
-      limit: Number.isNaN(limit) ? 100 : limit,
-    });
+    const comments = await attachReportCounts(
+      c.env.DB,
+      await listCommentsByStatus(c.env.DB, {
+        status: parsed.data,
+        limit: Number.isNaN(limit) ? 100 : limit,
+      }),
+    );
 
+    return c.json({ ok: true as const, data: { comments } });
+  });
+
+  /**
+   * Comments readers have flagged, most recently flagged first.
+   *
+   * Its own listing rather than a tab on the queue: a report is a signal about
+   * a comment, not a stage in its life, so a reported comment may be sitting in
+   * any tab — and looking for it there is how a report gets missed.
+   */
+  app.get("/admin/reports", async (c) => {
+    const limit = Number.parseInt(c.req.query("limit") ?? "100", 10);
+    const comments = await listReportedComments(
+      c.env.DB,
+      Number.isNaN(limit) ? 100 : limit,
+    );
     return c.json({ ok: true as const, data: { comments } });
   });
 
   app.get("/admin/stats", async (c) => {
     const counts = await countByStatus(c.env.DB);
+    const reported = await countReportedComments(c.env.DB);
     const audit = await listAuditEntries(c.env.DB, 20);
-    return c.json({ ok: true as const, data: { counts, audit } });
+    return c.json({ ok: true as const, data: { counts, reported, audit } });
   });
 
   /**

@@ -40,6 +40,7 @@ export interface UIDictionary {
   "comment.emailHint": string;
   "comment.closed": string;
   "comment.error": string;
+  "comment.reported": string;
   "comment.unsubscribed.title": string;
   "comment.unsubscribed.body": string;
   "comment.invalid.title": string;
@@ -95,6 +96,8 @@ export interface UIDictionary {
   "admin.actionFailed": string;
   "admin.replyFailed": string;
   "admin.commentStatus": string;
+  "admin.noReports": string;
+  "admin.reports": string;
   "admin.newsletter": string;
   "admin.email": string;
   "admin.joined": string;

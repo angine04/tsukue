@@ -1,4 +1,5 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
+import { useI18n } from "../../hooks/useI18n";
 import { formatDate } from "@tsukue/config";
 import { tokenizeCommentLines } from "@tsukue/api/render";
 import type { PublicComment, PublicCommentThread } from "@tsukue/types";
@@ -52,6 +53,30 @@ function CommentEntry({
   comment: PublicComment;
   lang: string;
 }) {
+  const { t } = useI18n(lang);
+  const [outcome, setOutcome] = useState<"idle" | "reported" | "failed">(
+    "idle",
+  );
+
+  /**
+   * Flags this comment for a moderator.
+   *
+   * No challenge is involved, unlike submitting, so this is a plain POST with
+   * no widget to wait for — the server bounds it per source instead. The
+   * answer says nothing about where the comment sits in moderation, so the only
+   * thing this can report back is that the flag was accepted.
+   */
+  async function report() {
+    try {
+      const response = await fetch(`/api/comments/${comment.id}/report`, {
+        method: "POST",
+      });
+      setOutcome(response.ok ? "reported" : "failed");
+    } catch {
+      setOutcome("failed");
+    }
+  }
+
   return (
     <li className="comment">
       <div className="comment-meta">
@@ -64,6 +89,25 @@ function CommentEntry({
         <time className="comment-date" dateTime={comment.createdAt}>
           {formatDate(new Date(comment.createdAt), lang)}
         </time>
+        {/*
+          Not on the author's own replies: there is nobody to report them to,
+          and offering it would suggest otherwise.
+        */}
+        {comment.isAuthor ? null : outcome === "idle" ? (
+          <button type="button" className="comment-report" onClick={report}>
+            {t("comment.report")}
+          </button>
+        ) : (
+          <span
+            className="comment-report-outcome"
+            data-status={outcome}
+            role={outcome === "failed" ? "alert" : "status"}
+          >
+            {outcome === "reported"
+              ? t("comment.reported")
+              : t("comment.error")}
+          </span>
+        )}
       </div>
       <CommentBody body={comment.body} />
     </li>

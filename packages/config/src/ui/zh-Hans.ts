@@ -62,6 +62,8 @@ export const zhHans: UIDictionary = {
   "comment.invalid.title": "链接无效",
   "comment.invalid.body": "这不是本站发出的链接，或者它已经失效。",
 
+  "comment.reported": "谢谢——管理员会看一下。",
+
   "admin.title": "管理面板",
   "admin.pendingComments": "待审核评论",
   "admin.approvedComments": "已批准评论",
@@ -111,6 +113,9 @@ export const zhHans: UIDictionary = {
   "admin.subscriberStatus.unsubscribed": "已退订",
   "admin.subscriberStatus.bounced": "退信",
   "admin.subscriberStatus.complained": "标记为垃圾邮件",
+
+  "admin.noReports": "还没有人举报。",
+  "admin.reports": "被举报 {{count}}",
 
   "error.notFoundTitle": "页面不存在",
   "error.notFoundBody": "这张卡片不在桌面上。",

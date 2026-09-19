@@ -52,14 +52,12 @@ describe("verifyTurnstile", () => {
   });
 
   it("fails closed when Cloudflare rejects the token", async () => {
-    const fetchImpl = vi
-      .fn()
-      .mockResolvedValue(
-        jsonResponse({
-          success: false,
-          "error-codes": ["invalid-input-response"],
-        }),
-      );
+    const fetchImpl = vi.fn().mockResolvedValue(
+      jsonResponse({
+        success: false,
+        "error-codes": ["invalid-input-response"],
+      }),
+    );
     const result = await verifyTurnstile({
       secret: "s",
       token: "t",

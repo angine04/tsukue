@@ -8,8 +8,5 @@
     }
   },
   "include": ["src/**/*"],
-  "references": [
-    { "path": "../schemas" },
-    { "path": "../types" }
-  ]
+  "references": [{ "path": "../schemas" }, { "path": "../types" }]
 }

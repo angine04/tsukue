@@ -11,8 +11,8 @@
       "@tsukue/schemas": ["../../packages/schemas/src/index.ts"],
       "@tsukue/types": ["../../packages/types/src/index.ts"],
       "@tsukue/mail": ["../../packages/mail/src/index.ts"],
-      "@tsukue/comments": ["../../packages/comments/src/index.ts"],
-      "@tsukue/comments/render": ["../../packages/comments/src/render.ts"]
+      "@tsukue/api": ["../../packages/api/src/index.ts"],
+      "@tsukue/api/render": ["../../packages/api/src/render.ts"]
     }
   }
 }

@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      '@tsukue/comments':
+      '@tsukue/api':
         specifier: workspace:*
-        version: link:packages/comments
+        version: link:packages/api
       hono:
         specifier: ^4.12.23
         version: 4.12.23
@@ -81,9 +81,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.0.0
         version: 4.3.0(vite@7.3.3(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
-      '@tsukue/comments':
+      '@tsukue/api':
         specifier: workspace:*
-        version: link:../../packages/comments
+        version: link:../../packages/api
       '@tsukue/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -143,7 +143,7 @@ importers:
         specifier: ^3.0.0
         version: 3.114.17(@cloudflare/workers-types@4.20260528.1)
 
-  packages/comments:
+  packages/api:
     dependencies:
       '@tsukue/config':
         specifier: workspace:*

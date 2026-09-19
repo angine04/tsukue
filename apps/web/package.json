@@ -24,7 +24,7 @@
     "@fontsource/monaspace-argon": "^5.2.5",
     "@fontsource/newsreader": "^5.2.10",
     "@tailwindcss/vite": "^4.0.0",
-    "@tsukue/comments": "workspace:*",
+    "@tsukue/api": "workspace:*",
     "@tsukue/config": "workspace:*",
     "@tsukue/types": "workspace:*",
     "@types/react": "^19.2.15",

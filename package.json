@@ -19,7 +19,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@tsukue/comments": "workspace:*",
+    "@tsukue/api": "workspace:*",
     "hono": "^4.12.23",
     "zod": "^3.25.76"
   },

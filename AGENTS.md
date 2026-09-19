@@ -1664,7 +1664,7 @@ Recommended structure:
    │     ├─ content.ts
    │     ├─ comments.ts
    │     └─ api.ts
-   ├─ comments/          # mounted by functions/api/[[path]].ts
+   ├─ api/               # the Pages Functions backend, mounted by functions/api/[[path]].ts
    │  ├─ package.json
    │  └─ src/
    │     ├─ routes.ts     # Hono app: the public comment API
@@ -1672,7 +1672,8 @@ Recommended structure:
    │     ├─ crypto.ts     # salted hashes, AES-GCM for stored addresses
    │     ├─ turnstile.ts  # siteverify, fails closed
    │     ├─ limits.ts     # published limits, rate and duplicate counting
-   │     └─ render.ts     # body -> tokens; no HTML is ever built here
+   │     ├─ render.ts     # body -> tokens; no HTML is ever built here
+   │     └─ admin/        # authenticated moderation: auth.ts, routes.ts
    └─ mail/
       ├─ package.json
       └─ src/

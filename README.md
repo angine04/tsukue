@@ -175,7 +175,7 @@ tsukue/
 ```
 
 `functions/` holds one file because every file there becomes a route. The
-comment API lives in `packages/comments` and is mounted by that entry point,
+comment API lives in `packages/api` and is mounted by that entry point,
 which also keeps it testable without a running Worker.
 
 ---

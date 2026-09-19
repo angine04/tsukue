@@ -1,11 +1,11 @@
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
-import { createAdminApp, createCommentsApp } from "@tsukue/comments";
+import { createAdminApp, createCommentsApp } from "@tsukue/api";
 
 /**
  * The Pages Functions entry point, and the only file under `functions/` that is
  * allowed to be one: every file here becomes a route, so anything that is not a
- * route lives in a package. The comment API is `@tsukue/comments`, mounted
+ * route lives in a package. The comment API is `@tsukue/api`, mounted
  * below rather than implemented inline.
  */
 const app = new Hono().basePath("/api");

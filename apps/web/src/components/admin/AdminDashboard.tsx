@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { tokenizeCommentLines } from "@tsukue/comments/render";
+import { tokenizeCommentLines } from "@tsukue/api/render";
 import { formatDate } from "@tsukue/config";
 import type { UIKey } from "@tsukue/config";
 import { useI18n } from "../../hooks/useI18n";

@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { formatDate } from "@tsukue/config";
-import { tokenizeCommentLines } from "@tsukue/comments/render";
+import { tokenizeCommentLines } from "@tsukue/api/render";
 import type { PublicComment, PublicCommentThread } from "@tsukue/types";
 
 interface CommentBodyProps {
@@ -13,7 +13,7 @@ interface CommentBodyProps {
  * React escapes text nodes, and the only element built from a body is an anchor
  * whose href the tokeniser matched as http(s) — so a comment cannot become
  * markup, and there is no `dangerouslySetInnerHTML` anywhere near user input.
- * The tokeniser lives in `@tsukue/comments` so the same logic is unit-tested
+ * The tokeniser lives in `@tsukue/api` so the same logic is unit-tested
  * against hostile bodies rather than trusted here.
  */
 function CommentBody({ body }: CommentBodyProps) {

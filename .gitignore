@@ -38,3 +38,8 @@ playwright-report/
 coverage/
 
 .env
+
+# playwright: artifacts from a run, not sources
+test-results/
+playwright-report/
+blob-report/

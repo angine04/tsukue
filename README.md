@@ -382,9 +382,29 @@ fails, which is how the rejection path is exercised without a real widget.
 | `pnpm build`     | Build static site                                        |
 | `pnpm deploy:cf` | Deploy to Cloudflare Pages (from root)                   |
 | `pnpm check`     | Type-check all packages                                  |
-| `pnpm test`      | Run tests across monorepo                                |
+| `pnpm test`      | Run unit tests across the monorepo                       |
 | `pnpm lint`      | Lint all packages                                        |
 | `pnpm format`    | Format all packages                                      |
+
+### Browser tests
+
+`apps/web` has a Playwright suite (`pnpm --filter web test:e2e`) covering the
+desk, the article routes, the comment form and admin protection. It needs two
+things beyond a checkout:
+
+```bash
+pnpm --filter web exec playwright install chromium   # once per machine
+# and a .dev.vars, which the API reads for Turnstile, HASH_SALT and ADMIN_TOKEN
+```
+
+It builds the site and serves it through `wrangler pages dev`, so the Functions
+and a local D1 are in the request path — the same shape as a deployment, which a
+dev server would not be.
+
+Two things to expect when running it repeatedly against the same local database:
+submissions are rate-limited per source, and an identical comment is refused
+within the hour. The suite uses a unique body for that reason, and will start
+failing on the rate limit after five runs in ten minutes rather than on a bug.
 
 ---
 

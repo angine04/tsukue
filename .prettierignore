@@ -1,0 +1,6 @@
+# pnpm owns this file's formatting, and the two disagree: prettier writes double
+# quotes and expands mappings, pnpm writes single quotes and collapses them. The
+# pre-commit hook runs prettier over staged `.yaml`, so without this the lockfile
+# is reformatted on commit and reformatted back on the next install — an
+# eight-thousand-line diff that says nothing about what actually changed.
+pnpm-lock.yaml

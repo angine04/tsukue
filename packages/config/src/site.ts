@@ -3,4 +3,3 @@ export const SITE_DESCRIPTION = "thoughts. essays. notes.";
 export const SITE_URL = "https://tsukue.angine.tech";
 export const AUTHOR_NAME = "Angine";
 export const AUTHOR_ROLE = "Writer & Engineer";
-export const AUTHOR_EMAIL = "me@angine.tech";

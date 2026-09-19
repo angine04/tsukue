@@ -27,3 +27,25 @@ export function sanitiseHeaderValue(value: string): string {
       .trim()
   );
 }
+
+/**
+ * The two headers that let a mailbox provider offer one-click unsubscribe
+ * (AGENTS 15.8).
+ *
+ * `List-Unsubscribe` is the URL and `List-Unsubscribe-Post` says a provider may
+ * follow it with a POST and no further interaction — which is what turns the
+ * link into a button in Gmail and Outlook. The body such a provider posts is
+ * the literal `List-Unsubscribe=One-Click`, so the endpoint behind this URL has
+ * to accept a POST as well as a click.
+ *
+ * The URL is assembled from configuration and a random token rather than from
+ * reader input, but it is flattened like any other header value: a header
+ * assembled anywhere is one worth making single-line, and an angle bracket
+ * would end the URL early in the form the spec requires.
+ */
+export function unsubscribeHeaders(url: string): Record<string, string> {
+  return {
+    "List-Unsubscribe": `<${sanitiseHeaderValue(url).replace(/[<>]/g, "")}>`,
+    "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+  };
+}

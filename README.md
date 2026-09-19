@@ -338,17 +338,25 @@ wrangler pages secret put MAIL_TOKEN --project-name=tsukue      # if the endpoin
 wrangler pages secret put MAIL_FROM --project-name=tsukue       # if sending mail
 ```
 
-| Variable                                   | Required                  | Purpose                                                                                                                                                                                  |
-| ------------------------------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `TURNSTILE_SECRET`                         | For comments              | Server-side verification. Without it **every submission is refused** — the check fails closed rather than open.                                                                          |
-| `HASH_SALT`                                | For comments              | Salt for the IP / user-agent / address lookup hashes. Without it submissions are refused, so a deployment cannot silently skip rate limiting. Rotating it invalidates every stored hash. |
-| `EMAIL_ENCRYPTION_KEY`                     | For notifications         | Base64 32-byte AES-GCM key. Addresses are hashed for lookup and encrypted for sending; without this key addresses are not stored at all.                                                 |
-| `ACCESS_TEAM_DOMAIN`                       | For `/admin`              | Your Access team domain, e.g. `yourteam.cloudflareaccess.com`. With `ACCESS_AUD`, the admin API verifies Cloudflare Access JWTs itself.                                                  |
-| `ACCESS_AUD`                               | For `/admin`              | The Access application's Audience tag.                                                                                                                                                   |
-| `ADMIN_TOKEN`                              | For `/admin`              | Shared secret accepted as a bearer token. The fallback when Access is not used, and how you reach the admin API locally. Without either, `/api/admin/*` refuses everything.              |
-| `ADMIN_EMAIL`                              | For notifications         | Where "a comment is waiting" is sent. Unset means no notification, not a failure.                                                                                                        |
-| `MAIL_PROVIDER`                            | For mail                  | Only `http` is implemented: a JSON endpoint that sends the message. Unset means no mail is sent.                                                                                         |
-| `MAIL_ENDPOINT`, `MAIL_FROM`, `MAIL_TOKEN` | With `MAIL_PROVIDER=http` | Endpoint URL, sender address, and optional bearer token.                                                                                                                                 |
+| Variable               | Required                  | Purpose                                                                                                                                                                                  |
+| ---------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TURNSTILE_SECRET`     | For comments              | Server-side verification. Without it **every submission is refused** — the check fails closed rather than open.                                                                          |
+| `HASH_SALT`            | For comments              | Salt for the IP / user-agent / address lookup hashes. Without it submissions are refused, so a deployment cannot silently skip rate limiting. Rotating it invalidates every stored hash. |
+| `EMAIL_ENCRYPTION_KEY` | For notifications         | Base64 32-byte AES-GCM key. Addresses are hashed for lookup and encrypted for sending; without this key addresses are not stored at all.                                                 |
+| `ACCESS_TEAM_DOMAIN`   | For `/admin`              | Your Access team domain, e.g. `yourteam.cloudflareaccess.com`. With `ACCESS_AUD`, the admin API verifies Cloudflare Access JWTs itself.                                                  |
+| `ACCESS_AUD`           | For `/admin`              | The Access application's Audience tag.                                                                                                                                                   |
+| `ADMIN_TOKEN`          | For `/admin`              | Shared secret accepted as a bearer token. The fallback when Access is not used, and how you reach the admin API locally. Without either, `/api/admin/*` refuses everything.              |
+| `ADMIN_EMAIL`          | For notifications         | Where "a comment is waiting" is sent. Unset means no notification, not a failure.                                                                                                        |
+| `MAIL_PROVIDER`        | For mail                  | Which adapter sends: `http` (any JSON endpoint) or `resend`. Unset means no mail is sent, which is a valid state.                                                                        |
+| `MAIL_FROM`            | For mail                  | The sender every provider needs, e.g. `Tsukue <comments@notify.example.com>`.                                                                                                            |
+| `MAIL_TOKEN`           | For mail                  | The credential, whatever the provider calls it — bearer token for `http`, API key (`re_…`) for `resend`.                                                                                 |
+| `MAIL_ENDPOINT`        | With `MAIL_PROVIDER=http` | The URL that accepts `{ to, from, subject, html, text, headers }` as JSON.                                                                                                               |
+
+Mail is provider-agnostic: all the adapters read the same three variables, so
+choosing a provider is a configuration change and not a code change. Adding one
+that is not listed is an adapter beside the others in `packages/mail/src/providers`
+plus a branch in the factory — the factory refuses an unknown name rather than
+quietly sending nothing.
 
 For local development the two halves come from different files, because they are
 read at different times:

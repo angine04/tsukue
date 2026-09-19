@@ -1,5 +1,35 @@
 import { escapeHtml, safeUrl } from "./escape.js";
 
+/**
+ * The double opt-in email. Nothing is sent to a subscriber until the address
+ * owner follows this link, which is what keeps one person from subscribing
+ * another.
+ *
+ * It carries no unsubscribe link on purpose: nobody asked to be subscribed yet,
+ * and offering a way out of something that has not started reads as a mistake.
+ * Not following the link is the way out.
+ */
+export const subscriptionConfirmTemplate = (data: {
+  siteName: string;
+  confirmUrl: string;
+}): string => {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Confirm your subscription to ${escapeHtml(data.siteName)}</title>
+</head>
+<body>
+  <h1>Confirm your subscription</h1>
+  <p>Someone asked to subscribe this address to ${escapeHtml(data.siteName)}.</p>
+  <p>If that was you, follow this link and you are done:</p>
+  <p><a href="${safeUrl(data.confirmUrl)}">Confirm subscription</a></p>
+  <p>If it was not you, nothing further will happen and no newsletter will be
+  sent to this address. There is nothing to undo.</p>
+</body>
+</html>`;
+};
+
 export const adminNotificationTemplate = (data: {
   commentAuthor: string;
   commentBody: string;

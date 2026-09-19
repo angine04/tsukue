@@ -7,3 +7,7 @@ export * from "./turnstile.js";
 export * from "./routes.js";
 export * from "./admin/auth.js";
 export * from "./admin/routes.js";
+export * from "./newsletter/links.js";
+export * from "./newsletter/store.js";
+export * from "./newsletter/routes.js";
+export * from "./newsletter/admin.js";

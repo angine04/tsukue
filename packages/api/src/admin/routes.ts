@@ -3,6 +3,7 @@ import { AUTHOR_NAME } from "@tsukue/config";
 import { CommentStatus } from "@tsukue/schemas";
 import type { CommentStatus as CommentStatusValue } from "@tsukue/types";
 import { authenticateAdmin, isSameOrigin, type AdminAuthEnv } from "./auth.js";
+import { registerNewsletterAdminRoutes } from "../newsletter/admin.js";
 import {
   countByStatus,
   getComment,
@@ -40,12 +41,25 @@ function fail(code: string, message: string) {
 }
 
 /** Set by the auth middleware and read by the handlers that audit. */
-interface AdminVariables {
+export interface AdminVariables {
   actor: string;
 }
 
+/**
+ * The admin app's context, named so the newsletter routes can be registered
+ * onto it from their own module and inherit the authentication and origin
+ * checks declared here.
+ */
+export type AdminApp = Hono<{
+  Bindings: AdminAuthEnv;
+  Variables: AdminVariables;
+}>;
+
 export function createAdminApp() {
-  const app = new Hono<{ Bindings: AdminAuthEnv; Variables: AdminVariables }>();
+  const app: AdminApp = new Hono<{
+    Bindings: AdminAuthEnv;
+    Variables: AdminVariables;
+  }>();
 
   /**
    * Every route below is behind this. Applied as middleware rather than
@@ -223,6 +237,11 @@ export function createAdminApp() {
       201,
     );
   });
+
+  // Subscriber management and sending live with the rest of the newsletter code
+  // and are registered onto this app, so they cannot drift out from behind the
+  // middleware above.
+  registerNewsletterAdminRoutes(app);
 
   return app;
 }

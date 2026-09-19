@@ -17,6 +17,7 @@ export const RESERVED_SLUGS = new Set([
   "api",
   "partials",
   "data",
+  "newsletter",
   "rss.xml",
   "sitemap.xml",
   "feed",
@@ -36,6 +37,7 @@ export const DEFAULT_ROUTE_CONFIG: RouteConfig = {
 export const POST_SEGMENT = "posts";
 export const PARTIAL_SEGMENT = "partials";
 export const ABOUT_SEGMENT = "about";
+export const NEWSLETTER_SEGMENT = "newsletter";
 
 /**
  * Locale segments to prepend for a given language.
@@ -119,6 +121,23 @@ export function homePath(
 
 export function isReservedSlug(slug: string): boolean {
   return RESERVED_SLUGS.has(slug);
+}
+
+/**
+ * Where a reader lands after confirming or leaving a newsletter.
+ *
+ * Static pages rather than something the API renders: each is the receipt for
+ * an action that already happened, and a page the API generated would be the one
+ * page in the site not built by Astro.
+ *
+ * Always the default language. The link arrives from an email, a subscriber row
+ * records no language to choose with, and guessing one from a request header
+ * would make the same link render differently for two people.
+ */
+export function newsletterResultPath(
+  result: "confirmed" | "unsubscribed" | "invalid",
+): string {
+  return joinPath([NEWSLETTER_SEGMENT, result]);
 }
 
 /**

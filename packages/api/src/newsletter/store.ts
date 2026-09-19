@@ -35,11 +35,10 @@ const READ_COLUMNS = `id, email_encrypted, email_hash, status, confirm_token,
  * for the next send.
  *
  * `created_at` is rewritten on conflict so it always means "when this address
- * last asked", which is what the resend cooldown measures. The confirmation and
- * unsubscribe dates are cleared because the request starts over; the confirm
- * token is replaced for the same reason, while the unsubscribe token is only
- * reissued on a genuine re-subscribe — an old unsubscribe link has to keep
- * working regardless.
+ * last asked", which is what the resend cooldown measures, and the confirmation
+ * and unsubscribe dates are cleared because the request starts over. The confirm
+ * token is replaced with the new one; the unsubscribe token is deliberately left
+ * as it was, so a link in an email sent months ago keeps working.
  */
 export async function upsertPendingSubscriber(
   db: D1Database,
@@ -105,8 +104,15 @@ export function getSubscriberByUnsubscribeToken(
 }
 
 /**
- * Moves a pending subscriber to active and consumes the confirm token, so the
- * link works once rather than indefinitely.
+ * Moves a pending subscriber to active.
+ *
+ * The confirm token is deliberately left in place rather than consumed. Nulling
+ * it looked tidier and broke the common case: Outlook and most corporate mail
+ * filters fetch links to scan them, so the prefetch would spend the token and
+ * the reader's own click would arrive at "that link is not valid". Reuse is safe
+ * because confirming is idempotent — and this is only ever called for a
+ * subscriber still pending, so a link in an old email cannot resurrect somebody
+ * who has since unsubscribed.
  */
 export async function confirmSubscriber(
   db: D1Database,
@@ -115,7 +121,7 @@ export async function confirmSubscriber(
   await db
     .prepare(
       `UPDATE newsletter_subscribers
-       SET status = 'active', confirmed_at = ?, confirm_token = NULL
+       SET status = 'active', confirmed_at = ?
        WHERE id = ?`,
     )
     .bind(input.confirmedAt, input.id)

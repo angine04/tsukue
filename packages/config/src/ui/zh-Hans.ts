@@ -90,6 +90,22 @@ export const zhHans: UIDictionary = {
   "admin.replyFailed": "回复失败（{{status}}）。",
   "admin.commentStatus": "评论状态",
 
+  "admin.newsletter": "通讯",
+  "admin.email": "邮箱",
+  "admin.joined": "加入时间",
+  "admin.noSubscribers": "这里还没有订阅者。",
+  "admin.subject": "主题",
+  "admin.bodyHtml": "正文（HTML）",
+  "admin.send": "发送",
+  "admin.sending": "发送中…",
+  "admin.sendResult":
+    "已发送 {{sent}} 封，失败 {{failed}} 封，跳过 {{skipped}} 封。",
+  "admin.subscriberStatus.pending": "待确认",
+  "admin.subscriberStatus.active": "已确认",
+  "admin.subscriberStatus.unsubscribed": "已退订",
+  "admin.subscriberStatus.bounced": "退信",
+  "admin.subscriberStatus.complained": "标记为垃圾邮件",
+
   "error.notFoundTitle": "页面不存在",
   "error.notFoundBody": "这张卡片不在桌面上。",
 

@@ -95,6 +95,22 @@ export const ko: UIDictionary = {
   "admin.replyFailed": "답글 실패({{status}}).",
   "admin.commentStatus": "댓글 상태",
 
+  "admin.newsletter": "뉴스레터",
+  "admin.email": "이메일",
+  "admin.joined": "가입일",
+  "admin.noSubscribers": "아직 구독자가 없습니다.",
+  "admin.subject": "제목",
+  "admin.bodyHtml": "본문(HTML)",
+  "admin.send": "보내기",
+  "admin.sending": "보내는 중…",
+  "admin.sendResult":
+    "{{sent}}건 발송, {{failed}}건 실패, {{skipped}}건 건너뜀.",
+  "admin.subscriberStatus.pending": "확인 대기",
+  "admin.subscriberStatus.active": "활성",
+  "admin.subscriberStatus.unsubscribed": "해지됨",
+  "admin.subscriberStatus.bounced": "반송",
+  "admin.subscriberStatus.complained": "스팸 신고",
+
   "error.notFoundTitle": "페이지를 찾을 수 없습니다",
   "error.notFoundBody": "그 카드는 책상 위에 없습니다.",
 

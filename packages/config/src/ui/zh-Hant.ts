@@ -89,6 +89,22 @@ export const zhHant: UIDictionary = {
   "admin.replyFailed": "回覆失敗（{{status}}）。",
   "admin.commentStatus": "留言狀態",
 
+  "admin.newsletter": "通訊",
+  "admin.email": "電子郵件",
+  "admin.joined": "加入時間",
+  "admin.noSubscribers": "這裡還沒有訂閱者。",
+  "admin.subject": "主旨",
+  "admin.bodyHtml": "內文（HTML）",
+  "admin.send": "傳送",
+  "admin.sending": "傳送中…",
+  "admin.sendResult":
+    "已寄出 {{sent}} 封，失敗 {{failed}} 封，略過 {{skipped}} 封。",
+  "admin.subscriberStatus.pending": "待確認",
+  "admin.subscriberStatus.active": "已確認",
+  "admin.subscriberStatus.unsubscribed": "已取消訂閱",
+  "admin.subscriberStatus.bounced": "退信",
+  "admin.subscriberStatus.complained": "標記為垃圾郵件",
+
   "error.notFoundTitle": "頁面不存在",
   "error.notFoundBody": "這張卡片不在桌面上。",
 

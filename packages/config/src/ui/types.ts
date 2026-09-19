@@ -91,6 +91,20 @@ export interface UIDictionary {
   "admin.actionFailed": string;
   "admin.replyFailed": string;
   "admin.commentStatus": string;
+  "admin.newsletter": string;
+  "admin.email": string;
+  "admin.joined": string;
+  "admin.noSubscribers": string;
+  "admin.subject": string;
+  "admin.bodyHtml": string;
+  "admin.send": string;
+  "admin.sending": string;
+  "admin.sendResult": string;
+  "admin.subscriberStatus.pending": string;
+  "admin.subscriberStatus.active": string;
+  "admin.subscriberStatus.unsubscribed": string;
+  "admin.subscriberStatus.bounced": string;
+  "admin.subscriberStatus.complained": string;
 
   // Errors
   "error.notFoundTitle": string;

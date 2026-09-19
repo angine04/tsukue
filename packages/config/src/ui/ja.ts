@@ -96,6 +96,22 @@ export const ja: UIDictionary = {
   "admin.replyFailed": "返信に失敗しました（{{status}}）。",
   "admin.commentStatus": "コメントの状態",
 
+  "admin.newsletter": "ニュースレター",
+  "admin.email": "メールアドレス",
+  "admin.joined": "登録日",
+  "admin.noSubscribers": "登録者はまだいません。",
+  "admin.subject": "件名",
+  "admin.bodyHtml": "本文（HTML）",
+  "admin.send": "送信",
+  "admin.sending": "送信中…",
+  "admin.sendResult":
+    "送信 {{sent}} 件、失敗 {{failed}} 件、保留 {{skipped}} 件。",
+  "admin.subscriberStatus.pending": "確認待ち",
+  "admin.subscriberStatus.active": "有効",
+  "admin.subscriberStatus.unsubscribed": "配信停止",
+  "admin.subscriberStatus.bounced": "バウンス",
+  "admin.subscriberStatus.complained": "迷惑メール報告",
+
   "error.notFoundTitle": "ページが見つかりません",
   "error.notFoundBody": "そのカードは机の上にありません。",
 

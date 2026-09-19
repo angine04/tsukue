@@ -3,6 +3,7 @@ import { tokenizeCommentLines } from "@tsukue/api/render";
 import { formatDate } from "@tsukue/config";
 import type { UIKey } from "@tsukue/config";
 import { useI18n } from "../../hooks/useI18n";
+import NewsletterPanel from "./NewsletterPanel";
 
 /** The statuses a moderator works through, in the order they appear. */
 const TABS = ["pending", "approved", "hidden", "spam", "deleted"] as const;
@@ -371,6 +372,7 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
           </ul>
         </section>
       ) : null}
+      <NewsletterPanel lang={lang} adminToken={adminToken} />
     </div>
   );
 }

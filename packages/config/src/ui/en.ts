@@ -94,6 +94,21 @@ export const en: UIDictionary = {
   "admin.replyFailed": "Reply failed ({{status}}).",
   "admin.commentStatus": "Comment status",
 
+  "admin.newsletter": "Newsletter",
+  "admin.email": "Email",
+  "admin.joined": "Joined",
+  "admin.noSubscribers": "No subscribers here.",
+  "admin.subject": "Subject",
+  "admin.bodyHtml": "Body (HTML)",
+  "admin.send": "Send",
+  "admin.sending": "Sending…",
+  "admin.sendResult": "Sent {{sent}}, failed {{failed}}, skipped {{skipped}}.",
+  "admin.subscriberStatus.pending": "Pending",
+  "admin.subscriberStatus.active": "Active",
+  "admin.subscriberStatus.unsubscribed": "Unsubscribed",
+  "admin.subscriberStatus.bounced": "Bounced",
+  "admin.subscriberStatus.complained": "Complained",
+
   "error.notFoundTitle": "Page not found",
   "error.notFoundBody": "That card is not on the desk.",
 

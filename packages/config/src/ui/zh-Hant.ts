@@ -32,6 +32,12 @@ export const zhHant: UIDictionary = {
   "comment.hidden": "已隱藏",
   "comment.reply": "回覆",
   "comment.report": "舉報",
+  "comment.title": "留言",
+  "comment.loading": "正在載入留言…",
+  "comment.posted": "謝謝，你的留言正在等待審核。",
+  "comment.emailHint": "選填，不會公開。",
+  "comment.closed": "留言功能尚未開放。",
+  "comment.error": "送出失敗，請再試一次。",
 
   "admin.title": "管理面板",
   "admin.pendingComments": "待審核評論",

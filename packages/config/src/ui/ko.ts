@@ -32,6 +32,12 @@ export const ko: UIDictionary = {
   "comment.hidden": "숨김",
   "comment.reply": "답글",
   "comment.report": "신고",
+  "comment.title": "댓글",
+  "comment.loading": "댓글을 불러오는 중…",
+  "comment.posted": "감사합니다. 댓글이 검토를 기다리고 있습니다.",
+  "comment.emailHint": "선택 사항이며 공개되지 않습니다.",
+  "comment.closed": "아직 댓글을 받지 않습니다.",
+  "comment.error": "전송하지 못했습니다. 다시 시도해 주세요.",
 
   "admin.title": "관리 패널",
   "admin.pendingComments": "승인 대기 댓글",

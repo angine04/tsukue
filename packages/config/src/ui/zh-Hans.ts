@@ -32,6 +32,12 @@ export const zhHans: UIDictionary = {
   "comment.hidden": "已隐藏",
   "comment.reply": "回复",
   "comment.report": "举报",
+  "comment.title": "评论",
+  "comment.loading": "正在加载评论…",
+  "comment.posted": "谢谢，你的评论正在等待审核。",
+  "comment.emailHint": "可选，不会公开。",
+  "comment.closed": "评论功能尚未开放。",
+  "comment.error": "提交失败，请重试。",
 
   "admin.title": "管理面板",
   "admin.pendingComments": "待审核评论",

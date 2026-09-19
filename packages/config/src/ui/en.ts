@@ -32,6 +32,12 @@ export const en: UIDictionary = {
   "comment.hidden": "Hidden",
   "comment.reply": "Reply",
   "comment.report": "Report",
+  "comment.title": "Comments",
+  "comment.loading": "Loading comments…",
+  "comment.posted": "Thanks — your comment is waiting to be reviewed.",
+  "comment.emailHint": "Optional, and never published.",
+  "comment.closed": "Comments are not open yet.",
+  "comment.error": "That did not go through. Please try again.",
 
   "admin.title": "Admin Dashboard",
   "admin.pendingComments": "Pending Comments",

@@ -34,6 +34,12 @@ export interface UIDictionary {
   "comment.hidden": string;
   "comment.reply": string;
   "comment.report": string;
+  "comment.title": string;
+  "comment.loading": string;
+  "comment.posted": string;
+  "comment.emailHint": string;
+  "comment.closed": string;
+  "comment.error": string;
 
   // Admin
   "admin.title": string;

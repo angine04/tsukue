@@ -1,0 +1,186 @@
+/*
+ * Comments live at the foot of the article sheet, so they inherit its paper.
+ * Everything here is sized to the sheet's own measure rather than to a page,
+ * and uses a rule instead of a card so the sheet keeps reading as one piece of
+ * paper with writing on it.
+ */
+
+.comments {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-muted) 25%, transparent);
+}
+
+.comments-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 400;
+  margin: 0 0 1.5rem;
+}
+
+.comment-list,
+.comment-replies {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comment + .comment,
+.comment-replies .comment {
+  margin-top: 1.5rem;
+}
+
+.comment-replies {
+  margin-top: 1.25rem;
+  /* Replies are set in from the thread they answer, which is the only cue the
+     nesting gets — a border here competed with the sheet's own edge. */
+  padding-left: 1.25rem;
+  border-left: 2px solid color-mix(in srgb, var(--color-muted) 20%, transparent);
+}
+
+.comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.comment-author {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--color-ink);
+}
+
+.comment-date {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.comment-body {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--color-ink);
+  margin: 0;
+  /* Long unbroken strings (a URL, a pasted token) must not widen the sheet. */
+  overflow-wrap: anywhere;
+}
+
+.comment-link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.comment-empty {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin: 0 0 1.5rem;
+}
+
+/* ------------------------------------------------------------------ form */
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.comment-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.comment-field label {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--color-ink);
+}
+
+.comment-field-hint {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+}
+
+.comment-field input,
+.comment-field textarea {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--color-ink);
+  background-color: color-mix(in srgb, var(--color-paper-ivory) 80%, #fff);
+  border: 1px solid color-mix(in srgb, var(--color-muted) 35%, transparent);
+  border-radius: 2px;
+  /* The sheet is already a light-on-dark surface; the browser's own dark form
+     styling would fight it. */
+  color-scheme: light;
+}
+
+.comment-field textarea {
+  resize: vertical;
+}
+
+.comment-field input:focus-visible,
+.comment-field textarea:focus-visible,
+.comment-submit:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/*
+ * Hidden from sight, from the pointer and from the keyboard, but still
+ * submitted. `display: none` would be skipped by bots that check for it, and
+ * `type="hidden"` is skipped by bots that only fill visible fields.
+ */
+.comment-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.comment-submit {
+  align-self: flex-start;
+  padding: 0.55rem 1.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--color-paper-ivory);
+  background-color: var(--color-accent);
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.comment-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.comment-status {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.comment-status[data-status="error"] {
+  color: var(--color-accent);
+}
+
+@media (max-width: 720px) {
+  /* Below the tap-target size that a phone needs; the whole control grows
+     rather than just its hit area so the two stay the same shape. */
+  .comment-submit {
+    align-self: stretch;
+    padding-block: 0.75rem;
+  }
+}

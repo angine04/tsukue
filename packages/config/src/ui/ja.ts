@@ -33,6 +33,12 @@ export const ja: UIDictionary = {
   "comment.hidden": "非表示",
   "comment.reply": "返信",
   "comment.report": "報告",
+  "comment.title": "コメント",
+  "comment.loading": "コメントを読み込んでいます…",
+  "comment.posted": "ありがとうございます。コメントは承認待ちです。",
+  "comment.emailHint": "任意。公開されません。",
+  "comment.closed": "コメントはまだ受け付けていません。",
+  "comment.error": "送信できませんでした。もう一度お試しください。",
 
   "admin.title": "管理パネル",
   "admin.pendingComments": "承認待ちコメント",

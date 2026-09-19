@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useRef } from "react";
 import { useI18n } from "../../hooks/useI18n";
-import type { DeskItem } from "../../lib/cards";
+import { cardLayoutId, type DeskItem } from "../../lib/cards";
 import DeskCard from "./DeskCard";
 
 /**
@@ -45,6 +45,8 @@ interface DeskRailProps {
   focusedIndex: number;
   onFocusIndex: (index: number) => void;
   onOpenArticle: (item: DeskItem) => void;
+  /** Layout id of the open sheet, so its card can step out of the document. */
+  expandedLayoutId?: string;
 }
 
 function DeskRail({
@@ -53,6 +55,7 @@ function DeskRail({
   focusedIndex,
   onFocusIndex,
   onOpenArticle,
+  expandedLayoutId,
 }: DeskRailProps) {
   const { t } = useI18n(lang);
   const railRef = useRef<HTMLUListElement>(null);
@@ -72,6 +75,13 @@ function DeskRail({
   const focusedIndexRef = useRef(focusedIndex);
   const navTargetRef = useRef<number | null>(null);
 
+  /**
+   * `settleOn` runs from an animation callback and needs the latest geometry
+   * pass, which is declared below it — a ref keeps that from becoming a
+   * dependency cycle.
+   */
+  const updateRailGeometryRef = useRef<(() => void) | null>(null);
+
   const targetFor = useCallback((index: number) => {
     const rail = railRef.current;
     const centre = centresRef.current[index];
@@ -83,17 +93,28 @@ function DeskRail({
    * Read every card box once and keep it. These are layout positions in the
    * rail's content space, so they are invariant under scrolling — re-reading
    * them per frame forced a style flush for nothing.
+   *
+   * Measured from rects rather than `offsetLeft`, which is rounded to whole
+   * pixels: a card sitting at 1234.6px would be reported at 1235, and the
+   * error compounds across the slots ahead of it.
    */
   const measure = useCallback(() => {
     const rail = railRef.current;
     if (!rail) return;
+    const railRect = rail.getBoundingClientRect();
+    const scroll = rail.scrollLeft;
     const slots: (HTMLElement | null)[] = [];
     const centres: number[] = [];
     for (let index = 0; index < items.length; index += 1) {
       const slot =
         rail.querySelector<HTMLElement>(`[data-slot="${index}"]`) ?? null;
       slots.push(slot);
-      centres.push(slot ? slot.offsetLeft + slot.offsetWidth / 2 : Number.NaN);
+      if (!slot) {
+        centres.push(Number.NaN);
+        continue;
+      }
+      const rect = slot.getBoundingClientRect();
+      centres.push(rect.left - railRect.left + scroll + rect.width / 2);
     }
     slotsRef.current = slots;
     centresRef.current = centres;
@@ -132,38 +153,79 @@ function DeskRail({
   }, [measure, syncRailPadding]);
 
   /**
+   * Seats the rail exactly on a card.
+   *
+   * A slot's `margin-inline` is derived from how far off-centre it is (that is
+   * how the scatter is damped as a card comes forward), so scrolling moves the
+   * very margins the scroll was computed from. A single measure-and-scroll
+   * pass is therefore invalidated by its own effect, and the error compounds
+   * along the rail — the last card used to settle 51px wide of centre. Each
+   * pass re-measures from the layout the previous one produced, so it
+   * converges in two or three; the loop exits as soon as the card is where it
+   * was asked to be, and at worst leaves a sub-pixel residue.
+   */
+  const settleOn = useCallback(
+    (index: number) => {
+      const rail = railRef.current;
+      if (!rail) return;
+
+      for (let pass = 0; pass < 5; pass += 1) {
+        remeasure();
+        const target = targetFor(index);
+        if (target === null) break;
+        if (Math.abs(rail.scrollLeft - target) < 0.5) break;
+        rail.scrollLeft = target;
+        updateRailGeometryRef.current?.();
+      }
+
+      updateRailGeometryRef.current?.();
+    },
+    [remeasure, targetFor],
+  );
+
+  /**
    * Hand-rolled rather than `scrollTo({ behavior: "smooth" })`: the native
    * curve is fixed and front-loaded, which reads as a lurch over one card's
    * travel, and it cannot be tuned. easeInOutCubic leaves and arrives gently.
    */
-  const animateTo = useCallback((target: number, duration: number) => {
-    const rail = railRef.current;
-    if (!rail) return;
-    if (navFrameRef.current) cancelAnimationFrame(navFrameRef.current);
+  const animateTo = useCallback(
+    (target: number, duration: number, onSettled: () => void) => {
+      const rail = railRef.current;
+      if (!rail) return;
+      if (navFrameRef.current) cancelAnimationFrame(navFrameRef.current);
 
-    const start = rail.scrollLeft;
-    const delta = target - start;
-    if (Math.abs(delta) < 1) {
-      navFrameRef.current = 0;
-      return;
-    }
+      const start = rail.scrollLeft;
+      const delta = target - start;
+      if (Math.abs(delta) < 1) {
+        navFrameRef.current = 0;
+        onSettled();
+        return;
+      }
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      rail.scrollLeft = target;
-      navFrameRef.current = 0;
-      return;
-    }
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        rail.scrollLeft = target;
+        navFrameRef.current = 0;
+        onSettled();
+        return;
+      }
 
-    const began = performance.now();
-    const step = (now: number) => {
-      const progress = Math.min(1, (now - began) / duration);
-      const eased =
-        progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
-      rail.scrollLeft = start + delta * eased;
-      navFrameRef.current = progress < 1 ? requestAnimationFrame(step) : 0;
-    };
-    navFrameRef.current = requestAnimationFrame(step);
-  }, []);
+      const began = performance.now();
+      const step = (now: number) => {
+        const progress = Math.min(1, (now - began) / duration);
+        const eased =
+          progress < 0.5 ? 4 * progress ** 3 : 1 - (-2 * progress + 2) ** 3 / 2;
+        rail.scrollLeft = start + delta * eased;
+        if (progress < 1) {
+          navFrameRef.current = requestAnimationFrame(step);
+        } else {
+          navFrameRef.current = 0;
+          onSettled();
+        }
+      };
+      navFrameRef.current = requestAnimationFrame(step);
+    },
+    [],
+  );
 
   const centerOn = useCallback(
     (index: number, duration = NAV_MS) => {
@@ -183,9 +245,9 @@ function DeskRail({
         );
       }
 
-      animateTo(target, duration);
+      animateTo(target, duration, () => settleOn(index));
     },
-    [animateTo, targetFor],
+    [animateTo, settleOn, targetFor],
   );
 
   /**
@@ -260,6 +322,10 @@ function DeskRail({
     }
   }, [focusedIndex, onFocusIndex]);
 
+  useEffect(() => {
+    updateRailGeometryRef.current = updateRailGeometry;
+  }, [updateRailGeometry]);
+
   const handleScroll = useCallback(() => {
     if (frameRef.current) return;
     frameRef.current = requestAnimationFrame(() => {
@@ -289,29 +355,20 @@ function DeskRail({
   // Mount-only on purpose: later focus changes animate through centerOn, and
   // re-running this on every focusedIndex change would fight that animation.
   useEffect(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-    remeasure();
-    const target = targetFor(focusedIndex);
-    if (target === null) return;
-    rail.scrollLeft = target;
-    updateRailGeometry();
+    settleOn(focusedIndex);
   }, []);
 
   useEffect(() => {
     const onResize = () => {
-      remeasure();
       // Card widths are viewport-relative, so a resize moves every card under
       // a stationary scroll offset and the focused card drifts off centre.
       // Put it back without animating: the layout changed, not the selection.
-      const rail = railRef.current;
-      const target = targetFor(focusedIndexRef.current);
-      if (rail && target !== null) rail.scrollLeft = target;
+      settleOn(focusedIndexRef.current);
       handleScroll();
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [handleScroll, remeasure, targetFor]);
+  }, [handleScroll, settleOn]);
 
   useEffect(
     () => () => {
@@ -380,6 +437,16 @@ function DeskRail({
     } else if (event.key === "End") {
       event.preventDefault();
       moveTo(items.length - 1);
+    } else if (event.key === "Enter") {
+      // The card is a real link, so Enter would navigate to the article route
+      // and reload the page. AGENTS 8.1 asks the focused card to open, which
+      // for a mouse is the sheet, so do the same here. The About card has no
+      // sheet and is left to follow its link.
+      const focused = items[focusedIndexRef.current];
+      if (focused?.kind === "article") {
+        event.preventDefault();
+        onOpenArticle(focused);
+      }
     }
   };
 
@@ -399,29 +466,51 @@ function DeskRail({
     centerOn(index);
   };
 
+  /**
+   * Whether a card is the centred one.
+   *
+   * This has to be measured live, and from rects rather than the cached
+   * centres: a slot's margins are derived from how far off-centre it is, so
+   * the cached values are stale the moment focus changes. Measuring against
+   * them left a card that had just been centred tens of pixels from its own
+   * target, and no click ever opened it.
+   *
+   * The tolerance absorbs the sub-pixel residue of the settle loop, not any
+   * real off-centredness, which is worth tens of pixels.
+   */
+  const isCentred = useCallback((index: number, tolerance = 2) => {
+    const rail = railRef.current;
+    const slot = slotsRef.current[index];
+    if (!rail || !slot) return false;
+    const railRect = rail.getBoundingClientRect();
+    const rect = slot.getBoundingClientRect();
+    const viewCentre = railRect.left + railRect.width / 2;
+    return Math.abs(rect.left + rect.width / 2 - viewCentre) <= tolerance;
+  }, []);
+
   const handleSelect = useCallback(
     (index: number, event: React.MouseEvent<HTMLAnchorElement>) => {
-      const rail = railRef.current;
-      const target = targetFor(index);
-
-      // Clicking anything that is not already centred brings it to the centre;
-      // only the centred card opens its article. Deciding this from the actual
-      // offset rather than from `focusedIndex` matters now that scrolling is
-      // free: the focused card is merely the nearest one, so it is usually a
-      // little off centre and would otherwise open on the first click.
-      if (rail && target !== null && Math.abs(rail.scrollLeft - target) > 1) {
+      // AGENTS 8.1: clicking a card that is not focused focuses it; only the
+      // focused card opens. `focusedIndex` cannot express that here, because
+      // mousedown focuses the card under the pointer before the click arrives
+      // and the rail's focus handler promotes it in between — so by click time
+      // every card is already "focused". Being centred is the same idea without
+      // that race, and it is what the reader sees: the card in the middle.
+      if (!isCentred(index)) {
         event.preventDefault();
-        focusedIndexRef.current = index;
-        navTargetRef.current = index;
-        onFocusIndex(index);
-        centerOn(index);
-      } else {
-        // Centred card: open the article instead of navigating
+        moveTo(index);
+        return;
+      }
+
+      if (items[index].kind === "article") {
+        // Open as a sheet rather than navigating to the same article route.
         event.preventDefault();
         onOpenArticle(items[index]);
       }
+      // The centred About card is left to follow its link: it is a real page
+      // and there is no sheet to prefer over it.
     },
-    [centerOn, items, onFocusIndex, onOpenArticle, targetFor],
+    [isCentred, items, moveTo, onOpenArticle],
   );
 
   return (
@@ -440,6 +529,9 @@ function DeskRail({
             index={index}
             lang={lang}
             focused={index === focusedIndex}
+            expanded={
+              item.kind === "article" && cardLayoutId(item) === expandedLayoutId
+            }
             onSelect={handleSelect}
           />
         ))}

@@ -71,43 +71,16 @@
   overflow-y: auto;
 }
 
+/*
+ * Geometry deliberately left to `.sheet-surface`, which the article route
+ * reuses. Restating max-width and padding here is what made the modal and the
+ * route render the same article at two different measures.
+ */
 .article-sheet {
   position: relative;
-  max-width: 42rem;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  background: var(--color-paper-ivory);
-  border-radius: 0.5rem;
-  box-shadow: 0 24px 48px rgba(26, 16, 8, 0.3);
-  padding: 3rem;
-}
-
-.article-sheet-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: rgba(26, 16, 8, 0.08);
-  border-radius: 999px;
-  font-size: 1.5rem;
-  line-height: 1;
-  color: var(--color-ink);
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.article-sheet-close:hover {
-  background: rgba(26, 16, 8, 0.15);
-}
-
-.article-sheet-content {
-  /* Content styles inherited from .article-content */
 }
 
 @media (prefers-reduced-motion: reduce) {

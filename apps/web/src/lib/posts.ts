@@ -7,6 +7,7 @@ import {
   SUPPORTED_LANGS,
   aboutPath,
   aboutSegments,
+  formatDate,
   homePath,
   localeSegments,
   postPath,
@@ -212,11 +213,9 @@ export function buildAlternates(
 
 /**
  * Rendered in UTC so a post dated `2026-05-28` reads as the 28th everywhere,
- * rather than shifting a day for readers behind the build machine.
+ * rather than shifting a day for readers behind the build machine. Re-exported
+ * from `@tsukue/config` so the React islands can format dates the same way.
  */
 export function formatPostDate(date: Date, lang: string): string {
-  return new Intl.DateTimeFormat(lang, {
-    dateStyle: "long",
-    timeZone: "UTC",
-  }).format(date);
+  return formatDate(date, lang);
 }

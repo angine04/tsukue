@@ -3,10 +3,12 @@ import { render } from "astro:content";
 import { SITE_NAME, homePath, ui } from "@tsukue/config";
 import ArticleContent from "../components/article/ArticleContent.astro";
 import AboutCard from "../components/desk/AboutCard";
+import DeskApp from "../components/desk/DeskApp";
 import Layout from "../layouts/Layout.astro";
 import {
   absoluteUrl,
   buildAlternates,
+  buildDeskItems,
   listContentRoutes,
   loadPosts,
 } from "../lib/posts";
@@ -41,6 +43,13 @@ export async function getStaticPaths() {
 const { kind, entry, meta, lang, path, alternates } = Astro.props;
 const Article = entry ? (await render(entry)).Content : null;
 const canonical = absoluteUrl(path);
+
+// Every content route is a page of the desk, so all of them carry the rail.
+const entries = await loadPosts();
+const deskItems = buildDeskItems(entries, lang);
+
+// Public by design, so it is baked into the page rather than fetched.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 ---
 
 {
@@ -53,14 +62,40 @@ const canonical = absoluteUrl(path);
       alternates={alternates}
       ogType="article"
     >
-      <div class="desk min-h-screen">
-        <div class="sheet-surface">
+      {/*
+        The desk and the sheet are the same page whether the reader opened the
+        card or landed here directly, so the route renders the island and the
+        article it is already pointing at.
+
+        The sheet below it is real markup, not a fallback for a broken island:
+        it is the article, readable and scrollable with no JavaScript at all.
+        The island adopts this exact element on hydration (before paint, and
+        the two are styled identically, so nothing visibly changes) rather than
+        fetching the same HTML again or serialising the post into the page.
+      */}
+      <DeskApp
+        client:load
+        items={deskItems}
+        lang={meta.lang}
+        initialSheet={{ kind: "article", slug: meta.slug, lang: meta.lang }}
+        turnstileSiteKey={turnstileSiteKey}
+      />
+
+      <div class="article-sheet-overlay" data-sheet-fallback="article">
+        <div
+          class="sheet-surface article-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-label={meta.title}
+        >
           <a class="sheet-back" href={homePath(meta.lang)}>
-            {ui("article.back", meta.lang)}
+            ← {ui("article.back", meta.lang)}
           </a>
-          <ArticleContent meta={meta}>
-            <Article />
-          </ArticleContent>
+          <div class="sheet-body">
+            <ArticleContent meta={meta}>
+              <Article />
+            </ArticleContent>
+          </div>
         </div>
       </div>
     </Layout>
@@ -71,12 +106,33 @@ const canonical = absoluteUrl(path);
       lang={lang}
       canonical={canonical}
     >
-      <div class="desk min-h-screen">
-        <div class="sheet-surface">
+      {/*
+        The About sheet is the same surface as an article's, so the island takes
+        it over the same way: Escape dismisses it here as it does for an
+        article, which is what AGENTS 8.1 asks for. It carries no layoutId,
+        because nothing on the desk morphs into it — the About card navigates.
+      */}
+      <DeskApp
+        client:load
+        items={deskItems}
+        lang={lang}
+        initialSheet={{ kind: "about", lang }}
+        turnstileSiteKey={turnstileSiteKey}
+      />
+
+      <div class="article-sheet-overlay" data-sheet-fallback="about">
+        <div
+          class="sheet-surface article-sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-label={ui("nav.about", lang)}
+        >
           <a class="sheet-back" href={homePath(lang)}>
-            {ui("nav.back", lang)}
+            ← {ui("nav.back", lang)}
           </a>
-          <AboutCard lang={lang} />
+          <div class="sheet-body">
+            <AboutCard lang={lang} />
+          </div>
         </div>
       </div>
     </Layout>

@@ -20,6 +20,9 @@ export async function getStaticPaths() {
 const { lang } = Astro.props;
 const entries = await loadPosts();
 const items = buildDeskItems(entries, lang);
+
+// Public by design, so it is baked into the page rather than fetched.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 ---
 
 <Layout
@@ -27,5 +30,10 @@ const items = buildDeskItems(entries, lang);
   lang={lang}
   canonical={absoluteUrl(Astro.url.pathname)}
 >
-  <DeskApp client:load items={items} lang={lang} />
+  <DeskApp
+    client:load
+    items={items}
+    lang={lang}
+    turnstileSiteKey={turnstileSiteKey}
+  />
 </Layout>

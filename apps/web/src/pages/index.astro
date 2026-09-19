@@ -7,8 +7,17 @@ import { absoluteUrl, buildDeskItems, loadPosts } from "../lib/posts";
 const lang = "en";
 const entries = await loadPosts();
 const items = buildDeskItems(entries, lang);
+
+// Public by design, so it is baked into the page rather than fetched. Empty
+// means the comment form is replaced by a notice.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
 ---
 
 <Layout description={SITE_DESCRIPTION} lang={lang} canonical={absoluteUrl("/")}>
-  <DeskApp client:load items={items} lang={lang} />
+  <DeskApp
+    client:load
+    items={items}
+    lang={lang}
+    turnstileSiteKey={turnstileSiteKey}
+  />
 </Layout>

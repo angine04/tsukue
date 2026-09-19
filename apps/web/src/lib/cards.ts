@@ -52,3 +52,13 @@ export interface DeskAbout {
 }
 
 export type DeskItem = DeskArticle | DeskAbout;
+
+/**
+ * The identity a card and its sheet share. Framer promotes the entering
+ * element over the leaving one by matching on this, so both sides must build
+ * it from the same post — never from a URL, which changes shape with the
+ * route config.
+ */
+export function cardLayoutId(item: { slug: string; lang: string }): string {
+  return `card-${item.slug}-${item.lang}`;
+}

@@ -322,6 +322,8 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   color: var(--color-card-muted);
+  /* A heading, so the browser's default margins have to go. */
+  margin: 0;
 }
 
 /* --------------------------------------------------------------- reduced */

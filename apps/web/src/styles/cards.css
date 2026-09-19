@@ -90,13 +90,28 @@
   --card-paper: var(--color-card-terracotta);
 }
 
-.desk-card[data-variant="compact"] {
+/* Width is set on the slot as well as the card: while a card is expanded it
+   leaves the document and the slot has to hold its footprint, or the rail
+   reflows under the reader. One rule each, so the two cannot drift. */
+.desk-card[data-variant="compact"],
+.desk-slot[data-variant="compact"] {
   --card-width: clamp(14rem, 18vw, 16rem);
 }
 
-.desk-card[data-kind="about"] {
+.desk-card[data-variant="name-card"],
+.desk-slot[data-variant="name-card"] {
   --card-width: clamp(14rem, 18vw, 17rem);
+}
+
+.desk-card[data-kind="about"] {
   justify-content: center;
+}
+
+/* An expanded card leaves the document so Framer can promote its sheet; the
+   empty slot keeps the box the card occupied. */
+.desk-slot[data-expanded] {
+  width: var(--card-width);
+  min-height: var(--card-height);
 }
 
 .desk-card[data-focused] {

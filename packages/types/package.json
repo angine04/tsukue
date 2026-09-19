@@ -12,7 +12,9 @@
     "./api": "./src/api.ts"
   },
   "scripts": {
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "typescript": "^5.7.0"

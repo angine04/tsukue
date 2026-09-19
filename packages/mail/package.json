@@ -12,6 +12,8 @@
   },
   "scripts": {
     "check": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
     "test": "vitest run"
   },
   "dependencies": {

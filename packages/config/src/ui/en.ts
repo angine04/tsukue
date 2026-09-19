@@ -60,6 +60,13 @@ export const en: UIDictionary = {
   "newsletter.invalid.body":
     "It is not a link this site issued, or it has been replaced since.",
 
+  "comment.unsubscribed.title": "Notifications stopped",
+  "comment.unsubscribed.body":
+    "You will not be emailed about those replies again. Nothing has been removed from the site.",
+  "comment.invalid.title": "That link is not valid",
+  "comment.invalid.body":
+    "It is not a link this site issued, or it is no longer usable.",
+
   "admin.title": "Admin Dashboard",
   "admin.pendingComments": "Pending Comments",
   "admin.approvedComments": "Approved Comments",

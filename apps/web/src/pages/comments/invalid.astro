@@ -1,0 +1,24 @@
+---
+import { homePath, ui } from "@tsukue/config";
+import Layout from "../../layouts/Layout.astro";
+
+const lang = "en";
+const title = ui("comment.invalid.title", lang);
+---
+
+{
+  /*
+  Where an unsubscribe link that is not ours, or that has been tampered with,
+  ends up. Deliberately says nothing about which — the difference is of interest
+  to whoever is guessing at links, and to nobody else.
+*/
+}
+<Layout title={title} lang={lang} noindex>
+  <main class="desk">
+    <div class="sheet-surface sheet-notice">
+      <h1>{title}</h1>
+      <p>{ui("comment.invalid.body", lang)}</p>
+      <a class="sheet-back" href={homePath(lang)}>{ui("nav.back", lang)}</a>
+    </div>
+  </main>
+</Layout>

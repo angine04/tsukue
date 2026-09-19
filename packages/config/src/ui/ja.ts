@@ -61,6 +61,13 @@ export const ja: UIDictionary = {
   "newsletter.invalid.body":
     "このサイトが発行したリンクではないか、すでに無効になっています。",
 
+  "comment.unsubscribed.title": "通知を停止しました",
+  "comment.unsubscribed.body":
+    "これらの返信についてのメールは今後届きません。サイト上の内容は何も変わっていません。",
+  "comment.invalid.title": "リンクが無効です",
+  "comment.invalid.body":
+    "このサイトが発行したリンクではないか、すでに使えなくなっています。",
+
   "admin.title": "管理パネル",
   "admin.pendingComments": "承認待ちコメント",
   "admin.approvedComments": "承認済みコメント",

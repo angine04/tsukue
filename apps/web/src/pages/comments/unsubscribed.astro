@@ -1,0 +1,24 @@
+---
+import { homePath, ui } from "@tsukue/config";
+import Layout from "../../layouts/Layout.astro";
+
+const lang = "en";
+const title = ui("comment.unsubscribed.title", lang);
+---
+
+{
+  /*
+  The receipt for leaving reply notifications, reached from a link in an email.
+  The wording covers both scopes — one thread or every one — because this page
+  cannot tell which link was followed and should not guess.
+*/
+}
+<Layout title={title} lang={lang} noindex>
+  <main class="desk">
+    <div class="sheet-surface sheet-notice">
+      <h1>{title}</h1>
+      <p>{ui("comment.unsubscribed.body", lang)}</p>
+      <a class="sheet-back" href={homePath(lang)}>{ui("nav.back", lang)}</a>
+    </div>
+  </main>
+</Layout>

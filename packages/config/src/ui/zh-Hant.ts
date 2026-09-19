@@ -55,6 +55,12 @@ export const zhHant: UIDictionary = {
   "newsletter.invalid.title": "連結無效",
   "newsletter.invalid.body": "這不是本站發出的連結，或者它已經失效。",
 
+  "comment.unsubscribed.title": "已停止通知",
+  "comment.unsubscribed.body":
+    "你不會再收到關於這些回覆的郵件。站點上的內容沒有任何變動。",
+  "comment.invalid.title": "連結無效",
+  "comment.invalid.body": "這不是本站發出的連結，或者它已經失效。",
+
   "admin.title": "管理面板",
   "admin.pendingComments": "待審核評論",
   "admin.approvedComments": "已批准評論",

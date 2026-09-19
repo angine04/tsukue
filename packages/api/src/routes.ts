@@ -17,6 +17,7 @@ import {
   toPublicComment,
 } from "./store.js";
 import { verifyTurnstile } from "./turnstile.js";
+import { registerNotificationRoutes } from "./notifications/routes.js";
 
 /**
  * The honeypot field. A real form leaves it empty; a bot filling every input it
@@ -278,6 +279,10 @@ export function createCommentsApp() {
       201,
     );
   });
+
+  // Reply-notification unsubscribes, registered here so the paths sit with the
+  // rest of the comment API rather than in an app of their own.
+  registerNotificationRoutes(app);
 
   return app;
 }

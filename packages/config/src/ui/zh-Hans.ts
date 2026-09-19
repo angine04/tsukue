@@ -56,6 +56,12 @@ export const zhHans: UIDictionary = {
   "newsletter.invalid.title": "链接无效",
   "newsletter.invalid.body": "这不是本站发出的链接，或者它已经失效。",
 
+  "comment.unsubscribed.title": "已停止通知",
+  "comment.unsubscribed.body":
+    "你不会再收到关于这些回复的邮件。站点上的内容没有任何变动。",
+  "comment.invalid.title": "链接无效",
+  "comment.invalid.body": "这不是本站发出的链接，或者它已经失效。",
+
   "admin.title": "管理面板",
   "admin.pendingComments": "待审核评论",
   "admin.approvedComments": "已批准评论",

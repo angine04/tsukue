@@ -11,3 +11,8 @@ export * from "./newsletter/links.js";
 export * from "./newsletter/store.js";
 export * from "./newsletter/routes.js";
 export * from "./newsletter/admin.js";
+export * from "./notifications/links.js";
+export * from "./notifications/tokens.js";
+export * from "./notifications/store.js";
+export * from "./notifications/routes.js";
+export * from "./notifications/send.js";

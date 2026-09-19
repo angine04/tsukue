@@ -18,6 +18,7 @@ export const RESERVED_SLUGS = new Set([
   "partials",
   "data",
   "newsletter",
+  "comments",
   "rss.xml",
   "sitemap.xml",
   "feed",
@@ -38,6 +39,7 @@ export const POST_SEGMENT = "posts";
 export const PARTIAL_SEGMENT = "partials";
 export const ABOUT_SEGMENT = "about";
 export const NEWSLETTER_SEGMENT = "newsletter";
+export const COMMENTS_SEGMENT = "comments";
 
 /**
  * Locale segments to prepend for a given language.
@@ -117,6 +119,16 @@ export function homePath(
   config: RouteConfig = DEFAULT_ROUTE_CONFIG,
 ): string {
   return joinPath(localeSegments(lang ?? config.defaultLang, config));
+}
+
+/**
+ * Where a reader lands after leaving comment notifications.
+ *
+ * Static, like the newsletter's receipts, and under its own segment so the URL
+ * says what the reader just did rather than which feature owns the code.
+ */
+export function commentResultPath(result: "unsubscribed" | "invalid"): string {
+  return joinPath([COMMENTS_SEGMENT, result]);
 }
 
 export function isReservedSlug(slug: string): boolean {

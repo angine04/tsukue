@@ -57,7 +57,10 @@ export const replyNotificationTemplate = (data: {
   replyBody: string;
   postSlug: string;
   postUrl: string;
-  unsubscribeUrl: string;
+  /** Stops notifications about this conversation only. */
+  threadUnsubscribeUrl: string;
+  /** Stops every comment notification for this address. */
+  allUnsubscribeUrl: string;
 }): string => {
   return `<!DOCTYPE html>
 <html>
@@ -70,7 +73,12 @@ export const replyNotificationTemplate = (data: {
   <p><strong>From:</strong> ${escapeHtml(data.replyAuthor)}</p>
   <blockquote>${escapeHtml(data.replyBody)}</blockquote>
   <p><a href="${safeUrl(data.postUrl)}">View on site</a></p>
-  <p><a href="${safeUrl(data.unsubscribeUrl)}">Unsubscribe from this thread</a></p>
+  <hr>
+  <p>
+    <a href="${safeUrl(data.threadUnsubscribeUrl)}">Unsubscribe from this thread</a>
+    &nbsp;·&nbsp;
+    <a href="${safeUrl(data.allUnsubscribeUrl)}">Unsubscribe from all comment notifications</a>
+  </p>
 </body>
 </html>`;
 };

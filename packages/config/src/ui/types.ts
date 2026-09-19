@@ -40,6 +40,10 @@ export interface UIDictionary {
   "comment.emailHint": string;
   "comment.closed": string;
   "comment.error": string;
+  "comment.unsubscribed.title": string;
+  "comment.unsubscribed.body": string;
+  "comment.invalid.title": string;
+  "comment.invalid.body": string;
 
   // Newsletter
   "newsletter.title": string;

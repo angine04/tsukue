@@ -61,6 +61,13 @@ export const ko: UIDictionary = {
   "newsletter.invalid.body":
     "이 사이트가 보낸 링크가 아니거나, 더 이상 쓸 수 없습니다.",
 
+  "comment.unsubscribed.title": "알림이 중지되었습니다",
+  "comment.unsubscribed.body":
+    "이 답글에 대한 메일은 더 이상 오지 않습니다. 사이트의 내용은 아무것도 바뀌지 않았습니다.",
+  "comment.invalid.title": "유효하지 않은 링크",
+  "comment.invalid.body":
+    "이 사이트가 보낸 링크가 아니거나, 더 이상 쓸 수 없습니다.",
+
   "admin.title": "관리 패널",
   "admin.pendingComments": "승인 대기 댓글",
   "admin.approvedComments": "승인된 댓글",

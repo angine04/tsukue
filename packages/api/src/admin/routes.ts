@@ -3,6 +3,7 @@ import { AUTHOR_NAME } from "@tsukue/config";
 import { CommentStatus } from "@tsukue/schemas";
 import type { CommentStatus as CommentStatusValue } from "@tsukue/types";
 import { authenticateAdmin, isSameOrigin, type AdminAuthEnv } from "./auth.js";
+import { notifyReplyAuthor } from "../notifications/send.js";
 import { registerNewsletterAdminRoutes } from "../newsletter/admin.js";
 import {
   countByStatus,
@@ -139,6 +140,24 @@ export function createAdminApp() {
         status: config.status,
         updatedAt: now,
       });
+
+      // Approving a reader's reply is the other moment a reply becomes public.
+      // Only on the transition: a second click, or an approve of something
+      // already approved, must not post the same notification twice.
+      if (
+        config.status === "approved" &&
+        existing.parent_id &&
+        existing.status !== "approved"
+      ) {
+        await notifyReplyAuthor(c.env, {
+          id,
+          slug: existing.slug,
+          lang: existing.lang ?? undefined,
+          parentId: existing.parent_id,
+          authorName: existing.author_name,
+          body: existing.body,
+        });
+      }
       await insertAuditEntry(c.env.DB, {
         id: crypto.randomUUID(),
         action: config.audit,
@@ -230,6 +249,19 @@ export function createAdminApp() {
       actor,
       details: `reply ${replyId}`,
       createdAt: now,
+    });
+
+    // Published on creation, so this is the moment its author can be told.
+    // Awaited rather than fired off, matching how a submitted comment notifies
+    // the moderator: one way to do it, and the reply is already stored either
+    // way — the notification never throws.
+    await notifyReplyAuthor(c.env, {
+      id: replyId,
+      slug: parent.slug,
+      lang: parent.lang ?? undefined,
+      parentId: rootId ?? id,
+      authorName: AUTHOR_NAME,
+      body: body.trim(),
     });
 
     return c.json(

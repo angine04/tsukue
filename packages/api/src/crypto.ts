@@ -13,6 +13,24 @@ function toBase64(bytes: Uint8Array): string {
 }
 
 /**
+ * Base64 with the two characters that need escaping in a URL swapped out, and
+ * the padding dropped. Used for anything that travels in a link: a token, or a
+ * signed payload.
+ */
+function toBase64Url(bytes: Uint8Array): string {
+  return toBase64(bytes)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+function fromBase64Url(value: string): Uint8Array<ArrayBuffer> {
+  const standard = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = "=".repeat((4 - (standard.length % 4)) % 4);
+  return fromBase64(standard + padding);
+}
+
+/**
  * Annotated with the buffer type rather than bare `Uint8Array`: since TS 5.7 a
  * typed array is generic over its backing buffer, and `Uint8Array` alone
  * defaults to `ArrayBufferLike`, which `crypto.subtle` will not accept because
@@ -47,10 +65,66 @@ export function normaliseEmail(email: string): string {
 export function randomToken(bytes = 32): string {
   const buffer = new Uint8Array(bytes);
   crypto.getRandomValues(buffer);
-  return toBase64(buffer)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return toBase64Url(buffer);
+}
+
+/**
+ * A payload with a signature over it: `payload.signature`, both base64url.
+ *
+ * Used for unsubscribe links, which have to carry authority without a database
+ * row to look up — a notification goes to an address a commenter left, and the
+ * only thing that should be able to stop those is whoever holds the link. The
+ * payload is not secret (an address hash, a scope, a comment id); the signature
+ * is what makes it unforgeable, and the hash is what keeps the link from naming
+ * an address.
+ */
+export async function signPayload(
+  payload: string,
+  secret: string,
+): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(payload),
+  );
+  return `${toBase64Url(encoder.encode(payload))}.${toBase64Url(new Uint8Array(signature))}`;
+}
+
+/**
+ * The payload a token carries, or nothing if the signature does not match.
+ *
+ * The comparison runs to the end rather than returning at the first difference,
+ * so a caller cannot learn a valid signature one character at a time.
+ */
+export async function verifyPayload(
+  token: string,
+  secret: string,
+): Promise<string | null> {
+  const [encoded, signature] = token.split(".");
+  if (!encoded || !signature) return null;
+
+  let payload: string;
+  try {
+    payload = new TextDecoder().decode(fromBase64Url(encoded));
+  } catch {
+    return null;
+  }
+
+  const expected = await signPayload(payload, secret);
+  if (expected.length !== token.length) return null;
+
+  let difference = 0;
+  for (let index = 0; index < expected.length; index += 1) {
+    difference |= expected.charCodeAt(index) ^ token.charCodeAt(index);
+  }
+  return difference === 0 ? payload : null;
 }
 
 async function sha256(value: string): Promise<string> {

@@ -18,4 +18,16 @@ export default defineConfig([
       "pnpm-lock.yaml",
     ],
   },
+  {
+    // Build and tooling configs run in Node, so they legitimately read the
+    // environment. Scoped to those files rather than declared globally, so a
+    // stray `process` in application code is still an error.
+    files: ["**/*.config.{js,mjs,cjs,ts}", "eslint.config.js"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+        console: "readonly",
+      },
+    },
+  },
 ]);

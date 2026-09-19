@@ -1615,7 +1615,7 @@ Recommended structure:
 │  │     │  │  ├─ DeskApp.tsx
 │  │     │  │  ├─ DeskCard.tsx
 │  │     │  │  ├─ DeskRail.tsx
-│  │     │  │  ├─ ArticleSheet.tsx
+│  │     │  │  ├─ Sheet.tsx        # article and About share one surface
 │  │     │  │  └─ AboutCard.tsx
 │  │     │  ├─ article/
 │  │     │  ├─ comments/
@@ -1664,10 +1664,20 @@ Recommended structure:
    │     ├─ content.ts
    │     ├─ comments.ts
    │     └─ api.ts
+   ├─ comments/          # mounted by functions/api/[[path]].ts
+   │  ├─ package.json
+   │  └─ src/
+   │     ├─ routes.ts     # Hono app: the public comment API
+   │     ├─ store.ts      # D1 queries; only approved comments are public
+   │     ├─ crypto.ts     # salted hashes, AES-GCM for stored addresses
+   │     ├─ turnstile.ts  # siteverify, fails closed
+   │     ├─ limits.ts     # published limits, rate and duplicate counting
+   │     └─ render.ts     # body -> tokens; no HTML is ever built here
    └─ mail/
       ├─ package.json
       └─ src/
          ├─ provider.ts
+         ├─ providers/    # http adapter + factory
          └─ templates/
 ```
 

@@ -15,16 +15,21 @@ A tactile, editorial blog template built with Astro, React, and Hono. Designed t
 - **Multilingual Content** — One MDX file per language, grouped by `translationKey`
 - **Configurable Routing** — Flat or prefixed post routes, flat or prefixed locale routes
 - **Article Partials** — Chrome-free fragments at `/partials/*` for in-app article expansion
+- **Card-to-Article Expansion** — A focused card grows into the article sheet as one shared-layout transition, and collapses back on Escape or browser Back
+- **One Page Per URL** — Landing on an article or the About page directly gives the same desk with the same sheet open, adopted from the server-rendered markup rather than re-fetched
+- **Comments API** — `GET /api/comments` returns approved comments only; `POST /api/comments` validates, verifies Turnstile, rate-limits, detects duplicates and stores everything as _pending_. Addresses are hashed for lookup and encrypted for sending; IPs are salted-hashed, never stored raw
+- **Comment Thread** — A reader-facing thread and form at the foot of every article sheet, inside the same island, so it works the same whether the card was clicked or the URL was opened directly. Bodies render as plain text with only `http(s)` links linkified; nothing a reader types can become markup
+- **Moderation Dashboard** — A queue at `/admin` for approving, hiding, deleting and marking comments as spam, plus replies published as the site author. Every action is written to an audit log, and the API behind it refuses anything unauthenticated
 - **SEO** — Canonical URLs, `hreflang` alternates, RSS, sitemap, and robots.txt
 - **Build-Time Content Validation** — Reserved slugs, conflicting routes, duplicate translation pairs, unsupported language tags, and drafts fail the build
 - **CSS-Only Textures** — Paper grain and wood grain drawn with gradients; the site requests no texture images
+- **Reduced Motion** — Desk scatter and sheet transitions respect `prefers-reduced-motion`
 
 ### Planned
 
-- **Card-to-Article Expansion** — Seamless transitions from desk cards to full article sheets
-- **Comments System** — Hono backend with Cloudflare D1, moderation, and Turnstile spam protection
-- **Newsletter** — Double opt-in subscription with unsubscribe support
-- **Admin Dashboard** — Protected comment moderation and subscriber management
+- **Newsletter** — Double opt-in subscription with unsubscribe support, and subscriber management in the dashboard
+- **Reader Replies** — The API and schema support replies one level deep and the dashboard publishes the author's; readers have no reply control yet
+- **Reply notifications** — A reply is stored and displayed, but nobody is emailed about it yet
 
 ## Tech Stack
 
@@ -50,24 +55,44 @@ A tactile, editorial blog template built with Astro, React, and Hono. Designed t
 
 ```bash
 # Clone the template
-git clone https://github.com/angine/tsukue.git my-blog
+git clone https://github.com/angine04/tsukue.git my-blog
 cd my-blog
 
 # Install dependencies
 pnpm install
 ```
 
+**If you are forking this for your own site**, change the two resource names in
+`wrangler.toml` before deploying. They are the template's, and deploying with
+them unchanged would target the template's own Pages project and database:
+
+```toml
+name = "your-project-name"          # also your *.pages.dev subdomain
+[[d1_databases]]
+database_name = "your-db-name"
+database_id = "<your database id>"  # from `wrangler d1 create`
+```
+
+Create your own with `wrangler pages project create` and `wrangler d1 create`.
+The project name is permanent — it becomes your `*.pages.dev` subdomain and
+Cloudflare cannot rename it, so pick it deliberately.
+
 ### 2. Configure your site
 
 Edit `packages/config/src/site.ts`:
 
 ```typescript
-export const SITE_NAME = "Your Name";
+export const SITE_NAME = "Your Blog";
 export const SITE_DESCRIPTION = "Your tagline.";
-export const SITE_URL = "https://yourdomain.com";
+export const SITE_URL = "https://yourdomain.com"; // must match the deployed domain
 export const AUTHOR_NAME = "Your Name";
-export const AUTHOR_EMAIL = "hello@yourdomain.com";
+export const AUTHOR_ROLE = "Writer & Engineer";
 ```
+
+These five constants are the whole of your site's identity in code: they feed
+the wordmark, the About name card, page titles, canonical URLs, the sitemap and
+RSS. Nothing else in the repository names your site — which means a fork is
+this file plus the two Cloudflare resource names below.
 
 ### 3. Add your content
 
@@ -77,20 +102,49 @@ Create MDX files in `apps/web/src/content/posts/en/` (or other language folders)
 ---
 title: "On Slowness in a Fast World"
 description: "A short essay about speed, attention, and deliberate work."
-date: "2026-05-28T00:00:00Z"
+date: 2026-05-28
 lang: en
 translationKey: on-slowness-in-a-fast-world
 slug: on-slowness
+
+draft: false
+tags: [essays, attention]
+
+card:
+  kind: article
+  color: ivory
+  variant: wide
+  rotation: -0.8
+  accent: brown
 ---
 Your article content here.
 ```
 
+Everything except the `card` block is required. The schema is strict, so an
+unrecognised key fails the build rather than being ignored — a typo in
+`translationKey` or `card.color` is an error, not a silently defaulted card.
+The file must also live at `src/content/posts/<lang>/<slug>.mdx`.
+
 ### 4. Run locally
 
+Two processes, because Cloudflare Pages Functions are not part of the Astro dev
+server — `astro dev` renders pages, `wrangler pages dev` runs `/api/*` against
+your local D1.
+
 ```bash
-# Start the web app (includes API functions at /api/*)
-pnpm dev:web
+# Terminal 1 — pages, with fast refresh
+pnpm dev
+
+# Terminal 2 — the API and local D1 on :8788
+pnpm dev:api
 ```
+
+`pnpm dev` proxies `/api/*` to `:8788` (see `astro.config.mjs`), so the browser
+only ever talks to the Astro origin and comments work in development. Override
+the port with `API_DEV_PORT` if you move it.
+
+Running `pnpm dev` alone is fine for layout and content work: `/api/*` will fail
+to connect, which the comment section tolerates rather than breaking the page.
 
 ### 5. Build for production
 
@@ -114,10 +168,15 @@ tsukue/
 │   ├── config/           # Routes, i18n, site metadata
 │   ├── schemas/          # Zod validation schemas
 │   ├── types/            # TypeScript types
+│   ├── comments/         # Comment API, D1 queries, Turnstile, hashing
 │   └── mail/             # Mail provider abstraction
 ├── migrations/           # D1 database migrations
 └── wrangler.toml         # Cloudflare Pages configuration
 ```
+
+`functions/` holds one file because every file there becomes a route. The
+comment API lives in `packages/comments` and is mounted by that entry point,
+which also keeps it testable without a running Worker.
 
 ---
 
@@ -222,37 +281,102 @@ A deploy workflow is included at `.github/workflows/deploy.yml` but disabled by 
 pnpm deploy:cf
 ```
 
+### Protecting the admin dashboard
+
+`/admin` and `/api/admin/*` must both be covered. Covering only the page leaves
+the API reachable — the dashboard is just a client for it:
+
+1. Cloudflare dashboard → **Zero Trust → Access → Applications → Add an
+   application → Self-hosted**.
+2. Add two paths on your domain: `/admin` and `/api/admin/*`.
+3. Add a policy allowing only your email address.
+4. Copy the application's **Audience tag** into `ACCESS_AUD`, and your team
+   domain into `ACCESS_TEAM_DOMAIN`.
+
+The API verifies the Access JWT itself rather than trusting that the request
+arrived through Access, so a route left uncovered is refused rather than
+treated as authenticated. It checks the signature, the issuer, the expiry and
+the audience, and it will not accept an `alg: none` token.
+
+Without `ACCESS_TEAM_DOMAIN` it falls back to `ADMIN_TOKEN`; without either it
+**refuses every admin request**, which is deliberate — an admin API that is
+open because authentication was never finished is the worst default.
+
 ### Database Setup
 
 ```bash
-# Apply D1 migrations
-wrangler d1 migrations apply DB
+# Apply D1 migrations to your local development database
+wrangler d1 migrations apply DB --local
+
+# Apply them to the deployed database
+wrangler d1 migrations apply DB --remote
 ```
+
+The `DB` binding is declared in `wrangler.toml`. Comment storage needs migrations
+`0001`, `0004`; newsletter needs `0002`; the admin audit log needs `0003`.
 
 ### Environment Variables
 
-Set these in Cloudflare Pages settings:
+`PUBLIC_TURNSTILE_SITE_KEY` is a **build-time** variable, supplied by whoever
+builds the site (in `.env`, which `astro.config.mjs` points Vite at). It is
+public — the comment form embeds it — and no Function reads it, so it is not a
+Pages secret. Without it the comment form is replaced by a notice and no request
+is made to Cloudflare.
 
+Everything else is a runtime secret:
+
+```bash
+wrangler pages secret put TURNSTILE_SECRET --project-name=tsukue
+wrangler pages secret put HASH_SALT --project-name=tsukue
+wrangler pages secret put EMAIL_ENCRYPTION_KEY --project-name=tsukue
+wrangler pages secret put ADMIN_EMAIL --project-name=tsukue
+# If using Cloudflare Access instead of a shared token:
+wrangler pages secret put ACCESS_TEAM_DOMAIN --project-name=tsukue
+wrangler pages secret put ACCESS_AUD --project-name=tsukue
+wrangler pages secret put MAIL_ENDPOINT --project-name=tsukue   # if sending mail
+wrangler pages secret put MAIL_TOKEN --project-name=tsukue      # if the endpoint needs one
+wrangler pages secret put MAIL_FROM --project-name=tsukue       # if sending mail
 ```
-TURNSTILE_SECRET_KEY
-MAIL_PROVIDER_API_KEY
-ADMIN_SECRET
-ENCRYPTION_KEY
-```
+
+| Variable                                   | Required                  | Purpose                                                                                                                                                                                  |
+| ------------------------------------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TURNSTILE_SECRET`                         | For comments              | Server-side verification. Without it **every submission is refused** — the check fails closed rather than open.                                                                          |
+| `HASH_SALT`                                | For comments              | Salt for the IP / user-agent / address lookup hashes. Without it submissions are refused, so a deployment cannot silently skip rate limiting. Rotating it invalidates every stored hash. |
+| `EMAIL_ENCRYPTION_KEY`                     | For notifications         | Base64 32-byte AES-GCM key. Addresses are hashed for lookup and encrypted for sending; without this key addresses are not stored at all.                                                 |
+| `ACCESS_TEAM_DOMAIN`                       | For `/admin`              | Your Access team domain, e.g. `yourteam.cloudflareaccess.com`. With `ACCESS_AUD`, the admin API verifies Cloudflare Access JWTs itself.                                                  |
+| `ACCESS_AUD`                               | For `/admin`              | The Access application's Audience tag.                                                                                                                                                   |
+| `ADMIN_TOKEN`                              | For `/admin`              | Shared secret accepted as a bearer token. The fallback when Access is not used, and how you reach the admin API locally. Without either, `/api/admin/*` refuses everything.              |
+| `ADMIN_EMAIL`                              | For notifications         | Where "a comment is waiting" is sent. Unset means no notification, not a failure.                                                                                                        |
+| `MAIL_PROVIDER`                            | For mail                  | Only `http` is implemented: a JSON endpoint that sends the message. Unset means no mail is sent.                                                                                         |
+| `MAIL_ENDPOINT`, `MAIL_FROM`, `MAIL_TOKEN` | With `MAIL_PROVIDER=http` | Endpoint URL, sender address, and optional bearer token.                                                                                                                                 |
+
+For local development the two halves come from different files, because they are
+read at different times:
+
+- **`.dev.vars`** (gitignored) for the runtime secrets above — Wrangler reads it
+  in place of the deployed ones.
+- **`.env`** (gitignored) for `PUBLIC_TURNSTILE_SITE_KEY` — the Astro build reads
+  it, and no Function can see it.
+
+Turnstile publishes a test pair that needs no account: site key
+`1x00000000000000000000AA` with secret
+`1x0000000000000000000000000000000AA` always passes, and secret `2x…` always
+fails, which is how the rejection path is exercised without a real widget.
 
 ---
 
 ## Commands
 
-| Command          | Description                            |
-| ---------------- | -------------------------------------- |
-| `pnpm dev`       | Start Astro dev server                 |
-| `pnpm build`     | Build static site                      |
-| `pnpm deploy:cf` | Deploy to Cloudflare Pages (from root) |
-| `pnpm check`     | Type-check all packages                |
-| `pnpm test`      | Run tests across monorepo              |
-| `pnpm lint`      | Lint all packages                      |
-| `pnpm format`    | Format all packages                    |
+| Command          | Description                                              |
+| ---------------- | -------------------------------------------------------- |
+| `pnpm dev`       | Start Astro dev server                                   |
+| `pnpm dev:api`   | Build, then serve static + Functions + local D1 on :8788 |
+| `pnpm build`     | Build static site                                        |
+| `pnpm deploy:cf` | Deploy to Cloudflare Pages (from root)                   |
+| `pnpm check`     | Type-check all packages                                  |
+| `pnpm test`      | Run tests across monorepo                                |
+| `pnpm lint`      | Lint all packages                                        |
+| `pnpm format`    | Format all packages                                      |
 
 ---
 

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { HttpMailProvider } from "./http.js";
 import { ResendMailProvider } from "./resend.js";
 import { createMailProvider } from "./factory.js";
@@ -13,6 +13,28 @@ const CONFIG = {
 function ok() {
   return Promise.resolve(new Response("", { status: 202 }));
 }
+
+/**
+ * A `fetch` that refuses a foreign receiver, the way the Workers runtime does.
+ *
+ * Both adapters called the global as a method of their own instance, which Node
+ * and an injected double both accept and the runtime rejects with "Illegal
+ * invocation". No test noticed, because every test injected a double — the bug
+ * surfaced when a local end-to-end run tried to send a real confirmation email.
+ * This double would have noticed.
+ */
+function fetchLikeRuntime() {
+  return vi.fn(function (this: unknown) {
+    if (this !== undefined && this !== globalThis) {
+      throw new TypeError("Illegal invocation");
+    }
+    return Promise.resolve(new Response("", { status: 202 }));
+  });
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("HttpMailProvider", () => {
   it("posts the message as JSON to the configured endpoint", async () => {
@@ -190,6 +212,42 @@ describe("ResendMailProvider", () => {
         html: "<p>Hi</p>",
       }),
     ).rejects.toThrow(/Resend returned 422.*Invalid from address/s);
+  });
+});
+
+describe("the global fetch both adapters fall back to", () => {
+  it("is called detached by the http adapter, as the runtime requires", async () => {
+    const globalFetch = fetchLikeRuntime();
+    vi.stubGlobal("fetch", globalFetch);
+
+    // No double injected: this is the path a deployment actually takes.
+    const provider = new HttpMailProvider(CONFIG);
+    await provider.send({
+      to: "a@b.test",
+      from: CONFIG.from,
+      subject: "s",
+      html: "h",
+    });
+
+    expect(globalFetch).toHaveBeenCalled();
+  });
+
+  it("is called detached by the Resend adapter too", async () => {
+    const globalFetch = fetchLikeRuntime();
+    vi.stubGlobal("fetch", globalFetch);
+
+    const provider = new ResendMailProvider({
+      apiKey: "re_test_key",
+      from: "Tsukue <comments@notify.example.test>",
+    });
+    await provider.send({
+      to: "a@b.test",
+      from: "Tsukue <comments@notify.example.test>",
+      subject: "s",
+      html: "h",
+    });
+
+    expect(globalFetch).toHaveBeenCalled();
   });
 });
 

@@ -24,7 +24,7 @@ export interface HttpMailProviderConfig {
 export class HttpMailProvider implements MailProvider {
   constructor(
     private readonly config: HttpMailProviderConfig,
-    private readonly fetchImpl: typeof fetch = fetch,
+    private readonly fetchImpl?: typeof fetch,
   ) {}
 
   async send(input: {
@@ -44,7 +44,12 @@ export class HttpMailProvider implements MailProvider {
       headers[sanitiseHeaderValue(key)] = sanitiseHeaderValue(value);
     }
 
-    const response = await this.fetchImpl(this.config.endpoint, {
+    // `call(...)` rather than `this.fetchImpl(...)`: the runtime's `fetch`
+    // rejects a foreign receiver, so calling it as a method of this instance
+    // throws "Illegal invocation" in production while passing every test that
+    // injects a double. Turnstile's verifier calls it the same way.
+    const call = this.fetchImpl ?? fetch;
+    const response = await call(this.config.endpoint, {
       method: "POST",
       headers: {
         "content-type": "application/json",

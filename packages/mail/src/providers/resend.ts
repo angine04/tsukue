@@ -26,7 +26,7 @@ const ENDPOINT = "https://api.resend.com/emails";
 export class ResendMailProvider implements MailProvider {
   constructor(
     private readonly config: ResendMailProviderConfig,
-    private readonly fetchImpl: typeof fetch = fetch,
+    private readonly fetchImpl?: typeof fetch,
   ) {}
 
   async send(input: {
@@ -46,7 +46,10 @@ export class ResendMailProvider implements MailProvider {
       headers[sanitiseHeaderValue(key)] = sanitiseHeaderValue(value);
     }
 
-    const response = await this.fetchImpl(ENDPOINT, {
+    // Detached, not `this.fetchImpl(...)`: see the note in http.ts — the
+    // runtime's `fetch` refuses a foreign receiver.
+    const call = this.fetchImpl ?? fetch;
+    const response = await call(ENDPOINT, {
       method: "POST",
       headers: {
         "content-type": "application/json",

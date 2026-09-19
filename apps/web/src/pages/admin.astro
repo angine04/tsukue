@@ -1,8 +1,22 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import AdminDashboard from "../components/admin/AdminDashboard";
+// Imported here rather than in the layout: the dashboard's styling has nothing
+// to do with the desk, and public pages should not download it.
+import "../styles/admin.css";
 ---
 
-<Layout title="Admin" description="Admin Dashboard">
+{
+  /*
+  Statically built like every other page, so nothing secret may pass through it
+  — a token handed to the island would be baked into public HTML. The dashboard
+  relies on the Cloudflare Access cookie the browser already carries; see
+  AGENTS 16.2.
+
+  `noindex` because a moderation queue has no business in a search result, and
+  Access should be the thing keeping people out rather than obscurity.
+*/
+}
+<Layout title="Admin" description="Comment moderation" lang="en" noindex>
   <AdminDashboard client:load lang="en" />
 </Layout>

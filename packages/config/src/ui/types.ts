@@ -52,6 +52,28 @@ export interface UIDictionary {
   "admin.spam": string;
   "admin.reply": string;
   "admin.sendNewsletter": string;
+  "admin.status.pending": string;
+  "admin.status.approved": string;
+  "admin.status.hidden": string;
+  "admin.status.spam": string;
+  "admin.status.deleted": string;
+  "admin.refresh": string;
+  "admin.loading": string;
+  "admin.nothingHere": string;
+  "admin.recentActivity": string;
+  "admin.authorBadge": string;
+  "admin.replyBadge": string;
+  "admin.reachableBadge": string;
+  "admin.reachableHint": string;
+  "admin.cancel": string;
+  "admin.replyLabel": string;
+  "admin.publishReply": string;
+  "admin.unauthorised": string;
+  "admin.couldNotReach": string;
+  "admin.requestFailed": string;
+  "admin.actionFailed": string;
+  "admin.replyFailed": string;
+  "admin.commentStatus": string;
 
   // Errors
   "error.notFoundTitle": string;

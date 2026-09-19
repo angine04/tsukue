@@ -17,15 +17,20 @@ export const dictionaries = {
 
 export function ui(key: UIKey, lang: string = "en"): string {
   const dict =
-    dictionaries[lang as keyof typeof dictionaries] ??
-    dictionaries.en;
+    dictionaries[lang as keyof typeof dictionaries] ?? dictionaries.en;
   return dict[key] ?? dictionaries.en[key] ?? key;
 }
 
+/**
+ * Looks up a string and substitutes named placeholders, written with **double**
+ * braces: `"Nothing {{status}}."`. Single braces are left alone, which is
+ * deliberate — a dictionary value that legitimately contains `{` needs no
+ * escaping.
+ */
 export function uiFormat(
   key: UIKey,
   lang: string = "en",
-  replacements: Record<string, string | number>
+  replacements: Record<string, string | number>,
 ): string {
   let text = ui(key, lang);
   for (const [placeholder, value] of Object.entries(replacements)) {

@@ -22,8 +22,11 @@ import { verifyTurnstile } from "./turnstile.js";
  * The honeypot field. A real form leaves it empty; a bot filling every input it
  * finds does not. Deliberately not in the Zod schema — a schema failure naming
  * the field would tell the bot which one to leave alone.
+ *
+ * Exported so the tests name it the way the route does instead of repeating the
+ * string and drifting from it.
  */
-const HONEYPOT_FIELD = "website";
+export const HONEYPOT_FIELD = "website";
 
 type ErrorCode =
   | "INVALID_REQUEST"
@@ -142,6 +145,33 @@ export function createCommentsApp() {
     }
 
     const input = parsed.data;
+
+    // The honeypot short-circuits everything else: a bot that filled it never
+    // loaded the widget, so asking Turnstile about it would only add a delay
+    // that distinguishes this path from a success.
+    //
+    // It also stores nothing, and runs before the hashing and encryption below.
+    // Storing these made every rejected request a write — on the one branch
+    // that reaches the database before Turnstile and before the rate limit, so
+    // a script filling a single hidden field was the cheapest possible way to
+    // spend the database's quota: no challenge to solve, no limit to trip, five
+    // rows written per request. A flood is visible in the logs instead, which
+    // is where a volume problem gets diagnosed anyway.
+    //
+    // The response is the accepted one, field for field. A trap that answers
+    // differently only works once.
+    const honeypot = (payload as Record<string, unknown>)[HONEYPOT_FIELD];
+    if (typeof honeypot === "string" && honeypot.trim() !== "") {
+      console.warn(`Honeypot: discarded a submission for "${input.slug}".`);
+      return c.json(
+        {
+          ok: true as const,
+          data: { id: crypto.randomUUID(), status: "pending" },
+        },
+        201,
+      );
+    }
+
     const now = new Date();
     const ip = c.req.header("cf-connecting-ip");
     const userAgent = c.req.header("user-agent");
@@ -165,20 +195,6 @@ export function createCommentsApp() {
           ? await encryptEmail(input.authorEmail, c.env.EMAIL_ENCRYPTION_KEY)
           : undefined,
     };
-
-    // The honeypot is checked first and short-circuits everything else: a bot
-    // that filled it never loaded the widget, so asking Turnstile about it
-    // would only add a delay that distinguishes this path from a success.
-    // Stored as spam so the queue shows what arrived, and answered exactly like
-    // a comment that was accepted.
-    const honeypot = (payload as Record<string, unknown>)[HONEYPOT_FIELD];
-    if (typeof honeypot === "string" && honeypot.trim() !== "") {
-      await insertComment(c.env.DB, { ...storage, status: "spam" });
-      return c.json(
-        { ok: true as const, data: { id: storage.id, status: "spam" } },
-        201,
-      );
-    }
 
     const turnstile = await verifyTurnstile({
       secret: c.env.TURNSTILE_SECRET,

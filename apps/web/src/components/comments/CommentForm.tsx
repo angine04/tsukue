@@ -125,8 +125,8 @@ export default function CommentForm({ slug, lang, siteKey }: CommentFormProps) {
           authorEmail: String(data.get("authorEmail") ?? "") || undefined,
           body: String(data.get("body") ?? ""),
           // The honeypot. A person never sees this field, so anything in it is
-          // a bot; the server files it as spam and answers exactly as it would
-          // a real comment.
+          // a bot; the server discards it and answers exactly as it would a
+          // real comment.
           website: String(data.get("website") ?? ""),
           turnstileToken: token,
         }),

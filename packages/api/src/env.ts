@@ -22,11 +22,15 @@ export interface D1Database {
 }
 
 /**
- * Everything the comment API reads from the environment. Secrets are optional
- * at the type level because a deployment can be missing them; each is checked
- * where it is used, and every check fails closed.
+ * Everything the API reads from the environment.
+ *
+ * One shape for the whole Function rather than one per feature: the comment and
+ * newsletter endpoints run in the same Worker, against the same database
+ * binding, with the same secrets. Secrets are optional at the type level because
+ * a deployment can be missing them; each is checked where it is used, and every
+ * check fails closed.
  */
-export interface CommentEnv {
+export interface ApiEnv {
   DB: D1Database;
 
   /** Turnstile secret. Without it, submissions are rejected. */

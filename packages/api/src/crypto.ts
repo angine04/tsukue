@@ -35,6 +35,24 @@ export function normaliseEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+/**
+ * An unguessable value for a link that carries authority: confirming an address,
+ * or leaving a mailing list.
+ *
+ * 32 bytes, because for an unsubscribe link the token is the only thing between
+ * a stranger and somebody else's subscription. Base64url without padding, so it
+ * survives a query string, an email client and a terminal without escaping —
+ * and so a wrapped link never breaks on a `+` being read as a space.
+ */
+export function randomToken(bytes = 32): string {
+  const buffer = new Uint8Array(bytes);
+  crypto.getRandomValues(buffer);
+  return toBase64(buffer)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
 async function sha256(value: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", encoder.encode(value));
   return toHex(new Uint8Array(digest));

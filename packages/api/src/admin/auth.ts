@@ -1,7 +1,7 @@
-import type { CommentEnv } from "../env.js";
+import type { ApiEnv } from "../env.js";
 
 /** Everything the admin surface needs to identify a caller. */
-export interface AdminAuthEnv extends CommentEnv {
+export interface AdminAuthEnv extends ApiEnv {
   /** e.g. `yourteam.cloudflareaccess.com` — the Access team domain. */
   ACCESS_TEAM_DOMAIN?: string;
   /** The Access application's Audience (AUD) tag. */

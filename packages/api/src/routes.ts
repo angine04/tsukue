@@ -3,7 +3,7 @@ import { CommentQuerySchema, CreateCommentSchema } from "@tsukue/schemas";
 import { adminNotificationTemplate, createMailProvider } from "@tsukue/mail";
 import type { PublicCommentThread } from "@tsukue/types";
 import { encryptEmail, hashEmail, hashIdentifier } from "./crypto.js";
-import type { CommentEnv } from "./env.js";
+import type { ApiEnv } from "./env.js";
 import {
   COMMENT_LIMITS,
   countRecentDuplicates,
@@ -47,7 +47,7 @@ const NOT_CONFIGURED_MESSAGE =
   "Comments are not available right now. Please try again later.";
 
 export function createCommentsApp() {
-  const app = new Hono<{ Bindings: CommentEnv }>();
+  const app = new Hono<{ Bindings: ApiEnv }>();
 
   /**
    * Approved comments for one post, threaded one level deep.
@@ -290,7 +290,7 @@ export function createCommentsApp() {
  * keeping it in the database — the worst of both.
  */
 async function notifyAdmin(
-  env: CommentEnv,
+  env: ApiEnv,
   comment: { commentAuthor: string; commentBody: string; postSlug: string },
 ): Promise<void> {
   if (!env.ADMIN_EMAIL) return;

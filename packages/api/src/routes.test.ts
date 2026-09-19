@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { CommentEnv, D1Database } from "./env.js";
+import type { ApiEnv, D1Database } from "./env.js";
 import { COMMENT_LIMITS } from "./limits.js";
 import { HONEYPOT_FIELD, createCommentsApp } from "./routes.js";
 
@@ -47,7 +47,7 @@ function recordingDb(recentCount = 0) {
   return { db, reads, writes };
 }
 
-const env = (db: D1Database): CommentEnv => ({
+const env = (db: D1Database): ApiEnv => ({
   DB: db,
   HASH_SALT: "test-salt",
   TURNSTILE_SECRET: "test-secret",

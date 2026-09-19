@@ -7,8 +7,3 @@
 .astro/
 .wrangler/
 dist/
-
-# Lockfiles are pnpm's to write, wherever they are — the same reason the root
-# ignore file lists the root one. (This nested copy should probably not exist at
-# all: a pnpm workspace has one lockfile, and this one predates the workspace.)
-pnpm-lock.yaml

@@ -161,23 +161,21 @@ export default function CommentList({
             spaced={index > 0 && threads[index - 1].replies.length === 0}
           />
           {thread.replies.length > 0 ? (
-            <>
-              {/*
-                Replies are set in from the thread they answer, which is the
-                only cue the nesting gets — a border here competed with the
-                sheet's own edge.
-              */}
-              <ol className="mt-5 border-l-2 border-l-[color-mix(in_srgb,var(--color-muted)_20%,transparent)] pl-5">
-                {thread.replies.map((reply) => (
-                  <CommentEntry
-                    key={reply.id}
-                    comment={reply}
-                    lang={lang}
-                    spaced
-                  />
-                ))}
-              </ol>
-            </>
+            /*
+              Replies are set in from the thread they answer, which is the
+              only cue the nesting gets — a border here competed with the
+              sheet's own edge.
+            */
+            <ol className="mt-5 border-l-2 border-l-[color-mix(in_srgb,var(--color-muted)_20%,transparent)] pl-5">
+              {thread.replies.map((reply) => (
+                <CommentEntry
+                  key={reply.id}
+                  comment={reply}
+                  lang={lang}
+                  spaced
+                />
+              ))}
+            </ol>
           ) : null}
         </Fragment>
       ))}

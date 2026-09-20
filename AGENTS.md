@@ -565,11 +565,11 @@ Reasonable rotation range:
 -10deg to +10deg
 ```
 
-Focused card rotation should be near:
-
-```text
--0.5deg to +0.5deg
-```
+Focused card rotation should stay near the angle it was placed at: a card on a
+desk is never square, and one that straightens perfectly reads as a rendering
+artefact rather than as attention. What separates the focused card is the
+scatter of the others — the rail's bank, which is zero at the focused position
+— plus the clearance, shadow and contrast of 8.2.
 
 Prefer deterministic rotations from frontmatter or a slug-based seed. Do not use unstable random rotations on each render.
 
@@ -618,10 +618,14 @@ Preferred:
 ```text
 native-feeling wheel/trackpad behavior
 horizontal rail state
-snap-to-focused-card
+snap-to-focused-card on touch; desktop follows the pointer and does not snap
 clear keyboard fallback
 touch-friendly mobile behavior
 ```
+
+On a desktop the rail is a surface you push, and a rail that snaps out from
+under the pointer fights the scroll it is following; snapping is what makes the
+touch version usable instead. See the note at the top of `DeskRail.tsx`.
 
 ## 8.6 Mobile behavior
 
@@ -1117,11 +1121,15 @@ Public `POST` should:
 validate Turnstile
 validate body
 rate-limit
-sanitize content
+store the body verbatim
 store as pending
 notify admin
 return success without exposing internal moderation detail
 ```
+
+The body is not sanitised on the way in. Escaping belongs at render, where the
+tokeniser turns everything into text and only its own links into anchors (13.5);
+doing it here would also mean guessing at what the reader typed and losing it.
 
 ## 13.4 Admin API
 
@@ -1186,6 +1194,13 @@ manual moderation
 ```
 
 Do not auto-publish comments in v1.
+
+Rate limiting keys on a salted hash of `cf-connecting-ip`, which Cloudflare sets
+and a client cannot forge. Where that header is absent — a deployment fronted by
+something else — the per-window limit does not apply, and the layers either side
+of it are what stands in its place. That is a deliberate choice over hashing a
+constant, which would put every visitor in one bucket and let a single flood
+exhaust the allowance for everybody.
 
 Recommended limits:
 
@@ -1365,6 +1380,13 @@ Default route:
 
 Protect with Cloudflare Access if possible.
 
+That protection is an Access policy on `/admin*`, which is edge configuration
+rather than code: nothing in this repository enforces it. The page itself is
+deliberately static and public, and ships no moderation data — everything it
+shows is fetched from the guarded `/api/admin/*` — so a policy protects the
+surface rather than a secret, and the API refuses every unauthenticated request
+whether or not one is configured.
+
 ## 16.3 Admin UI implementation
 
 Admin can be:
@@ -1423,6 +1445,11 @@ Recommended:
 email_hash for lookup
 email_encrypted for sending
 ```
+
+The one address stored plainly is `admin_audit_log.actor`, which is the
+moderator's own identity from the Access token. An audit entry exists to name
+who acted; the rule above is about the readers whose addresses pass through the
+site, and those are never stored in the clear.
 
 Use stable normalized email before hashing.
 

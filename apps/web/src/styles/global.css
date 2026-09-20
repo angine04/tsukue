@@ -1,27 +1,16 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
-@theme {
-  --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
-  --font-mono: var(--font-code);
-
-  --color-desk-base: #8a5f3e;
-  --color-paper-ivory: #f2eadc;
-  --color-paper-sand: #d9c5a5;
-  --color-paper-olive: #6f7564;
-  --color-paper-terracotta: #a15f3d;
-  --color-paper-warm: #c4a882;
-  --color-paper-sage: #8b9a7d;
-  --color-paper-clay: #b87d5e;
-  --color-ink: #231b16;
-  --color-muted: #6f6258;
-  --color-accent: #7a2f22;
-
-  --shadow-card-rest: 0 12px 24px rgba(26, 16, 8, 0.18);
-  --shadow-card-focus: 0 18px 38px rgba(26, 16, 8, 0.24);
-  --shadow-sheet: 0 32px 64px rgba(26, 16, 8, 0.32);
-}
-
+/*
+ * The language-specific font stacks.
+ *
+ * They live here rather than in the theme because they change with the
+ * document's language, and `@theme` fixes a value at build time. What the theme
+ * declares is the *default* stack, and every rule below overrides the same
+ * variable for one language — so `font-sans` in markup and `var(--font-sans)`
+ * in a stylesheet resolve to the same thing, and both follow the language of
+ * the page rather than the build machine.
+ */
 :root {
   --font-serif-latin: "Newsreader", "Noto Serif", serif;
   --font-sans-latin: "Cabin", "Noto Sans", system-ui, sans-serif;
@@ -45,10 +34,6 @@
   --font-sans-ko:
     "Noto Sans KR", "Source Han Sans KR", "Apple SD Gothic Neo",
     "Malgun Gothic", sans-serif;
-
-  --font-serif: var(--font-serif-latin);
-  --font-sans: var(--font-sans-latin);
-  --font-code: "Monaspace Argon", ui-monospace, monospace;
 }
 
 :lang(en) {

@@ -1,4 +1,19 @@
-:root {
+/*
+ * The design tokens, in one place.
+ *
+ * They are declared in `@theme` because that is what makes them usable two
+ * ways at once: Tailwind emits them as custom properties the stylesheets read
+ * with `var(…)`, and it generates utilities from them (`bg-paper-ivory`,
+ * `shadow-card-rest`, `font-serif`) so markup never has to invent a class for
+ * a colour that already has a name.
+ *
+ * Declaring them here rather than in a plain `:root` block is what removes the
+ * duplication this file used to carry: the values lived in both places, and the
+ * copy in the theme was stale — it still held the example shadows from AGENTS
+ * 10.3 while the real ones were a four-layer stack. Nothing published that
+ * difference only because a later unlayered rule happened to win.
+ */
+@theme {
   --color-desk-base: #8a5f3e;
   --color-desk-light: #a07852;
   --color-desk-dark: #6b4a30;
@@ -110,4 +125,14 @@
       transparent 38%,
       rgb(0 0 0 / 36%) 100%
     );
+
+  /*
+   * The font families. These values are the Latin stacks, and each language's
+   * stack overrides the same variable in `:root`/`:lang()` below — which is why
+   * a `font-sans` utility and a `var(--font-sans)` read agree, and both follow
+   * the document's language rather than the build machine's.
+   */
+  --font-serif: var(--font-serif-latin);
+  --font-sans: var(--font-sans-latin);
+  --font-code: "Monaspace Argon", ui-monospace, monospace;
 }

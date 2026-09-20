@@ -47,6 +47,10 @@ const posts = defineCollection({
           rotation: z.number().min(-10).max(10).optional(),
           accent: CardAccent.default("brown"),
         })
+        // Strict like the root object: a mistyped key inside `card` is a
+        // setting the author believes they made, and stripping it silently
+        // hands them a card that ignores them.
+        .strict()
         .optional(),
 
       translation: z
@@ -54,6 +58,7 @@ const posts = defineCollection({
           sourceLang: z.string().min(1).optional(),
           status: z.enum(["human", "machine", "mixed"]).optional(),
         })
+        .strict()
         .optional(),
     })
     .strict(),

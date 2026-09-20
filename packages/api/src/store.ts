@@ -315,6 +315,9 @@ export async function attachReportCounts(
  * The moderation queue: one status, oldest first so a backlog is worked
  * through in the order it arrived.
  *
+ * Every other status is an archive rather than a queue, where the question is
+ * "what came in recently", so those read newest first.
+ *
  * The address is fetched only to learn *whether* one exists — the moderator
  * needs to know a reply could be delivered, never what the address is.
  */
@@ -323,11 +326,14 @@ export async function listCommentsByStatus(
   input: { status: CommentStatus; limit?: number },
 ): Promise<AdminComment[]> {
   const limit = Math.min(Math.max(input.limit ?? 100, 1), 200);
+  // A literal chosen here, not a bound parameter: SQLite cannot parameterise
+  // the direction, and this is not input from anyone.
+  const direction = input.status === "pending" ? "ASC" : "DESC";
   const result = await db
     .prepare(
       `SELECT ${READ_COLUMNS} FROM comments
        WHERE status = ?
-       ORDER BY created_at ASC
+       ORDER BY created_at ${direction}
        LIMIT ?`,
     )
     .bind(input.status, limit)

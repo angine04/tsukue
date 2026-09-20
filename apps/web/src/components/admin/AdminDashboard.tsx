@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { tokenizeCommentLines } from "@tsukue/api/render";
-import { formatDate } from "@tsukue/config";
+import { DEFAULT_LANG, formatDate, postPath } from "@tsukue/config";
 import type { UIKey } from "@tsukue/config";
 import { useI18n } from "../../hooks/useI18n";
 import NewsletterPanel from "./NewsletterPanel";
@@ -80,6 +80,18 @@ function CommentBody({ body }: { body: string }) {
       ))}
     </p>
   );
+}
+
+/**
+ * Where a moderator can read the comment in context.
+ *
+ * Built with the route helper rather than by prefixing the slug with a slash:
+ * a comment carries the language of the article it was written on, and both the
+ * language and the route mode decide what that URL is. Hand-writing it sent a
+ * moderator to a 404 for every article that is not in the default language.
+ */
+function articlePath(comment: AdminComment): string {
+  return postPath({ slug: comment.slug, lang: comment.lang ?? DEFAULT_LANG });
 }
 
 interface AdminDashboardProps {
@@ -329,9 +341,9 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
                 </time>
                 <a
                   className="text-muted no-underline font-code hover:underline focus-visible:outline-offset-2"
-                  href={`/${comment.slug}`}
+                  href={articlePath(comment)}
                 >
-                  /{comment.slug}
+                  {articlePath(comment)}
                 </a>
                 {comment.parentId ? (
                   <span className="text-[0.68rem] uppercase tracking-[0.06em] px-[0.35rem] py-[0.1rem] rounded-[2px] bg-[color-mix(in_srgb,var(--color-muted)_12%,transparent)] text-muted">

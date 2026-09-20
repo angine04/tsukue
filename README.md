@@ -366,7 +366,14 @@ plus a branch in the factory — the factory refuses an unknown name rather than
 quietly sending nothing.
 
 For local development the two halves come from different files, because they are
-read at different times:
+read at different times. Both have committed examples holding Turnstile's test
+pair and placeholders — no real credential — so a clone can run the API and the
+test suite without an account:
+
+```bash
+cp .env.example .env           # PUBLIC_TURNSTILE_SITE_KEY, read by the build
+cp .dev.vars.example .dev.vars # runtime secrets, read by Wrangler
+```
 
 - **`.dev.vars`** (gitignored) for the runtime secrets above — Wrangler reads it
   in place of the deployed ones.

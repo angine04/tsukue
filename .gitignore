@@ -20,6 +20,9 @@ pnpm-debug.log*
 # needs the same protection as .env — it is not covered by the patterns above.
 .dev.vars
 .dev.vars.*
+# …except the example, which holds no secrets and is the only way a clone knows
+# what the file is supposed to contain.
+!.dev.vars.example
 
 # macOS-specific files
 .DS_Store

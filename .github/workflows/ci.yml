@@ -1,13 +1,16 @@
 name: CI
 
+# `develop` as well as `main`: a pull request into main is the last chance to
+# catch something, not the first, and until now nothing verified the integration
+# branch at all.
 on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,4 +28,33 @@ jobs:
 
       - run: pnpm check
 
+      - run: pnpm test
+
+      # The site key is baked into the build and the runtime secrets are read by
+      # the Functions, so both files have to exist before either runs. The
+      # examples carry Turnstile's published test pair and placeholders — no
+      # repository secret is involved.
+      - name: Local env for the build and the API
+        run: |
+          cp .env.example .env
+          cp .dev.vars.example .dev.vars
+
       - run: pnpm build
+
+      # The browser suite runs against the real deployment shape: the built site
+      # served by `wrangler pages dev`, with Pages Functions and a local D1 in
+      # the request path. That D1 starts empty, and `pages dev` reads the same
+      # local state `d1 migrations apply` writes.
+      - name: Schema for the local database the suite uses
+        run: pnpm db:migrate:local
+
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+
+      - run: pnpm --filter web test:e2e
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: apps/web/test-results/
+          retention-days: 7

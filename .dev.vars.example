@@ -1,0 +1,39 @@
+# Runtime secrets for the API. Copy to `.dev.vars` (gitignored):
+#
+#   cp .dev.vars.example .dev.vars
+#
+# Wrangler reads this in place of the deployed secrets, and `wrangler pages dev`
+# reads it from the repository root, which is where the functions live. In
+# production the same names are set with `wrangler pages secret put`. Nothing in
+# this file is a real credential: it holds Turnstile's documented test pair and
+# placeholder values, so a clone can run the API and the test suite offline.
+#
+# The Turnstile test pair needs no account:
+#   1x0000000000000000000000000000000AA  always passes
+#   2x0000000000000000000000000000000AA  always fails (for the rejection path)
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
+
+# Any string. Addresses and IPs are stored only as a hash salted with this, so
+# it needs to be unguessable in production — the value here is a placeholder.
+HASH_SALT=dev-salt-not-a-secret
+
+# AES-GCM wants exactly 32 bytes, base64. This is 32 zero bytes: a valid key of
+# the right shape for local work, and obviously not one to deploy.
+EMAIL_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+
+# The shared secret behind `/api/admin/*` when Cloudflare Access is not in use,
+# and the escape hatch the test suite and local development use. In production,
+# prefer Access and leave this unset. Without either, the admin API refuses
+# everything authentically rather than openly.
+ADMIN_TOKEN=dev-admin-token
+
+# Mail is optional locally and off by default: with no provider configured the
+# send endpoints answer NOT_CONFIGURED instead of pretending to send. To exercise
+# it, uncomment and point MAIL_ENDPOINT at something that accepts a POST — see
+# the README for the provider names.
+# MAIL_PROVIDER=http
+# MAIL_ENDPOINT=http://127.0.0.1:8787/send
+# MAIL_TOKEN=
+# MAIL_FROM=Tsukue <comments@notify.example.com>
+# ADMIN_EMAIL=you@example.com

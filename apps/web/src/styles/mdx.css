@@ -104,8 +104,31 @@
 
 .mdx-content figcaption {
   margin-top: 0.5em;
+  font-family: var(--font-sans);
   font-size: 0.875rem;
+  line-height: 1.4;
   color: var(--color-muted);
+}
+
+/*
+ * Captions belong to the article's generated MDX surface, so their type stays
+ * here rather than requiring every image component to repeat it.
+ */
+.mdx-content .mdx-code-block figcaption {
+  margin-top: 0;
+}
+
+.mdx-content .mdx-code-block pre {
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Slot content is nested inside these wrappers, so it needs the same rhythm
+   as the paragraphs that remain direct children of `.mdx-content`. */
+.mdx-content .mdx-callout > div > * + *,
+.mdx-content .mdx-aside > div > * + *,
+.mdx-content .mdx-footnote-note > div > * + * {
+  margin-top: 1.25em;
 }
 
 .mdx-content table {

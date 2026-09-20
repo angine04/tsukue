@@ -7,6 +7,7 @@ export const ja: UIDictionary = {
   "nav.search": "検索",
   "nav.back": "戻る",
 
+  "desk.tagline": "思索。随筆。記録。",
   "desk.readArticle": "記事を読む",
   "desk.minRead": "分で読める",
   "desk.scrollLeft": "左にスクロール",

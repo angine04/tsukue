@@ -7,6 +7,7 @@ export const en: UIDictionary = {
   "nav.search": "Search",
   "nav.back": "Back",
 
+  "desk.tagline": "thoughts. essays. notes.",
   "desk.readArticle": "Read article",
   "desk.minRead": "min read",
   "desk.scrollLeft": "Scroll",

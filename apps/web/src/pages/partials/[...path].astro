@@ -1,6 +1,7 @@
 ---
 import { render } from "astro:content";
 import { postPartialSegments } from "@tsukue/config";
+import { mdxComponents } from "../../components/mdx";
 import ArticleContent from "../../components/article/ArticleContent.astro";
 import { loadPosts, toPostMeta } from "../../lib/posts";
 
@@ -21,5 +22,5 @@ const Article = (await render(entry)).Content;
 ---
 
 <ArticleContent meta={meta}>
-  <Article />
+  <Article components={mdxComponents} />
 </ArticleContent>

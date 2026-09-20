@@ -14,7 +14,11 @@ import {
  */
 const app = new Hono().basePath("/api");
 
-app.get("/health", (c) => c.json({ ok: true, status: "healthy" }));
+// Answers in the envelope every other endpoint uses (AGENTS 12.3), so a caller
+// reads `data` here the same way it does anywhere else.
+app.get("/health", (c) =>
+  c.json({ ok: true as const, data: { status: "healthy" } }),
+);
 
 // Public: reads approved comments, accepts pending submissions.
 app.route("/", createCommentsApp());

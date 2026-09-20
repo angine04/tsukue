@@ -140,8 +140,13 @@ describe("POST /newsletter/subscribe", () => {
     const response = await subscribe(db);
 
     expect(response.status).toBe(202);
-    expect(writes).toHaveLength(1);
-    expect(writes[0].sql).toContain("status = 'pending'");
+    // The subscriber, and — now that every send is logged — the row recording
+    // the confirmation email. This is about the subscriber.
+    const subscriberWrites = writes.filter((write) =>
+      write.sql.includes("newsletter_subscribers"),
+    );
+    expect(subscriberWrites).toHaveLength(1);
+    expect(subscriberWrites[0].sql).toContain("status = 'pending'");
 
     const mail = mailCalls(calls);
     expect(mail).toHaveLength(1);
@@ -195,7 +200,9 @@ describe("POST /newsletter/subscribe", () => {
 
     await subscribe(db);
 
-    expect(writes).toHaveLength(1);
+    expect(
+      writes.filter((write) => write.sql.includes("newsletter_subscribers")),
+    ).toHaveLength(1);
     expect(mailCalls(calls)).toHaveLength(1);
   });
 
@@ -231,7 +238,9 @@ describe("POST /newsletter/subscribe", () => {
     // visible only to callers who are not already subscribed, which is exactly
     // what the response must not disclose.
     expect(response.status).toBe(202);
-    expect(writes).toHaveLength(1);
+    expect(
+      writes.filter((write) => write.sql.includes("newsletter_subscribers")),
+    ).toHaveLength(1);
   });
 
   it("rejects something that is not an address, without writing", async () => {
@@ -266,7 +275,9 @@ describe("GET /newsletter/confirm", () => {
 
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("/newsletter/confirmed");
-    expect(writes).toHaveLength(1);
+    expect(
+      writes.filter((write) => write.sql.includes("newsletter_subscribers")),
+    ).toHaveLength(1);
     expect(writes[0].sql).toContain("status = 'active'");
   });
 
@@ -281,6 +292,26 @@ describe("GET /newsletter/confirm", () => {
     );
 
     expect(response.headers.get("location")).toBe("/newsletter/invalid");
+    expect(writes).toEqual([]);
+  });
+
+  it("redirects missing and over-long tokens without a lookup", async () => {
+    stubFetch();
+    const { db, writes } = fakeDb();
+
+    const missing = await createNewsletterApp().request(
+      "/newsletter/confirm",
+      undefined,
+      env(db),
+    );
+    const overLong = await createNewsletterApp().request(
+      `/newsletter/confirm?token=${"x".repeat(129)}`,
+      undefined,
+      env(db),
+    );
+
+    expect(missing.headers.get("location")).toBe("/newsletter/invalid");
+    expect(overLong.headers.get("location")).toBe("/newsletter/invalid");
     expect(writes).toEqual([]);
   });
 
@@ -337,7 +368,9 @@ describe("unsubscribe", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(writes).toHaveLength(1);
+    expect(
+      writes.filter((write) => write.sql.includes("newsletter_subscribers")),
+    ).toHaveLength(1);
     expect(writes[0].sql).toContain("status = 'unsubscribed'");
   });
 

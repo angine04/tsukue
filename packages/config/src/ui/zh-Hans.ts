@@ -7,6 +7,7 @@ export const zhHans: UIDictionary = {
   "nav.search": "搜索",
   "nav.back": "返回",
 
+  "desk.tagline": "思考。随笔。笔记。",
   "desk.readArticle": "阅读文章",
   "desk.minRead": "分钟阅读",
   "desk.scrollLeft": "向左滚动",

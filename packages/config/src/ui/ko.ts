@@ -7,6 +7,7 @@ export const ko: UIDictionary = {
   "nav.search": "검색",
   "nav.back": "뒤로",
 
+  "desk.tagline": "생각. 에세이. 기록.",
   "desk.readArticle": "글 읽기",
   "desk.minRead": "분 읽기",
   "desk.scrollLeft": "왼쪽으로 스크롤",

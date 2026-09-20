@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { commentResultPath } from "@tsukue/config";
+import { CommentNotificationTokenQuerySchema } from "@tsukue/schemas";
 import type { ApiEnv } from "../env.js";
 import { recordOptOut } from "./store.js";
 import { readOptOutToken } from "./tokens.js";
@@ -33,9 +34,11 @@ async function record(
 export function registerNotificationRoutes(
   app: Hono<{ Bindings: ApiEnv }>,
 ): void {
-  /** The link a reader clicks, in either scope. */
   app.get("/comments/unsubscribe", async (c) => {
-    const result = await record(c.env, c.req.query("token") ?? "");
+    const parsed = CommentNotificationTokenQuerySchema.safeParse({
+      token: c.req.query("token"),
+    });
+    const result = await record(c.env, parsed.success ? parsed.data.token : "");
     return c.redirect(
       commentResultPath(result.ok ? "unsubscribed" : "invalid"),
       302,
@@ -49,7 +52,10 @@ export function registerNotificationRoutes(
    * whole of the authority.
    */
   app.post("/comments/unsubscribe", async (c) => {
-    const result = await record(c.env, c.req.query("token") ?? "");
+    const parsed = CommentNotificationTokenQuerySchema.safeParse({
+      token: c.req.query("token"),
+    });
+    const result = await record(c.env, parsed.success ? parsed.data.token : "");
     if (!result.ok) {
       return c.json(
         {

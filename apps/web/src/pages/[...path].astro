@@ -2,6 +2,7 @@
 import { render } from "astro:content";
 import { SITE_NAME, homePath, ui } from "@tsukue/config";
 import ArticleContent from "../components/article/ArticleContent.astro";
+import { mdxComponents } from "../components/mdx";
 import AboutCard from "../components/desk/AboutCard";
 import DeskApp from "../components/desk/DeskApp";
 import Layout from "../layouts/Layout.astro";
@@ -93,7 +94,7 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
           </a>
           <div class="sheet-body">
             <ArticleContent meta={meta}>
-              <Article />
+              <Article components={mdxComponents} />
             </ArticleContent>
           </div>
         </div>

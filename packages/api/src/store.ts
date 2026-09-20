@@ -54,6 +54,14 @@ const INSERT_COLUMNS = [
 const READ_COLUMNS = `id, slug, lang, parent_id, author_name, body, status,
   created_at, author_is_admin, author_email_encrypted, ip_hash`;
 
+/**
+ * Stored exactly as it was written.
+ *
+ * The body is deliberately not sanitised on the way in. The renderer escapes
+ * every token and links only what it tokenises itself (AGENTS 13.5), which is
+ * the layer that can do this without guessing what the reader meant; stripping
+ * markup on the way in would only lose text the author typed.
+ */
 export async function insertComment(
   db: D1Database,
   comment: NewComment,

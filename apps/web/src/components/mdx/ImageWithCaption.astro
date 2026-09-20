@@ -1,0 +1,50 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  credit?: string;
+  width?: number;
+  height?: number;
+  loading?: "eager" | "lazy";
+}
+
+const {
+  src,
+  alt,
+  caption,
+  credit,
+  width,
+  height,
+  loading = "lazy",
+} = Astro.props;
+const hasCaption = Boolean(caption || credit);
+---
+
+{
+  /* ImageWithCaption keeps image meaning and attribution together in the HTML. */
+}
+<figure class="mdx-image-with-caption">
+  <img
+    src={src}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    decoding="async"
+    class="block w-full rounded-sm"
+  />
+  {
+    hasCaption && (
+      <figcaption>
+        {caption && <span>{caption}</span>}
+        {credit && (
+          <span class="font-sans text-xs uppercase tracking-[0.08em]">
+            {caption ? " · " : ""}
+            {credit}
+          </span>
+        )}
+      </figcaption>
+    )
+  }
+</figure>

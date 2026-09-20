@@ -1,17 +1,17 @@
-import { SendNewsletterInputSchema, SubscriberStatus } from "@tsukue/schemas";
+import {
+  LimitQuerySchema,
+  SendNewsletterInputSchema,
+  SubscriberStatus,
+} from "@tsukue/schemas";
 import type {
   AdminSubscriber,
   NewsletterSendResult,
   SubscriberStatus as SubscriberStatusValue,
 } from "@tsukue/types";
-import {
-  createMailProvider,
-  newsletterTemplate,
-  unsubscribeHeaders,
-  type MailProvider,
-} from "@tsukue/mail";
+import { newsletterTemplate, unsubscribeHeaders } from "@tsukue/mail";
 import type { AdminApp } from "../admin/routes.js";
 import { decryptEmail } from "../crypto.js";
+import { sendLoggedMail } from "../mail/log.js";
 import { insertAuditEntry } from "../store.js";
 import { newsletterLink } from "./links.js";
 import {
@@ -92,10 +92,17 @@ export function registerNewsletterAdminRoutes(app: AdminApp): void {
       return c.json(fail("INVALID_STATUS", "Unknown status filter."), 400);
     }
 
-    const limit = Number.parseInt(c.req.query("limit") ?? "100", 10);
+    const limit = LimitQuerySchema.safeParse(c.req.query("limit") ?? "100");
+    if (!limit.success) {
+      return c.json(
+        fail("INVALID_LIMIT", "The limit must be a small positive number."),
+        400,
+      );
+    }
+
     const rows = await listSubscribersByStatus(c.env.DB, {
       status: parsed.data,
-      limit: Number.isNaN(limit) ? 100 : limit,
+      limit: limit.data,
     });
     const counts = await countSubscribersByStatus(c.env.DB);
 
@@ -137,23 +144,22 @@ export function registerNewsletterAdminRoutes(app: AdminApp): void {
 
     const encryptionKey = c.env.EMAIL_ENCRYPTION_KEY;
     const from = c.env.MAIL_FROM;
-    let provider: MailProvider | undefined;
-    try {
-      provider = createMailProvider(c.env);
-    } catch (error) {
-      console.error(`Newsletter send rejected: ${String(error)}`);
-    }
-    if (!provider || !encryptionKey || !from) {
+    const rows = await listSubscribersByStatus(c.env.DB, {
+      status: "active",
+      limit: SEND_BATCH_LIMIT,
+    });
+
+    if (!encryptionKey || !from) {
+      // Recorded, not merely refused: a send that never left is exactly what a
+      // moderator goes looking for when nobody received it.
+      const reason = "Sending mail is not configured.";
+      await sendLoggedMail(c.env, { category: "newsletter", reason });
+      console.error(`Newsletter send rejected: ${reason}`);
       return c.json(
         fail("NOT_CONFIGURED", "Sending mail is not configured."),
         500,
       );
     }
-
-    const rows = await listSubscribersByStatus(c.env.DB, {
-      status: "active",
-      limit: SEND_BATCH_LIMIT,
-    });
 
     let sent = 0;
     let failed = 0;
@@ -163,9 +169,23 @@ export function registerNewsletterAdminRoutes(app: AdminApp): void {
         row.unsubscribe_token,
       );
 
+      let to: string;
       try {
-        await provider.send({
-          to: await decryptEmail(row.email_encrypted, encryptionKey),
+        to = await decryptEmail(row.email_encrypted, encryptionKey);
+      } catch (error) {
+        failed += 1;
+        const reason = "The subscriber's address could not be decrypted.";
+        await sendLoggedMail(c.env, { category: "newsletter", reason });
+        console.error(
+          `Newsletter delivery failed for ${row.id}: ${reason}; ${String(error)}`,
+        );
+        continue;
+      }
+
+      const result = await sendLoggedMail(c.env, {
+        category: "newsletter",
+        message: {
+          to,
           from,
           subject: parsed.data.subject,
           html: newsletterTemplate({
@@ -176,12 +196,14 @@ export function registerNewsletterAdminRoutes(app: AdminApp): void {
           // Both headers, on every newsletter: this is what lets a mailbox
           // provider offer unsubscribe without the reader hunting for a link.
           headers: unsubscribeHeaders(unsubscribeUrl),
-        });
+        },
+      });
+      if (result.ok) {
         sent += 1;
-      } catch (error) {
+      } else {
         failed += 1;
         console.error(
-          `Newsletter delivery failed for ${row.id}: ${String(error)}`,
+          `Newsletter delivery failed for ${row.id}: ${result.error}`,
         );
       }
     }

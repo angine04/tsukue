@@ -1,0 +1,26 @@
+---
+interface Props {
+  title?: string;
+  language?: string;
+}
+
+const { title, language } = Astro.props;
+const hasCaption = Boolean(title || language);
+---
+
+{
+  /* CodeBlock frames Shiki's build-time output; it deliberately does not highlight code. */
+}
+<figure
+  class="mdx-code-block overflow-hidden rounded-md border border-line bg-paper-ivory shadow-card-rest"
+>
+  {
+    hasCaption && (
+      <figcaption class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-line bg-paper-sand px-4 py-2 font-sans text-xs font-bold uppercase tracking-[0.08em] text-muted">
+        {title && <span>{title}</span>}
+        {language && <span>{language}</span>}
+      </figcaption>
+    )
+  }
+  <div class="overflow-x-auto"><slot /></div>
+</figure>

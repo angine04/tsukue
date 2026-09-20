@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { SITE_NAME, newsletterResultPath } from "@tsukue/config";
-import { SubscribeInputSchema } from "@tsukue/schemas";
+import {
+  NewsletterTokenQuerySchema,
+  SubscribeInputSchema,
+} from "@tsukue/schemas";
 import {
   createMailProvider,
   subscriptionConfirmTemplate,
@@ -15,6 +18,7 @@ import {
 } from "../crypto.js";
 import { verifyTurnstile } from "../turnstile.js";
 import { newsletterLink } from "./links.js";
+import { sendLoggedMail } from "../mail/log.js";
 import {
   confirmSubscriber,
   getSubscriberByConfirmToken,
@@ -170,14 +174,17 @@ export function createNewsletterApp() {
     });
 
     try {
-      await provider.send({
-        to: email,
-        from,
-        subject: `Confirm your subscription to ${SITE_NAME}`,
-        html: subscriptionConfirmTemplate({
-          siteName: SITE_NAME,
-          confirmUrl: newsletterLink("/confirm", confirmToken),
-        }),
+      await sendLoggedMail(c.env, {
+        category: "subscription_confirmation",
+        message: {
+          to: email,
+          from,
+          subject: `Confirm your subscription to ${SITE_NAME}`,
+          html: subscriptionConfirmTemplate({
+            siteName: SITE_NAME,
+            confirmUrl: newsletterLink("/confirm", confirmToken),
+          }),
+        },
       });
     } catch (error) {
       // Logged, not surfaced. The row is stored, the reader can ask again after
@@ -201,7 +208,10 @@ export function createNewsletterApp() {
    * subscriber is ever moved, so no link can undo a later unsubscribe.
    */
   app.get("/newsletter/confirm", async (c) => {
-    const token = c.req.query("token") ?? "";
+    const parsed = NewsletterTokenQuerySchema.safeParse({
+      token: c.req.query("token"),
+    });
+    const token = parsed.success ? parsed.data.token : undefined;
     const subscriber = token
       ? await getSubscriberByConfirmToken(c.env.DB, token)
       : null;
@@ -229,10 +239,11 @@ export function createNewsletterApp() {
     });
     return c.redirect(newsletterResultPath("confirmed"), 302);
   });
-
-  /** The visible unsubscribe link. */
   app.get("/newsletter/unsubscribe", async (c) => {
-    const token = c.req.query("token") ?? "";
+    const parsed = NewsletterTokenQuerySchema.safeParse({
+      token: c.req.query("token"),
+    });
+    const token = parsed.success ? parsed.data.token : undefined;
     const subscriber = token
       ? await getSubscriberByUnsubscribeToken(c.env.DB, token)
       : null;
@@ -251,7 +262,10 @@ export function createNewsletterApp() {
    * parse — the token in the URL is the entire authority.
    */
   app.post("/newsletter/unsubscribe", async (c) => {
-    const token = c.req.query("token") ?? "";
+    const parsed = NewsletterTokenQuerySchema.safeParse({
+      token: c.req.query("token"),
+    });
+    const token = parsed.success ? parsed.data.token : undefined;
     const subscriber = token
       ? await getSubscriberByUnsubscribeToken(c.env.DB, token)
       : null;

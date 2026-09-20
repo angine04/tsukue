@@ -7,6 +7,7 @@ export interface UIDictionary {
   "nav.back": string;
 
   // Desk / Cards
+  "desk.tagline": string;
   "desk.readArticle": string;
   "desk.minRead": string;
   "desk.scrollLeft": string;

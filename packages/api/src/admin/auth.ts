@@ -194,6 +194,10 @@ async function verifyAccessToken(
     };
   }
 
+  // The actor is the person doing the moderating, and an audit entry exists to
+  // name them, so their address is the point of the field rather than a leak.
+  // AGENTS 17.3's hash-and-encrypt rule is about the readers whose addresses
+  // arrive here; those go through `hashEmail`/`encryptEmail` instead.
   const actor = payload.email ?? payload.sub;
   if (!actor) {
     return { ok: false, reason: "Token carries no identity" };

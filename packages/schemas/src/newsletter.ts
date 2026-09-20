@@ -55,13 +55,19 @@ export const SubscribeInputSchema = z.object({
 export type SubscribeInput = z.infer<typeof SubscribeInputSchema>;
 
 /**
- * The token from an unsubscribe link.
- *
- * Length-bounded because it arrives in a query string, and a token that is not
- * one of ours should cost a comparison rather than a lookup.
+ * Tokens in newsletter links are random base64url values. Keeping a bound at
+ * the URL boundary avoids handing an unbounded query value to the store.
  */
+export const NewsletterTokenSchema = z.string().min(1).max(128);
+
+export const NewsletterTokenQuerySchema = z.object({
+  token: NewsletterTokenSchema,
+});
+
+export type NewsletterTokenQuery = z.infer<typeof NewsletterTokenQuerySchema>;
+
 export const UnsubscribeInputSchema = z.object({
-  token: z.string().min(1).max(128),
+  token: NewsletterTokenSchema,
 });
 
 export type UnsubscribeInput = z.infer<typeof UnsubscribeInputSchema>;

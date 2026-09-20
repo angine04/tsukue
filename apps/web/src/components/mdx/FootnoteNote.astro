@@ -1,0 +1,22 @@
+---
+interface Props {
+  label?: string;
+}
+
+const { label = "Note" } = Astro.props;
+---
+
+{
+  /* FootnoteNote is a labelled note block, not automatic footnote numbering: that needs a remark plugin. */
+}
+<aside
+  aria-label={label}
+  class="mdx-footnote-note border-y border-line py-4 text-muted"
+>
+  <p
+    class="mb-2 font-sans text-xs font-bold uppercase tracking-[0.08em] text-accent"
+  >
+    {label}
+  </p>
+  <div class="font-sans text-sm leading-[1.65]"><slot /></div>
+</aside>

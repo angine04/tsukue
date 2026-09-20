@@ -1,0 +1,33 @@
+---
+interface Props {
+  title?: string;
+  tone?: "note" | "caution" | "tip";
+}
+
+const { title, tone = "note" } = Astro.props;
+
+const toneClasses = {
+  note: "border-l-accent bg-paper-ivory",
+  caution: "border-l-paper-terracotta bg-paper-warm",
+  tip: "border-l-paper-olive bg-paper-sage",
+} satisfies Record<NonNullable<Props["tone"]>, string>;
+---
+
+{
+  /* A Callout highlights a useful aside without interrupting the article's flow. */
+}
+<aside
+  class:list={[
+    "mdx-callout rounded-r-md border border-line border-l-4 px-5 py-4 text-ink shadow-card-rest",
+    toneClasses[tone],
+  ]}
+>
+  {
+    title && (
+      <p class="mb-2 font-sans text-xs font-bold uppercase tracking-[0.08em] text-muted">
+        {title}
+      </p>
+    )
+  }
+  <div class="font-sans leading-[1.65]"><slot /></div>
+</aside>

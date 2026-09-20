@@ -1,12 +1,8 @@
 import { SITE_URL, postPath } from "@tsukue/config";
-import {
-  createMailProvider,
-  replyNotificationTemplate,
-  unsubscribeHeaders,
-  type MailProvider,
-} from "@tsukue/mail";
+import { replyNotificationTemplate, unsubscribeHeaders } from "@tsukue/mail";
 import { decryptEmail, hashEmail } from "../crypto.js";
 import type { ApiEnv } from "../env.js";
+import { sendLoggedMail } from "../mail/log.js";
 import { getComment } from "../store.js";
 import { commentUnsubscribeUrl } from "./links.js";
 import { isOptedOut } from "./store.js";
@@ -46,15 +42,6 @@ export async function notifyReplyAuthor(
   const from = env.MAIL_FROM ?? env.ADMIN_EMAIL;
   if (!salt || !encryptionKey || !from) return;
 
-  let provider: MailProvider | undefined;
-  try {
-    provider = createMailProvider(env);
-  } catch (error) {
-    console.error(`Reply notification skipped: ${String(error)}`);
-    return;
-  }
-  if (!provider) return;
-
   try {
     const parent = await getComment(env.DB, reply.parentId);
     if (!parent?.author_email_encrypted) return;
@@ -74,23 +61,32 @@ export async function notifyReplyAuthor(
       await optOutToken({ emailHash, scope: "all", threadId: "" }, salt),
     );
 
-    await provider.send({
-      to,
-      from,
-      subject: `New reply on ${reply.slug}`,
-      html: replyNotificationTemplate({
-        replyAuthor: reply.authorName,
-        replyBody: reply.body,
-        postSlug: reply.slug,
-        postUrl: postUrlFor(reply),
-        threadUnsubscribeUrl: threadUrl,
-        allUnsubscribeUrl: allUrl,
-      }),
-      // The header offers the broad one: a mailbox provider's one-click button
-      // reads as "stop sending me this kind of mail", and the narrower link is
-      // in the body for a reader who wants only this thread to go quiet.
-      headers: unsubscribeHeaders(allUrl),
+    const result = await sendLoggedMail(env, {
+      category: "comment_reply",
+      message: {
+        to,
+        from,
+        subject: `New reply on ${reply.slug}`,
+        html: replyNotificationTemplate({
+          replyAuthor: reply.authorName,
+          replyBody: reply.body,
+          postSlug: reply.slug,
+          postUrl: postUrlFor(reply),
+          threadUnsubscribeUrl: threadUrl,
+          allUnsubscribeUrl: allUrl,
+        }),
+        // The header offers the broad one: a mailbox provider's one-click
+        // button reads as "stop sending me this kind of mail", and the
+        // narrower link is in the body for a reader who wants only this
+        // thread to go quiet.
+        headers: unsubscribeHeaders(allUrl),
+      },
     });
+    if (!result.ok) {
+      console.error(
+        `Reply notification failed for ${reply.id}: ${result.error}`,
+      );
+    }
   } catch (error) {
     console.error(
       `Reply notification failed for ${reply.id}: ${String(error)}`,

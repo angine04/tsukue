@@ -1,7 +1,13 @@
 import { Hono } from "hono";
-import { AUTHOR_NAME } from "@tsukue/config";
-import { CommentStatus } from "@tsukue/schemas";
+import {
+  AdminReplyInputSchema,
+  CommentIdSchema,
+  CommentStatus,
+  COMMENT_REPLY_MAX_LENGTH,
+  LimitQuerySchema,
+} from "@tsukue/schemas";
 import type { CommentStatus as CommentStatusValue } from "@tsukue/types";
+import { AUTHOR_NAME } from "@tsukue/config";
 import { authenticateAdmin, isSameOrigin, type AdminAuthEnv } from "./auth.js";
 import { notifyReplyAuthor } from "../notifications/send.js";
 import { registerNewsletterAdminRoutes } from "../newsletter/admin.js";
@@ -18,6 +24,7 @@ import {
   resolveReplyParent,
   setCommentStatus,
 } from "../store.js";
+import { countMailSendLogsByStatus, listMailSendLogs } from "../mail/log.js";
 
 /**
  * What a moderator may do. Each maps to a status the public listing filters
@@ -37,8 +44,6 @@ const ACTIONS: Record<
   delete: { status: "deleted", audit: "comment.delete", describe: "deleted" },
   spam: { status: "spam", audit: "comment.spam", describe: "marked as spam" },
 };
-
-const REPLY_MAX_LENGTH = 4000;
 
 function fail(code: string, message: string) {
   return { ok: false as const, error: { code, message } };
@@ -107,12 +112,19 @@ export function createAdminApp() {
       return c.json(fail("INVALID_STATUS", "Unknown status filter."), 400);
     }
 
-    const limit = Number.parseInt(c.req.query("limit") ?? "100", 10);
+    const parsedLimit = LimitQuerySchema.safeParse(c.req.query("limit"));
+    if (!parsedLimit.success) {
+      return c.json(
+        fail("INVALID_LIMIT", "Limit must be between 1 and 200."),
+        400,
+      );
+    }
+
     const comments = await attachReportCounts(
       c.env.DB,
       await listCommentsByStatus(c.env.DB, {
         status: parsed.data,
-        limit: Number.isNaN(limit) ? 100 : limit,
+        limit: parsedLimit.data,
       }),
     );
 
@@ -127,12 +139,41 @@ export function createAdminApp() {
    * any tab — and looking for it there is how a report gets missed.
    */
   app.get("/admin/reports", async (c) => {
-    const limit = Number.parseInt(c.req.query("limit") ?? "100", 10);
-    const comments = await listReportedComments(
-      c.env.DB,
-      Number.isNaN(limit) ? 100 : limit,
-    );
+    const parsedLimit = LimitQuerySchema.safeParse(c.req.query("limit"));
+    if (!parsedLimit.success) {
+      return c.json(
+        fail("INVALID_LIMIT", "Limit must be between 1 and 200."),
+        400,
+      );
+    }
+
+    const comments = await listReportedComments(c.env.DB, parsedLimit.data);
     return c.json({ ok: true as const, data: { comments } });
+  });
+
+  /**
+   * What the mail layer has tried to send, newest first, with the counts the
+   * panel beside it shows.
+   *
+   * A failure is kept rather than retried away, because the question a moderator
+   * arrives with is "did that go out?" — a reader who never received a
+   * confirmation link cannot confirm, and this is where that shows.
+   */
+  app.get("/admin/mail-logs", async (c) => {
+    const limit = LimitQuerySchema.safeParse(c.req.query("limit") ?? "50");
+    if (!limit.success) {
+      return c.json(
+        fail("INVALID_LIMIT", "The limit must be a small positive number."),
+        400,
+      );
+    }
+
+    const [logs, counts] = await Promise.all([
+      listMailSendLogs(c.env.DB, limit.data),
+      countMailSendLogsByStatus(c.env.DB),
+    ]);
+
+    return c.json({ ok: true as const, data: { logs, counts } });
   });
 
   app.get("/admin/stats", async (c) => {
@@ -149,7 +190,15 @@ export function createAdminApp() {
    */
   for (const [action, config] of Object.entries(ACTIONS)) {
     app.post(`/admin/comments/:id/${action}`, async (c) => {
-      const id = c.req.param("id");
+      const parsedId = CommentIdSchema.safeParse(c.req.param("id"));
+      if (!parsedId.success) {
+        return c.json(
+          fail("INVALID_REQUEST", "That comment id is invalid."),
+          400,
+        );
+      }
+
+      const id = parsedId.data;
       const actor = c.get("actor");
 
       const existing = await getComment(c.env.DB, id);
@@ -217,26 +266,31 @@ export function createAdminApp() {
       return c.json(fail("INVALID_REQUEST", "Request body must be JSON."), 400);
     }
 
-    const body = (payload as { body?: unknown })?.body;
-    if (typeof body !== "string" || body.trim() === "") {
-      return c.json(
-        fail("INVALID_COMMENT_BODY", "Reply body is required."),
-        400,
-      );
-    }
-    if (body.length > REPLY_MAX_LENGTH) {
+    const parsed = AdminReplyInputSchema.safeParse(payload);
+    if (!parsed.success) {
+      const tooLong = parsed.error.issues[0]?.code === "too_big";
       return c.json(
         fail(
-          "COMMENT_TOO_LONG",
-          `Reply must be at most ${REPLY_MAX_LENGTH} characters.`,
+          tooLong ? "COMMENT_TOO_LONG" : "INVALID_COMMENT_BODY",
+          tooLong
+            ? `Reply must be at most ${COMMENT_REPLY_MAX_LENGTH} characters.`
+            : "Reply body is required.",
         ),
         400,
       );
     }
 
-    const id = c.req.param("id");
-    const actor = c.get("actor");
+    const parsedId = CommentIdSchema.safeParse(c.req.param("id"));
+    if (!parsedId.success) {
+      return c.json(
+        fail("INVALID_REQUEST", "That comment id is invalid."),
+        400,
+      );
+    }
 
+    const body = parsed.data.body;
+    const id = parsedId.data;
+    const actor = c.get("actor");
     const parent = await getComment(c.env.DB, id);
     if (!parent) {
       return c.json(fail("COMMENT_NOT_FOUND", "No such comment."), 404);
@@ -258,7 +312,7 @@ export function createAdminApp() {
       lang: parent.lang ?? undefined,
       parentId: rootId ?? id,
       authorName: AUTHOR_NAME,
-      body: body.trim(),
+      body,
       status: "approved",
       createdAt: now,
       authorIsAdmin: true,
@@ -284,7 +338,7 @@ export function createAdminApp() {
       lang: parent.lang ?? undefined,
       parentId: rootId ?? id,
       authorName: AUTHOR_NAME,
-      body: body.trim(),
+      body,
     });
 
     return c.json(

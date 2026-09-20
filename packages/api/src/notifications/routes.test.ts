@@ -105,6 +105,20 @@ describe("GET /comments/unsubscribe", () => {
     expect(response.headers.get("location")).toBe("/comments/invalid");
     expect(writes).toEqual([]);
   });
+
+  it("redirects an over-long token without attempting verification", async () => {
+    const { db, writes } = fakeDb();
+
+    const response = await createCommentsApp().request(
+      `/comments/unsubscribe?token=${"x".repeat(257)}`,
+      undefined,
+      env(db),
+    );
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe("/comments/invalid");
+    expect(writes).toEqual([]);
+  });
 });
 
 describe("POST /comments/unsubscribe", () => {

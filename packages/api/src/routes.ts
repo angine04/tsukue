@@ -1,6 +1,11 @@
 import { Hono } from "hono";
-import { CommentQuerySchema, CreateCommentSchema } from "@tsukue/schemas";
-import { adminNotificationTemplate, createMailProvider } from "@tsukue/mail";
+import {
+  CommentIdSchema,
+  CommentQuerySchema,
+  CreateCommentSchema,
+  HoneypotInputSchema,
+} from "@tsukue/schemas";
+import { adminNotificationTemplate } from "@tsukue/mail";
 import type { PublicCommentThread } from "@tsukue/types";
 import { encryptEmail, hashEmail, hashIdentifier } from "./crypto.js";
 import type { ApiEnv } from "./env.js";
@@ -21,11 +26,12 @@ import {
 } from "./store.js";
 import { verifyTurnstile } from "./turnstile.js";
 import { registerNotificationRoutes } from "./notifications/routes.js";
+import { sendLoggedMail } from "./mail/log.js";
 
 /**
  * The honeypot field. A real form leaves it empty; a bot filling every input it
- * finds does not. Deliberately not in the Zod schema — a schema failure naming
- * the field would tell the bot which one to leave alone.
+ * finds does not. Its shape is validated separately so a failure never names
+ * the trap field to a bot.
  *
  * Exported so the tests name it the way the route does instead of repeating the
  * string and drifting from it.
@@ -165,8 +171,14 @@ export function createCommentsApp() {
     //
     // The response is the accepted one, field for field. A trap that answers
     // differently only works once.
-    const honeypot = (payload as Record<string, unknown>)[HONEYPOT_FIELD];
-    if (typeof honeypot === "string" && honeypot.trim() !== "") {
+    const honeypot = HoneypotInputSchema.safeParse(payload);
+    if (!honeypot.success) {
+      return c.json(
+        fail("INVALID_REQUEST", "Check the submitted fields and try again."),
+        400,
+      );
+    }
+    if ((honeypot.data.website ?? "").trim() !== "") {
       console.warn(`Honeypot: discarded a submission for "${input.slug}".`);
       return c.json(
         {
@@ -304,7 +316,15 @@ export function createCommentsApp() {
       return c.json(fail("NOT_CONFIGURED", NOT_CONFIGURED_MESSAGE), 500);
     }
 
-    const id = c.req.param("id");
+    const parsedId = CommentIdSchema.safeParse(c.req.param("id"));
+    if (!parsedId.success) {
+      return c.json(
+        fail("INVALID_REQUEST", "That comment id is invalid."),
+        400,
+      );
+    }
+
+    const id = parsedId.data;
     const comment = await getComment(c.env.DB, id);
     if (!comment) {
       return c.json(fail("COMMENT_NOT_FOUND", "No such comment."), 404);
@@ -357,23 +377,16 @@ async function notifyAdmin(
 ): Promise<void> {
   if (!env.ADMIN_EMAIL) return;
 
-  let provider;
-  try {
-    provider = createMailProvider(env);
-  } catch (error) {
-    console.error(`Admin notification skipped: ${String(error)}`);
-    return;
-  }
-  if (!provider) return;
-
-  try {
-    await provider.send({
+  const result = await sendLoggedMail(env, {
+    category: "admin_notification",
+    message: {
       to: env.ADMIN_EMAIL,
       from: env.MAIL_FROM ?? env.ADMIN_EMAIL,
       subject: `New comment on ${comment.postSlug}`,
       html: adminNotificationTemplate({ ...comment, adminUrl: "/admin" }),
-    });
-  } catch (error) {
-    console.error(`Admin notification failed: ${String(error)}`);
-  }
+    },
+  });
+  // The row is already in the log; this is so the failure is visible in the
+  // Function's own output while somebody is watching it.
+  if (!result.ok) console.error(`Admin notification failed: ${result.error}`);
 }

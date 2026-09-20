@@ -1,0 +1,29 @@
+---
+interface Props {
+  caption?: string;
+  credit?: string;
+}
+
+const { caption, credit } = Astro.props;
+const hasCaption = Boolean(caption || credit);
+---
+
+{
+  /* A Figure gives media or other block content an optional editorial caption. */
+}
+<figure class="mdx-figure">
+  <slot />
+  {
+    hasCaption && (
+      <figcaption>
+        {caption && <span>{caption}</span>}
+        {credit && (
+          <span class="font-sans text-xs uppercase tracking-[0.08em]">
+            {caption ? " · " : ""}
+            {credit}
+          </span>
+        )}
+      </figcaption>
+    )
+  }
+</figure>

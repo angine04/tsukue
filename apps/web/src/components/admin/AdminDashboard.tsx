@@ -45,6 +45,116 @@ interface AuditEntry {
   createdAt: string;
 }
 
+interface MailLog {
+  id: string;
+  category: string;
+  provider: string;
+  recipientEmailHash: string | null;
+  status: "success" | "failure";
+  error: string | null;
+  createdAt: string;
+}
+
+interface MailLogPanelProps {
+  lang: string;
+  adminToken: string;
+}
+
+function MailLogPanel({ lang, adminToken }: MailLogPanelProps) {
+  const [logs, setLogs] = useState<MailLog[] | null>(null);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [error, setError] = useState("");
+
+  const headers = useCallback(
+    (): HeadersInit =>
+      adminToken ? { authorization: `Bearer ${adminToken}` } : {},
+    [adminToken],
+  );
+
+  const load = useCallback(async () => {
+    setError("");
+    try {
+      const response = await fetch("/api/admin/mail-logs?limit=50", {
+        headers: headers(),
+      });
+      if (!response.ok) {
+        setError(`Could not load mail log (${response.status}).`);
+        setLogs([]);
+        return;
+      }
+      const payload = (await response.json()) as {
+        ok: boolean;
+        data?: { logs: MailLog[]; counts: Record<string, number> };
+      };
+      if (!payload.ok || !payload.data) {
+        setError("Could not load mail log.");
+        setLogs([]);
+        return;
+      }
+      setLogs(payload.data.logs);
+      setCounts(payload.data.counts);
+    } catch {
+      setError("Could not reach the mail log.");
+      setLogs([]);
+    }
+  }, [headers]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  return (
+    <section className="mt-12 pt-6 border-t border-t-line">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 mb-3">
+        <h2 className="font-sans text-[0.95rem] font-semibold m-0">
+          Mail send log
+        </h2>
+        <span className="text-[0.78rem] text-muted">
+          {counts.success ?? 0} succeeded · {counts.failure ?? 0} failed
+        </span>
+      </div>
+      {error ? (
+        <p className="text-[0.9rem] text-muted m-0" role="status">
+          {error}
+        </p>
+      ) : logs === null ? (
+        <p className="text-[0.9rem] text-muted">Loading mail log…</p>
+      ) : logs.length === 0 ? (
+        <p className="text-[0.9rem] text-muted m-0">
+          No mail send attempts have been recorded.
+        </p>
+      ) : (
+        <ul className="text-[0.8rem] text-muted">
+          {logs.map((log) => (
+            <li
+              className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-2 border-t border-t-line"
+              key={log.id}
+            >
+              <span className="font-code text-ink">{log.category}</span>
+              <span
+                className={
+                  log.status === "failure" ? "text-accent" : "text-ink"
+                }
+              >
+                {log.status}
+              </span>
+              <span>{log.provider}</span>
+              <time className="ml-auto" dateTime={log.createdAt}>
+                {formatDate(new Date(log.createdAt), lang)}
+              </time>
+              {log.error ? (
+                <span className="basis-full text-accent [overflow-wrap:anywhere]">
+                  {log.error}
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 /**
  * The dashboard is plain and efficient on purpose (AGENTS 16.3): it is a tool,
  * not a desk. It stays separate from the desk because a tool that looks like a
@@ -453,6 +563,7 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
         </section>
       ) : null}
       <NewsletterPanel lang={lang} adminToken={adminToken} />
+      <MailLogPanel lang={lang} adminToken={adminToken} />
     </div>
   );
 }

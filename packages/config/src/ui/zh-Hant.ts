@@ -7,6 +7,7 @@ export const zhHant: UIDictionary = {
   "nav.search": "搜尋",
   "nav.back": "返回",
 
+  "desk.tagline": "思考。隨筆。筆記。",
   "desk.readArticle": "閱讀文章",
   "desk.minRead": "分鐘閱讀",
   "desk.scrollLeft": "向左捲動",

@@ -107,11 +107,15 @@ function CommentEntry({
           Pushed to the end of the meta row (`margin-left: auto`) so it sits away
           from the name and date it belongs to: available without competing with
           them, and easier to ignore than to hit by accident.
+
+          On a phone that last part has to stop short of unreachable: the hit
+          area grows with padding and an equal negative margin, so the control
+          looks the same size and the row above it does not move.
         */}
         {comment.isAuthor ? null : outcome === "idle" ? (
           <button
             type="button"
-            className="ml-auto border-0 bg-transparent p-0 font-sans text-[0.78rem] text-muted underline cursor-pointer hover:text-accent focus-visible:text-accent"
+            className="ml-auto border-0 bg-transparent p-0 font-sans text-[0.78rem] text-muted underline cursor-pointer hover:text-accent focus-visible:text-accent max-[720px]:py-3 max-[720px]:-my-3"
             onClick={report}
           >
             {t("comment.report")}

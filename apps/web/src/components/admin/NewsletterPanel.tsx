@@ -138,46 +138,57 @@ export default function NewsletterPanel({
   }
 
   return (
-    <section className="admin-newsletter">
-      <h2>{t("admin.newsletter")}</h2>
+    <section className="mt-12 pt-6 border-t border-t-line">
+      <h2 className="font-sans text-[0.95rem] font-semibold m-0 mb-3">
+        {t("admin.newsletter")}
+      </h2>
 
-      <nav className="admin-tabs" aria-label={t("admin.subscribers")}>
+      <nav
+        className="flex flex-wrap gap-[0.4rem] mb-6"
+        aria-label={t("admin.subscribers")}
+      >
         {STATUSES.map((name) => (
           <button
             key={name}
             type="button"
-            className="admin-tab"
+            className="font-sans text-[0.85rem] text-ink bg-wash border border-line rounded-[2px] px-[0.7rem] py-[0.3rem] cursor-pointer inline-flex items-center gap-[0.45rem] capitalize focus-visible:outline-offset-2 data-active:border-accent data-active:text-accent"
             data-active={name === status ? "" : undefined}
             aria-current={name === status ? "true" : undefined}
             onClick={() => setStatus(name)}
           >
             {t(STATUS_LABEL[name])}
-            <span className="admin-tab-count">{counts[name] ?? 0}</span>
+            <span className="tabular-nums text-muted">{counts[name] ?? 0}</span>
           </button>
         ))}
       </nav>
 
       {error ? (
-        <p className="admin-error" role="alert">
+        <p
+          className="text-[0.9rem] text-accent bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] border-l-[3px] border-l-accent py-[0.6rem] px-[0.8rem] m-0 mb-5"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
 
       {subscribers === null ? (
-        <p className="admin-empty">{t("admin.loading")}</p>
+        <p className="text-[0.9rem] text-muted">{t("admin.loading")}</p>
       ) : subscribers.length === 0 ? (
-        <p className="admin-empty">{t("admin.noSubscribers")}</p>
+        <p className="text-[0.9rem] text-muted">{t("admin.noSubscribers")}</p>
       ) : (
-        <ul className="admin-newsletter-list">
+        <ul className="mb-8">
           {subscribers.map((subscriber) => (
-            <li key={subscriber.id} className="admin-newsletter-item">
-              <span className="admin-newsletter-email">
+            <li
+              key={subscriber.id}
+              className="flex flex-wrap items-baseline gap-[0.6rem] py-[0.7rem] border-t border-t-line text-[0.82rem] text-muted"
+            >
+              <span className="flex-[1_1_12rem] min-w-0 [overflow-wrap:anywhere] text-ink font-code">
                 {subscriber.emailMasked}
               </span>
-              <span className="admin-badge admin-badge--muted">
+              <span className="text-[0.68rem] uppercase tracking-[0.06em] px-[0.35rem] py-[0.1rem] rounded-[2px] bg-[color-mix(in_srgb,var(--color-muted)_12%,transparent)] text-muted">
                 {t(STATUS_LABEL[subscriber.status])}
               </span>
-              <time dateTime={subscriber.createdAt}>
+              <time className="flex-[0_1_auto]" dateTime={subscriber.createdAt}>
                 {t("admin.joined")}:{" "}
                 {formatDate(new Date(subscriber.createdAt), lang)}
               </time>
@@ -187,37 +198,46 @@ export default function NewsletterPanel({
       )}
 
       <form
-        className="admin-newsletter-form"
+        className="flex flex-col items-stretch gap-2 pt-4 px-0 pb-0 border-t border-t-line"
         onSubmit={(event) => {
           event.preventDefault();
           void sendNewsletter();
         }}
       >
-        <label htmlFor="newsletter-subject">{t("admin.subject")}</label>
+        <label
+          className="text-[0.82rem] text-muted"
+          htmlFor="newsletter-subject"
+        >
+          {t("admin.subject")}
+        </label>
         <input
           id="newsletter-subject"
           type="text"
           maxLength={200}
+          className="w-full font-sans text-[0.92rem] text-ink bg-white border border-line rounded-[2px] p-2 [color-scheme:light] focus-visible:outline-offset-2"
           value={subject}
           onChange={(event) => setSubject(event.target.value)}
         />
-        <label htmlFor="newsletter-body">{t("admin.bodyHtml")}</label>
+        <label className="text-[0.82rem] text-muted" htmlFor="newsletter-body">
+          {t("admin.bodyHtml")}
+        </label>
         <textarea
           id="newsletter-body"
           rows={8}
           maxLength={20000}
+          className="w-full font-sans text-[0.92rem] text-ink bg-white border border-line rounded-[2px] p-2 resize-y [color-scheme:light] focus-visible:outline-offset-2"
           value={body}
           onChange={(event) => setBody(event.target.value)}
         />
         <button
           type="submit"
-          className="admin-action admin-action--primary"
+          className="font-sans text-[0.85rem] text-paper-ivory bg-accent border border-accent rounded-[2px] px-[0.7rem] py-[0.3rem] cursor-pointer self-start focus-visible:outline-offset-2 disabled:opacity-[0.45] disabled:cursor-not-allowed"
           disabled={sending || subject.trim() === "" || body.trim() === ""}
         >
           {sending ? t("admin.sending") : t("admin.send")}
         </button>
         {sendResult ? (
-          <p className="admin-newsletter-result" role="status">
+          <p className="mt-1 mx-0 mb-0 text-[0.85rem] text-muted" role="status">
             {tFormat("admin.sendResult", {
               sent: sendResult.sent,
               failed: sendResult.failed,

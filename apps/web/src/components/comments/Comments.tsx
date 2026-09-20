@@ -45,11 +45,24 @@ export default function Comments({ slug, lang, siteKey }: CommentsProps) {
   }, [slug, lang]);
 
   return (
-    <section className="comments" aria-label={t("comment.title")}>
-      <h2 className="comments-title">{t("comment.title")}</h2>
+    <section
+      className="mt-12 border-t border-t-line pt-8"
+      aria-label={t("comment.title")}
+    >
+      {/*
+        Comments live at the foot of the article sheet, so they inherit its paper.
+        Everything here is sized to the sheet's own measure rather than to a page,
+        and uses a rule instead of a card so the sheet keeps reading as one piece
+        of paper with writing on it.
+      */}
+      <h2 className="mb-6 font-serif text-[1.35rem] font-normal">
+        {t("comment.title")}
+      </h2>
 
       {list.status === "loading" ? (
-        <p className="comment-empty">{t("comment.loading")}</p>
+        <p className="mb-6 font-sans text-[0.9rem] text-muted">
+          {t("comment.loading")}
+        </p>
       ) : null}
 
       {list.status === "ready" ? (
@@ -68,7 +81,9 @@ export default function Comments({ slug, lang, siteKey }: CommentsProps) {
       {siteKey ? (
         <CommentForm slug={slug} lang={lang} siteKey={siteKey} />
       ) : (
-        <p className="comment-empty">{t("comment.closed")}</p>
+        <p className="mb-6 font-sans text-[0.9rem] text-muted">
+          {t("comment.closed")}
+        </p>
       )}
     </section>
   );

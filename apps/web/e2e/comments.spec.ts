@@ -37,7 +37,7 @@ test.describe("the comment form", () => {
       "#comment-body",
       `A comment from the end-to-end suite at ${new Date().toISOString()}.`,
     );
-    const submit = page.locator(".comment-submit");
+    const submit = page.locator('form button[type="submit"]');
     await expect(submit).toBeEnabled({ timeout: 30_000 });
     await submit.click();
 

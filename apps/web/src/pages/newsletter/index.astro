@@ -3,7 +3,6 @@ import { SITE_DESCRIPTION, homePath, newsletterPath, ui } from "@tsukue/config";
 import SubscribeForm from "../../components/newsletter/SubscribeForm";
 import Layout from "../../layouts/Layout.astro";
 import { absoluteUrl } from "../../lib/posts";
-import "../../styles/newsletter.css";
 
 const lang = "en";
 const title = ui("newsletter.title", lang);
@@ -20,15 +19,17 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
   canonical={absoluteUrl(newsletterPath())}
 >
   <main class="desk">
-    <div class="sheet-surface newsletter-sheet">
+    <div class="sheet-surface">
       <a class="sheet-back" href={homePath(lang)}>← {ui("nav.back", lang)}</a>
-      <h1>{title}</h1>
-      <p class="newsletter-intro">{ui("newsletter.intro", lang)}</p>
+      <h1 class="mb-2 font-serif text-[clamp(1.75rem,4vw,2.5rem)]">{title}</h1>
+      <p class="text-muted">{ui("newsletter.intro", lang)}</p>
       {
         siteKey ? (
           <SubscribeForm client:load lang={lang} siteKey={siteKey} />
         ) : (
-          <p class="newsletter-closed">{ui("newsletter.closed", lang)}</p>
+          <p class="font-sans text-[0.8rem] text-muted">
+            {ui("newsletter.closed", lang)}
+          </p>
         )
       }
     </div>

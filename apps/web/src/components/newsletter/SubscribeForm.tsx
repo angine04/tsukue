@@ -67,9 +67,15 @@ export default function SubscribeForm({
   }
 
   return (
-    <form className="newsletter-form" onSubmit={handleSubmit}>
-      <div className="newsletter-field">
-        <label htmlFor="newsletter-email">{t("newsletter.emailLabel")}</label>
+    <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-[0.35rem]">
+        <label
+          className="font-sans text-[0.85rem] text-ink"
+          htmlFor="newsletter-email"
+        >
+          {t("newsletter.emailLabel")}
+        </label>
+        {/* The sheet is a light surface; the browser's dark form styling would fight it. */}
         <input
           id="newsletter-email"
           name="email"
@@ -77,24 +83,27 @@ export default function SubscribeForm({
           required
           maxLength={254}
           autoComplete="email"
+          className="w-full border border-line-strong bg-[color-mix(in_srgb,var(--color-paper-ivory)_80%,#fff)] px-[0.7rem] py-[0.6rem] font-sans text-[0.95rem] text-ink rounded-[2px] scheme-light focus-visible:outline-offset-2"
         />
       </div>
 
-      <div className="newsletter-turnstile" ref={containerRef} />
+      <div ref={containerRef} />
 
       <button
         type="submit"
-        className="newsletter-submit"
+        className="self-start rounded-[2px] border-0 bg-accent px-[1.4rem] py-[0.55rem] font-sans text-[0.95rem] text-paper-ivory cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-offset-2"
         disabled={sending || !token}
       >
         {sending ? t("newsletter.sending") : t("newsletter.subscribe")}
       </button>
 
-      <p className="newsletter-hint">{t("newsletter.hint")}</p>
+      <p className="font-sans text-[0.8rem] text-muted">
+        {t("newsletter.hint")}
+      </p>
 
       {message ? (
         <p
-          className="newsletter-status"
+          className="font-sans text-[0.88rem] data-[status=pending]:text-accent data-[status=error]:text-accent"
           data-status={status}
           role={status === "error" ? "alert" : "status"}
         >

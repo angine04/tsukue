@@ -740,39 +740,57 @@ motion layout primitives
 
 ## 10.2 CSS file structure
 
-Recommended:
-
 ```text
 src/styles/
-├─ global.css
-├─ tokens.css
-├─ fonts.css
-├─ desk.css
-├─ cards.css
-├─ article.css
-├─ mdx.css
-└─ admin.css
+├─ global.css     Tailwind entry, the language font stacks, base styles
+├─ tokens.css     the design tokens, as a Tailwind `@theme` block
+├─ desk.css       the desk surface, the sheet, the rail
+├─ cards.css      card paper, colourways, rotation, focus
+├─ article.css    the article sheet (overlay and geometry)
+└─ mdx.css        element styles for rendered MDX
 ```
+
+Only material files exist. Surfaces that are layout, spacing, typography or
+form controls — the dashboard, the comment thread, the newsletter and comment
+forms, the article header — carry utilities on their markup and have no
+stylesheet of their own. `fonts.css` was never needed: `@fontsource` imports
+live in `Layout.astro` and the stacks are variables in `global.css`.
 
 ## 10.3 Design tokens
 
-Use CSS variables for design tokens:
+Tokens are declared once, in `tokens.css`, as a Tailwind `@theme` block:
 
 ```css
-:root {
+@theme {
   --color-desk-base: #8a5f3e;
   --color-paper-ivory: #f2eadc;
-  --color-paper-sand: #d9c5a5;
-  --color-paper-olive: #6f7564;
-  --color-paper-terracotta: #a15f3d;
   --color-ink: #231b16;
   --color-muted: #6f6258;
   --color-accent: #7a2f22;
 
-  --shadow-card-rest: 0 12px 24px rgba(26, 16, 8, 0.18);
-  --shadow-card-focus: 0 18px 38px rgba(26, 16, 8, 0.24);
+  /* Derived surfaces, so a repeated color-mix has one name. */
+  --color-line: color-mix(in srgb, var(--color-muted) 25%, transparent);
+
+  --shadow-card-rest: …;
+  --shadow-card-focus: …;
 }
 ```
+
+Declaring them in `@theme` rather than a plain `:root` is what makes each
+token usable two ways at once: it is emitted as the custom property the
+stylesheets read with `var(…)`, and Tailwind generates a utility from it
+(`bg-paper-ivory`, `text-ink`, `border-line`, `font-serif`, `shadow-card-rest`),
+so markup never has to invent a class for a colour that already has a name.
+
+Do not declare a token anywhere else. Declaring the same token in two places
+is how the values drifted apart before: the theme held the example shadows
+from this section while the stylesheets held the real ones, and only cascade
+order was keeping them honest. Tokens that nothing references are dropped from
+the build, so a palette entry costs nothing until it is used.
+
+The language font stacks are the exception: they are set in `:root`/`:lang()`
+in `global.css`, because they change with the document's language and `@theme`
+fixes a value at build time.
 
 ## 10.4 Texture rules
 
@@ -904,15 +922,22 @@ Example:
 
 ## 11.3 Tailwind font mapping
 
-Tailwind should reference active variables:
+The theme declares the families, pointing at the language variables that
+`10.3`/`11.2` describe:
 
-```ts
-fontFamily: {
-  sans: ["var(--font-sans)"],
-  serif: ["var(--font-serif)"],
-  mono: ["var(--font-code)"],
+```css
+@theme {
+  --font-serif: var(--font-serif-latin);
+  --font-sans: var(--font-sans-latin);
+  --font-code: "Monaspace Argon", ui-monospace, monospace;
 }
 ```
+
+Tailwind emits utilities for these as `font-family: var(--font-sans)` — a
+reference, not a copied value — so `font-sans` in markup and `var(--font-sans)`
+in a stylesheet resolve to the same thing, and both follow the `:lang()` block
+for the page rather than the build machine. Do not restate the stacks in a
+Tailwind config file.
 
 # 11.4 UI Strings Internationalization
 

@@ -210,26 +210,32 @@ Each post can specify card metadata in frontmatter:
 
 ```yaml
 card:
-  kind: article # article | about
-  color: ivory # ivory | sand | olive | terracotta
-  variant: wide # wide | compact
+  kind: article # article | about | note
+  color: ivory # ivory | sand | olive | terracotta | warm-paper
+  variant: wide # wide | compact | name-card
   rotation: -0.8 # degrees (-5 to +5)
-  accent: brown
+  accent: brown # brown | rust | forest | slate
 ```
 
 ### Styling
 
-Design tokens are in `apps/web/src/styles/tokens.css`:
+Design tokens are declared in `apps/web/src/styles/tokens.css` as a Tailwind
+`@theme` block, so each one is both a CSS variable and a utility:
 
 ```css
-:root {
+@theme {
   --color-desk-base: #8a5f3e;
   --color-paper-ivory: #f2eadc;
-  --color-paper-olive: #6f7564;
   --color-ink: #231b16;
-  --shadow-card-rest: 0 12px 24px rgba(26, 16, 8, 0.18);
+  --shadow-card-rest: …;
 }
 ```
+
+That means `bg-paper-ivory` in markup and `var(--color-paper-ivory)` in a
+stylesheet are the same value. Add a token once, there, and use it either way.
+Layout, spacing, type and form controls are utilities on the markup; paper,
+texture, shadow, rotation and motion stay in `desk.css`, `cards.css`,
+`article.css` and `mdx.css`.
 
 ### Fonts
 
@@ -239,7 +245,8 @@ Fonts are self-hosted via [fontsource](https://fontsource.org/) packages:
 - **Cabin** (sans) — `@fontsource/cabin`
 - **Monaspace Argon** (code) — `@fontsource/monaspace-argon`
 
-CJK fonts are loaded per-language via system font fallbacks. To customize, update `apps/web/src/styles/fonts.css` and `apps/web/src/styles/global.css`.
+CJK text falls back to each language's own system stack. To customize, edit the
+stacks and their `:lang()` blocks in `apps/web/src/styles/global.css`.
 
 ---
 

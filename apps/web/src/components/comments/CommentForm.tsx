@@ -72,9 +72,18 @@ export default function CommentForm({ slug, lang, siteKey }: CommentFormProps) {
   const sending = status === "sending";
 
   return (
-    <form className="comment-form" onSubmit={handleSubmit}>
-      <div className="comment-field">
-        <label htmlFor="comment-name">{t("comment.name")}</label>
+    <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-[0.35rem]">
+        <label
+          className="font-sans text-[0.85rem] text-ink"
+          htmlFor="comment-name"
+        >
+          {t("comment.name")}
+        </label>
+        {/*
+          The sheet is already a light-on-dark surface; the browser's own dark
+          form styling would fight it.
+        */}
         <input
           id="comment-name"
           name="authorName"
@@ -82,13 +91,19 @@ export default function CommentForm({ slug, lang, siteKey }: CommentFormProps) {
           required
           maxLength={80}
           autoComplete="name"
+          className="w-full border border-line-strong bg-[color-mix(in_srgb,var(--color-paper-ivory)_80%,#fff)] px-[0.7rem] py-[0.6rem] font-sans text-[0.95rem] text-ink rounded-[2px] scheme-light focus-visible:outline-offset-2"
         />
       </div>
 
-      <div className="comment-field">
-        <label htmlFor="comment-email">
+      <div className="flex flex-col gap-[0.35rem]">
+        <label
+          className="font-sans text-[0.85rem] text-ink"
+          htmlFor="comment-email"
+        >
           {t("comment.email")}{" "}
-          <span className="comment-field-hint">{t("comment.emailHint")}</span>
+          <span className="text-[0.78rem] text-muted">
+            {t("comment.emailHint")}
+          </span>
         </label>
         <input
           id="comment-email"
@@ -96,11 +111,17 @@ export default function CommentForm({ slug, lang, siteKey }: CommentFormProps) {
           type="email"
           maxLength={254}
           autoComplete="email"
+          className="w-full border border-line-strong bg-[color-mix(in_srgb,var(--color-paper-ivory)_80%,#fff)] px-[0.7rem] py-[0.6rem] font-sans text-[0.95rem] text-ink rounded-[2px] scheme-light focus-visible:outline-offset-2"
         />
       </div>
 
-      <div className="comment-field">
-        <label htmlFor="comment-body">{t("comment.body")}</label>
+      <div className="flex flex-col gap-[0.35rem]">
+        <label
+          className="font-sans text-[0.85rem] text-ink"
+          htmlFor="comment-body"
+        >
+          {t("comment.body")}
+        </label>
         <textarea
           id="comment-body"
           name="body"
@@ -108,14 +129,22 @@ export default function CommentForm({ slug, lang, siteKey }: CommentFormProps) {
           required
           maxLength={4000}
           placeholder={t("comment.placeholder")}
+          className="w-full resize-y border border-line-strong bg-[color-mix(in_srgb,var(--color-paper-ivory)_80%,#fff)] px-[0.7rem] py-[0.6rem] font-sans text-[0.95rem] text-ink rounded-[2px] scheme-light focus-visible:outline-offset-2"
         />
       </div>
 
       {/*
+        Hidden from sight, from the pointer and from the keyboard, but still
+        submitted. `display: none` would be skipped by bots that check for it,
+        and `type="hidden"` is skipped by bots that only fill visible fields.
+
         The honeypot. Hidden from people and from assistive technology, and
         named to look like an ordinary field to anything scraping the form.
       */}
-      <div className="comment-honeypot" aria-hidden="true">
+      <div
+        className="absolute left-[-9999px] h-px w-px overflow-hidden"
+        aria-hidden="true"
+      >
         <label htmlFor="comment-website">Website</label>
         <input
           id="comment-website"
@@ -126,11 +155,15 @@ export default function CommentForm({ slug, lang, siteKey }: CommentFormProps) {
         />
       </div>
 
-      <div className="comment-turnstile" ref={containerRef} />
+      <div ref={containerRef} />
 
+      {/*
+        Below the tap-target size that a phone needs; the whole control grows
+        rather than just its hit area so the two stay the same shape.
+      */}
       <button
         type="submit"
-        className="comment-submit"
+        className="self-start rounded-[2px] border-0 bg-accent px-[1.4rem] py-[0.55rem] font-sans text-[0.95rem] text-paper-ivory cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-offset-2 max-[720px]:self-stretch max-[720px]:py-3"
         disabled={sending || !token}
       >
         {t("comment.submit")}
@@ -138,7 +171,7 @@ export default function CommentForm({ slug, lang, siteKey }: CommentFormProps) {
 
       {message ? (
         <p
-          className="comment-status"
+          className="font-sans text-[0.88rem] text-muted data-[status=error]:text-accent"
           data-status={status}
           role={status === "error" ? "alert" : "status"}
         >

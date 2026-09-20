@@ -83,7 +83,7 @@ test.describe("a direct article route", () => {
 
     const html = await response.text();
     expect(html).toContain("<article");
-    expect(html).toMatch(/<h1[^>]*>On Slowness/);
+    expect(html).toMatch(/<h1[^>]*>\s*On Slowness/);
     // The sheet the island adopts is real markup, not a placeholder it fills in.
     expect(html).toContain("data-sheet-fallback");
   });

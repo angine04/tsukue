@@ -46,13 +46,18 @@ interface AuditEntry {
 }
 
 /**
- * The dashboard is plain on purpose (AGENTS 16.3): it is a tool, not a desk.
- * The styling lives in `admin.css` and shares nothing with the card system.
+ * The dashboard is plain and efficient on purpose (AGENTS 16.3): it is a tool,
+ * not a desk. It stays separate from the desk because a tool that looks like a
+ * toy is a tool that gets used carelessly. Sans-serif throughout, no paper, no
+ * rotation.
  */
 function CommentBody({ body }: { body: string }) {
   const lines = tokenizeCommentLines(body);
   return (
-    <p className="admin-comment-body">
+    /*
+     * Moderation often involves hostile input; it must not widen the page.
+     */
+    <p className="text-[0.92rem] leading-[1.6] mb-3 [overflow-wrap:anywhere] whitespace-pre-wrap">
       {lines.map((tokens, lineIndex) => (
         <span key={lineIndex}>
           {lineIndex > 0 ? <br /> : null}
@@ -63,6 +68,7 @@ function CommentBody({ body }: { body: string }) {
                 href={token.value}
                 rel="noopener noreferrer nofollow"
                 target="_blank"
+                className="text-accent focus-visible:outline-offset-2"
               >
                 {token.value}
               </a>
@@ -238,24 +244,29 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
   }
 
   return (
-    <div className="admin">
-      <header className="admin-header">
-        <h1>{t("admin.title")}</h1>
+    <div className="max-w-[52rem] mx-auto pt-8 px-5 pb-16 font-sans text-ink">
+      <header className="flex items-baseline justify-between gap-4 mb-6">
+        <h1 className="font-sans text-[1.35rem] font-semibold m-0">
+          {t("admin.title")}
+        </h1>
         <button
           type="button"
-          className="admin-refresh"
+          className="font-sans text-[0.85rem] text-ink bg-wash border border-line rounded-[2px] px-[0.7rem] py-[0.3rem] cursor-pointer focus-visible:outline-offset-2"
           onClick={() => void load(tab, reportedOnly)}
         >
           {t("admin.refresh")}
         </button>
       </header>
 
-      <nav className="admin-tabs" aria-label={t("admin.commentStatus")}>
+      <nav
+        className="flex flex-wrap gap-[0.4rem] mb-6"
+        aria-label={t("admin.commentStatus")}
+      >
         {TABS.map((name) => (
           <button
             key={name}
             type="button"
-            className="admin-tab"
+            className="font-sans text-[0.85rem] text-ink bg-wash border border-line rounded-[2px] px-[0.7rem] py-[0.3rem] cursor-pointer inline-flex items-center gap-[0.45rem] capitalize focus-visible:outline-offset-2 data-active:border-accent data-active:text-accent"
             data-active={!reportedOnly && name === tab ? "" : undefined}
             aria-current={!reportedOnly && name === tab ? "true" : undefined}
             onClick={() => {
@@ -264,7 +275,7 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
             }}
           >
             {t(STATUS_LABEL[name])}
-            <span className="admin-tab-count">{counts[name] ?? 0}</span>
+            <span className="tabular-nums text-muted">{counts[name] ?? 0}</span>
           </button>
         ))}
         {/*
@@ -274,7 +285,7 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
         */}
         <button
           type="button"
-          className="admin-tab admin-tab--reported"
+          className="font-sans text-[0.85rem] text-ink bg-wash border border-line rounded-[2px] px-[0.7rem] py-[0.3rem] cursor-pointer inline-flex items-center gap-[0.45rem] capitalize focus-visible:outline-offset-2 data-active:border-accent data-active:text-accent"
           data-active={reportedOnly ? "" : undefined}
           aria-current={reportedOnly ? "true" : undefined}
           onClick={() => setReportedOnly(true)}
@@ -284,28 +295,31 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
       </nav>
 
       {error ? (
-        <p className="admin-error" role="alert">
+        <p
+          className="text-[0.9rem] text-accent bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)] border-l-[3px] border-l-accent py-[0.6rem] px-[0.8rem] m-0 mb-5"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
 
       {comments === null ? (
-        <p className="admin-empty">{t("admin.loading")}</p>
+        <p className="text-[0.9rem] text-muted">{t("admin.loading")}</p>
       ) : comments.length === 0 ? (
-        <p className="admin-empty">
+        <p className="text-[0.9rem] text-muted">
           {reportedOnly
             ? t("admin.noReports")
             : tFormat("admin.nothingHere", { status: t(STATUS_LABEL[tab]) })}
         </p>
       ) : (
-        <ul className="admin-list">
+        <ul>
           {comments.map((comment) => (
-            <li key={comment.id} className="admin-item">
-              <div className="admin-item-meta">
-                <span className="admin-author">
+            <li key={comment.id} className="py-4 border-t border-t-line">
+              <div className="flex flex-wrap items-center gap-[0.6rem] text-[0.78rem] text-muted mb-[0.4rem]">
+                <span className="text-[0.9rem] font-semibold text-ink">
                   {comment.authorName}
                   {comment.isAuthor ? (
-                    <span className="admin-badge">
+                    <span className="text-[0.68rem] uppercase tracking-[0.06em] px-[0.35rem] py-[0.1rem] rounded-[2px] bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-accent">
                       {t("admin.authorBadge")}
                     </span>
                   ) : null}
@@ -313,24 +327,34 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
                 <time dateTime={comment.createdAt}>
                   {formatDate(new Date(comment.createdAt), lang)}
                 </time>
-                <a className="admin-post" href={`/${comment.slug}`}>
+                <a
+                  className="text-muted no-underline font-code hover:underline focus-visible:outline-offset-2"
+                  href={`/${comment.slug}`}
+                >
                   /{comment.slug}
                 </a>
                 {comment.parentId ? (
-                  <span className="admin-badge admin-badge--muted">
+                  <span className="text-[0.68rem] uppercase tracking-[0.06em] px-[0.35rem] py-[0.1rem] rounded-[2px] bg-[color-mix(in_srgb,var(--color-muted)_12%,transparent)] text-muted">
                     {t("admin.replyBadge")}
                   </span>
                 ) : null}
                 {comment.hasEmail ? (
                   <span
-                    className="admin-badge admin-badge--muted"
+                    className="text-[0.68rem] uppercase tracking-[0.06em] px-[0.35rem] py-[0.1rem] rounded-[2px] bg-[color-mix(in_srgb,var(--color-muted)_12%,transparent)] text-muted"
                     title={t("admin.reachableHint")}
                   >
                     {t("admin.reachableBadge")}
                   </span>
                 ) : null}
                 {comment.reportCount > 0 ? (
-                  <span className="admin-badge admin-badge--flag">
+                  /*
+                   * A comment readers have flagged.
+                   *
+                   * Solid rather than tinted, because it is the one badge in
+                   * the queue that asks for action and the rest are
+                   * descriptions.
+                   */
+                  <span className="text-[0.68rem] uppercase tracking-[0.06em] px-[0.35rem] py-[0.1rem] rounded-[2px] bg-accent text-paper-ivory">
                     {tFormat("admin.reports", { count: comment.reportCount })}
                   </span>
                 ) : null}
@@ -338,13 +362,13 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
 
               <CommentBody body={comment.body} />
 
-              <div className="admin-actions">
+              <div className="flex flex-wrap gap-[0.4rem]">
                 {ACTIONS.filter((action) => action !== comment.status).map(
                   (action) => (
                     <button
                       key={action}
                       type="button"
-                      className="admin-action"
+                      className="font-sans text-[0.85rem] text-ink bg-wash border border-line rounded-[2px] px-[0.7rem] py-[0.3rem] cursor-pointer focus-visible:outline-offset-2 disabled:opacity-[0.45] disabled:cursor-not-allowed data-[action=delete]:text-accent data-[action=spam]:text-accent"
                       data-action={action}
                       disabled={busy !== null}
                       onClick={() => void act(comment.id, action)}
@@ -355,7 +379,7 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
                 )}
                 <button
                   type="button"
-                  className="admin-action"
+                  className="font-sans text-[0.85rem] text-ink bg-wash border border-line rounded-[2px] px-[0.7rem] py-[0.3rem] cursor-pointer focus-visible:outline-offset-2 disabled:opacity-[0.45] disabled:cursor-not-allowed"
                   disabled={busy !== null}
                   onClick={() =>
                     setReplyTo(replyTo === comment.id ? null : comment.id)
@@ -368,20 +392,24 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
               </div>
 
               {replyTo === comment.id ? (
-                <div className="admin-reply">
-                  <label htmlFor={`reply-${comment.id}`}>
+                <div className="flex flex-col gap-2 mt-[0.9rem] p-[0.8rem] border-l-[3px] border-l-accent bg-[color-mix(in_srgb,var(--color-muted)_6%,transparent)]">
+                  <label
+                    className="text-[0.82rem] text-muted"
+                    htmlFor={`reply-${comment.id}`}
+                  >
                     {t("admin.replyLabel")}
                   </label>
                   <textarea
                     id={`reply-${comment.id}`}
                     rows={3}
                     maxLength={4000}
+                    className="font-sans text-[0.92rem] text-ink bg-white border border-line rounded-[2px] p-2 resize-y [color-scheme:light] focus-visible:outline-offset-2"
                     value={replyBody}
                     onChange={(event) => setReplyBody(event.target.value)}
                   />
                   <button
                     type="button"
-                    className="admin-action admin-action--primary"
+                    className="font-sans text-[0.85rem] text-paper-ivory bg-accent border border-accent rounded-[2px] px-[0.7rem] py-[0.3rem] cursor-pointer self-start focus-visible:outline-offset-2 disabled:opacity-[0.45] disabled:cursor-not-allowed"
                     disabled={busy !== null || replyBody.trim() === ""}
                     onClick={() => void sendReply(comment.id)}
                   >
@@ -395,15 +423,15 @@ export default function AdminDashboard({ lang = "en" }: AdminDashboardProps) {
       )}
 
       {audit.length > 0 ? (
-        <section className="admin-audit">
-          <h2>{t("admin.recentActivity")}</h2>
-          <ul>
+        <section className="mt-12 pt-6 border-t border-t-line">
+          <h2 className="font-sans text-[0.95rem] font-semibold m-0 mb-3">
+            {t("admin.recentActivity")}
+          </h2>
+          <ul className="text-[0.8rem] text-muted">
             {audit.map((entry) => (
-              <li key={entry.id}>
-                <span className="admin-audit-action">{entry.action}</span>
-                <span className="admin-audit-actor">
-                  {entry.actor ?? "unknown"}
-                </span>
+              <li className="flex gap-3 py-1" key={entry.id}>
+                <span className="font-code">{entry.action}</span>
+                <span className="flex-1">{entry.actor ?? "unknown"}</span>
                 <time dateTime={entry.createdAt}>
                   {formatDate(new Date(entry.createdAt), lang)}
                 </time>

@@ -21,7 +21,8 @@ function CommentBody({ body }: CommentBodyProps) {
   const lines = tokenizeCommentLines(body);
 
   return (
-    <p className="comment-body">
+    <p className="font-sans text-[0.95rem] leading-[1.65] text-ink [overflow-wrap:anywhere]">
+      {/* Long unbroken strings (a URL, a pasted token) must not widen the sheet. */}
       {lines.map((tokens, lineIndex) => (
         <Fragment key={lineIndex}>
           {lineIndex > 0 ? <br /> : null}
@@ -29,7 +30,7 @@ function CommentBody({ body }: CommentBodyProps) {
             token.type === "link" ? (
               <a
                 key={tokenIndex}
-                className="comment-link"
+                className="text-accent underline decoration-[1px] underline-offset-2 [overflow-wrap:anywhere]"
                 href={token.value}
                 rel="noopener noreferrer nofollow"
                 target="_blank"
@@ -49,9 +50,11 @@ function CommentBody({ body }: CommentBodyProps) {
 function CommentEntry({
   comment,
   lang,
+  spaced,
 }: {
   comment: PublicComment;
   lang: string;
+  spaced?: boolean;
 }) {
   const { t } = useI18n(lang);
   const [outcome, setOutcome] = useState<"idle" | "reported" | "failed">(
@@ -78,28 +81,44 @@ function CommentEntry({
   }
 
   return (
-    <li className="comment">
-      <div className="comment-meta">
-        <span className="comment-author">{comment.authorName}</span>
+    <li className={spaced ? "mt-6" : undefined}>
+      <div className="flex flex-wrap items-baseline gap-[0.6rem] mb-[0.35rem]">
+        <span className="font-serif text-base text-ink">
+          {comment.authorName}
+        </span>
         {/*
           Formatted for the article's language, not the browser's: the same
           comment should not read differently to two people, and letting the
           browser decide is also how a server/client mismatch starts.
         */}
-        <time className="comment-date" dateTime={comment.createdAt}>
+        <time
+          className="font-sans text-[0.78rem] text-muted tabular-nums"
+          dateTime={comment.createdAt}
+        >
           {formatDate(new Date(comment.createdAt), lang)}
         </time>
         {/*
           Not on the author's own replies: there is nobody to report them to,
           and offering it would suggest otherwise.
         */}
+        {/*
+          The report control, and what it says afterwards.
+
+          Pushed to the end of the meta row (`margin-left: auto`) so it sits away
+          from the name and date it belongs to: available without competing with
+          them, and easier to ignore than to hit by accident.
+        */}
         {comment.isAuthor ? null : outcome === "idle" ? (
-          <button type="button" className="comment-report" onClick={report}>
+          <button
+            type="button"
+            className="ml-auto border-0 bg-transparent p-0 font-sans text-[0.78rem] text-muted underline cursor-pointer hover:text-accent focus-visible:text-accent"
+            onClick={report}
+          >
             {t("comment.report")}
           </button>
         ) : (
           <span
-            className="comment-report-outcome"
+            className="ml-auto font-sans text-[0.78rem] text-muted data-[status=failed]:text-accent"
             data-status={outcome}
             role={outcome === "failed" ? "alert" : "status"}
           >
@@ -127,20 +146,38 @@ export default function CommentList({
   emptyLabel,
 }: CommentListProps) {
   if (threads.length === 0) {
-    return <p className="comment-empty">{emptyLabel}</p>;
+    return (
+      <p className="mb-6 font-sans text-[0.9rem] text-muted">{emptyLabel}</p>
+    );
   }
 
   return (
-    <ol className="comment-list">
-      {threads.map((thread) => (
+    <ol>
+      {threads.map((thread, index) => (
         <Fragment key={thread.comment.id}>
-          <CommentEntry comment={thread.comment} lang={lang} />
+          <CommentEntry
+            comment={thread.comment}
+            lang={lang}
+            spaced={index > 0 && threads[index - 1].replies.length === 0}
+          />
           {thread.replies.length > 0 ? (
-            <ol className="comment-replies">
-              {thread.replies.map((reply) => (
-                <CommentEntry key={reply.id} comment={reply} lang={lang} />
-              ))}
-            </ol>
+            <>
+              {/*
+                Replies are set in from the thread they answer, which is the
+                only cue the nesting gets — a border here competed with the
+                sheet's own edge.
+              */}
+              <ol className="mt-5 border-l-2 border-l-[color-mix(in_srgb,var(--color-muted)_20%,transparent)] pl-5">
+                {thread.replies.map((reply) => (
+                  <CommentEntry
+                    key={reply.id}
+                    comment={reply}
+                    lang={lang}
+                    spaced
+                  />
+                ))}
+              </ol>
+            </>
           ) : null}
         </Fragment>
       ))}

@@ -68,13 +68,22 @@
   --font-sans: var(--font-sans-ko);
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 3px;
-}
+/*
+ * Base styles go in Tailwind's `base` layer rather than being left unlayered.
+ * An unlayered rule outranks every layer, so anything written here could never
+ * be adjusted by a utility on the element — the focus ring below would win
+ * against a `focus-visible:outline-offset-*` utility. In `base`, it stays a
+ * default that markup can override.
+ */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    scroll-behavior: auto;
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      scroll-behavior: auto;
+    }
   }
 }

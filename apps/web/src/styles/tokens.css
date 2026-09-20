@@ -47,6 +47,17 @@
   --color-desk-ink: var(--color-paper-ivory);
 
   /*
+   * Derived surfaces for the tool chrome — the dashboard, the comment thread,
+   * the forms. Each was written inline as a `color-mix()` in the stylesheet
+   * that wanted it, so "the hairline between two rows" was a percentage
+   * repeated per file. Naming them gives that decision one value; the mixes
+   * are in sRGB, exactly as they were.
+   */
+  --color-line: color-mix(in srgb, var(--color-muted) 25%, transparent);
+  --color-line-strong: color-mix(in srgb, var(--color-muted) 35%, transparent);
+  --color-wash: color-mix(in srgb, var(--color-muted) 8%, transparent);
+
+  /*
    * A single blurred box-shadow reads as a cut-out. Real contact shadows are
    * stacked: a tight dark line where the sheet touches, a mid falloff, and a
    * wide ambient pool. All four are warmed and offset slightly down-right so

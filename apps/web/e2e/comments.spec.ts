@@ -11,7 +11,7 @@ test.describe("the comment form", () => {
   test("will not submit an empty one", async ({ page }) => {
     await page.goto("/on-slowness");
 
-    const submit = page.locator(".comment-submit");
+    const submit = page.locator('form button[type="submit"]');
     await expect(submit).toBeEnabled({ timeout: 30_000 });
     await submit.click();
 
@@ -21,7 +21,7 @@ test.describe("the comment form", () => {
       .locator("#comment-name")
       .evaluate((input: HTMLInputElement) => input.validity.valueMissing);
     expect(nameIsMissing).toBe(true);
-    await expect(page.locator(".comment-status")).toHaveCount(0);
+    await expect(page.locator("form [data-status]")).toHaveCount(0);
   });
 
   test("stores a submission as awaiting review", async ({ page }) => {
@@ -43,7 +43,7 @@ test.describe("the comment form", () => {
 
     // Not "posted": nothing is published until a moderator approves it, and the
     // reader is told exactly that.
-    const status = page.locator(".comment-status");
+    const status = page.locator("form [data-status]");
     await expect(status).toHaveAttribute("data-status", "posted", {
       timeout: 30_000,
     });

@@ -10,20 +10,32 @@ interface Props {
 const { meta } = Astro.props;
 ---
 
-<article class="article-content" lang={meta.lang}>
-  <header class="article-header">
-    <h1>{meta.title}</h1>
-    <p class="article-description">{meta.description}</p>
+{
+  /* The measure, type and rhythm of a rendered article. Everything below is
+    layout and typography, so it is utilities; the paper it sits on is the
+    sheet's, and the prose an MDX file produces is styled by `mdx.css`, which
+    is the only place that can reach generated elements. */
+}
+<article class="font-sans leading-[1.75] text-ink" lang={meta.lang}>
+  <header class="mb-10">
+    <h1
+      class="mb-3 font-serif text-[clamp(1.9rem,4.5vw,2.75rem)] leading-[1.15]"
+    >
+      {meta.title}
+    </h1>
+    <p class="mb-5 font-serif text-[1.15rem] italic text-muted">
+      {meta.description}
+    </p>
 
-    <div class="article-meta">
-      <time datetime={meta.date.toISOString()}>
+    <div class="flex flex-wrap items-baseline gap-3 text-sm text-muted">
+      <time class="tabular-nums" datetime={meta.date.toISOString()}>
         {formatPostDate(meta.date, meta.lang)}
       </time>
       {
         meta.updated && (
-          <span class="article-updated">
+          <span>
             {ui("article.updated", meta.lang)}{" "}
-            <time datetime={meta.updated.toISOString()}>
+            <time class="tabular-nums" datetime={meta.updated.toISOString()}>
               {formatPostDate(meta.updated, meta.lang)}
             </time>
           </span>
@@ -31,9 +43,14 @@ const { meta } = Astro.props;
       }
       {
         meta.tags.length > 0 && (
-          <ul class="article-tags" aria-label={ui("article.tags", meta.lang)}>
+          <ul
+            class="flex flex-wrap gap-2"
+            aria-label={ui("article.tags", meta.lang)}
+          >
             {meta.tags.map((tag) => (
-              <li>{tag}</li>
+              <li class="rounded-full border border-line-strong px-[0.55rem] py-[0.1rem] text-[0.8rem]">
+                {tag}
+              </li>
             ))}
           </ul>
         )

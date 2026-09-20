@@ -35,7 +35,7 @@ test.describe("the admin API", () => {
 
     // Two elements match: the comment queue and the newsletter panel both
     // report the refusal, which is the point — neither pretends to be empty.
-    await expect(page.locator(".admin-error").first()).toContainText(
+    await expect(page.locator("[role=alert]").first()).toContainText(
       /not authorised/i,
       { timeout: 30_000 },
     );

@@ -11,6 +11,16 @@
   margin-top: 2em;
 }
 
+/*
+ * The article's own h1 is serif because the markup says so; the headings an
+ * MDX file writes are not markup the page controls, so their family has to be
+ * set here. h2 and h3 only — h4 has always been sans and stays that way.
+ */
+.mdx-content h2,
+.mdx-content h3 {
+  font-family: var(--font-serif);
+}
+
 .mdx-content h2 {
   font-size: 1.6rem;
 }

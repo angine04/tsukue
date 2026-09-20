@@ -71,9 +71,7 @@ test.describe("a direct article route", () => {
     // Straight to the article: nothing about this visit comes from the desk.
     await page.goto("/on-slowness");
 
-    await expect(page.locator(".article-content h1")).toContainText(
-      /slowness/i,
-    );
+    await expect(page.locator("article h1")).toContainText(/slowness/i);
     await expect(page.locator(".desk-rail")).toBeVisible();
   });
 

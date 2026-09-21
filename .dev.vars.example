@@ -31,6 +31,15 @@ EMAIL_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 # everything authentically rather than openly.
 ADMIN_TOKEN=dev-admin-token
 
+# Cloudflare Access. Preferred over ADMIN_TOKEN in a deployment: set both of
+# these and leave ADMIN_TOKEN unset, so a shared secret left over from setup
+# cannot become the weakest link. The audience tag comes from the Access
+# application; the dashboard steps are in the README under "Protecting the admin
+# dashboard". Commented out because Access cannot work on localhost — it
+# authenticates with a cookie only the edge can issue.
+# ACCESS_TEAM_DOMAIN=yourteam.cloudflareaccess.com
+# ACCESS_AUD=your-access-application-audience-tag
+
 # Mail is optional locally and off by default: with no provider configured the
 # send endpoints answer NOT_CONFIGURED instead of pretending to send. To exercise
 # it, uncomment and point MAIL_ENDPOINT at something that accepts a POST — see

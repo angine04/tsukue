@@ -12,7 +12,10 @@
 #   1x0000000000000000000000000000000AA  always passes
 #   2x0000000000000000000000000000000AA  always fails (for the rejection path)
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
-TURNSTILE_SITE_KEY=1x00000000000000000000AA
+
+# The matching *site* key is deliberately absent: it is public, it belongs to the
+# build rather than the runtime, and no Function reads it. It goes in `.env` as
+# PUBLIC_TURNSTILE_SITE_KEY — see .env.example.
 
 # Any string. Addresses and IPs are stored only as a hash salted with this, so
 # it needs to be unguessable in production — the value here is a placeholder.
